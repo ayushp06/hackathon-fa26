@@ -20,5 +20,11 @@ export const theme = {
     dialIndicatorWidth: 4,
     dialValueFontRatio: 0.2,
     calibrationDialMaxDiameter: 260,
+    manualDialMaxDiameter: 180,
   },
 } as const;
+
+export function manualDialDiameter(windowWidth: number) {
+  const contentWidth = Math.min(windowWidth, theme.sizing.contentMaxWidth) - theme.spacing.lg * 2;
+  return Math.min(theme.sizing.manualDialMaxDiameter, (contentWidth - theme.spacing.md) / 2);
+}

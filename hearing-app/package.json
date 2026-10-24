@@ -34,7 +34,7 @@
     "ios": "expo start --ios",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src constants app.config.ts",
-    "test": "node --experimental-strip-types --test src/device/mockDeviceService.test.mjs src/components/rotaryMath.test.mjs src/state/mockCalibration.test.mjs"
+    "test": "node --experimental-strip-types --test constants/theme.test.mjs src/device/mockDeviceService.test.mjs src/components/rotaryMath.test.mjs src/state/mockCalibration.test.mjs src/state/manualValues.test.mjs"
   },
   "private": true
 }

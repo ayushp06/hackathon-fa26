@@ -73,7 +73,7 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
           </View>
         </View>
       </GestureDetector>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, { width: diameter }]}>{label}</Text>
     </View>
   );
 }
@@ -82,5 +82,5 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center', gap: theme.spacing.md },
   valueOverlay: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   value: { color: theme.colors.background, fontWeight: '500', fontVariant: ['tabular-nums'] },
-  label: { ...theme.typography.segment, color: theme.colors.secondaryText },
+  label: { ...theme.typography.segment, color: theme.colors.secondaryText, textAlign: 'center' },
 });
