@@ -15,10 +15,11 @@ type Props = {
   diameter: number;
   label: string;
   value: number;
+  valueSuffix?: string;
   onValueChange: (value: number) => void;
 };
 
-export function RotaryDial({ min, max, step, diameter, label, value, onValueChange }: Props) {
+export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix = '', onValueChange }: Props) {
   if (![min, max, step, diameter, value].every(Number.isFinite) || max <= min || step <= 0 || diameter < 56) {
     throw new Error('RotaryDial requires finite values, max > min, step > 0, and diameter >= 56');
   }
@@ -53,7 +54,7 @@ export function RotaryDial({ min, max, step, diameter, label, value, onValueChan
           accessible
           accessibilityRole="adjustable"
           accessibilityLabel={label}
-          accessibilityValue={{ min, max, now: currentValue }}
+          accessibilityValue={{ min, max, now: currentValue, text: `${currentValue}${valueSuffix}` }}
           accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
           onAccessibilityAction={(event) => {
             if (event.nativeEvent.actionName === 'increment') changeBy(1);
@@ -68,7 +69,7 @@ export function RotaryDial({ min, max, step, diameter, label, value, onValueChan
             <AnimatedLine animatedProps={indicator} stroke={theme.colors.background} strokeWidth={theme.sizing.dialIndicatorWidth} strokeLinecap="round" />
           </Svg>
           <View pointerEvents="none" style={styles.valueOverlay}>
-            <Text style={[styles.value, { fontSize: diameter * theme.sizing.dialValueFontRatio }]}>{currentValue}</Text>
+            <Text style={[styles.value, { fontSize: diameter * theme.sizing.dialValueFontRatio }]}>{currentValue}{valueSuffix}</Text>
           </View>
         </View>
       </GestureDetector>

@@ -1,24 +1,65 @@
-import { useState } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { theme } from '../../constants/theme';
 import { RotaryDial } from '../components/RotaryDial';
+import { useCalibrationStore, VOLUME_MAX, VOLUME_MIN } from '../state/useCalibrationStore';
 
 export function AutomaticCalibrationScreen() {
-  const [value, setValue] = useState(50);
   const { width } = useWindowDimensions();
+  const volume = useCalibrationStore((state) => state.volume);
+  const status = useCalibrationStore((state) => state.status);
+  const setVolume = useCalibrationStore((state) => state.setVolume);
+  const recalibrate = useCalibrationStore((state) => state.recalibrate);
+  const diameter = Math.max(56, Math.min(theme.sizing.calibrationDialMaxDiameter, width - theme.spacing.lg * 4));
+  const loading = status === 'loading';
 
   return (
-    <View style={styles.content}>
-      <Text style={styles.title}>Automatic Calibration</Text>
-      <View style={styles.preview}>
-        <RotaryDial min={0} max={100} step={1} diameter={Math.min(240, width - 96)} label="Volume" value={value} onValueChange={setValue} />
+    <ScrollView contentContainerStyle={styles.content}>
+      <RotaryDial
+        min={VOLUME_MIN}
+        max={VOLUME_MAX}
+        step={1}
+        diameter={diameter}
+        label="Volume"
+        value={volume}
+        valueSuffix="%"
+        onValueChange={setVolume}
+      />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: loading, busy: loading }}
+        disabled={loading}
+        onPress={() => void recalibrate()}
+        style={({ pressed }) => [styles.button, pressed && styles.pressed]}
+      >
+        <Text style={styles.buttonText}>{loading ? 'Recalibrating…' : 'Recalibrate'}</Text>
+      </Pressable>
+      <View style={styles.status} accessibilityLiveRegion="polite">
+        {status === 'complete' ? <Text style={styles.statusText}>Mock calibration complete</Text> : null}
+        {status === 'error' ? <Text style={styles.statusText}>Calibration failed. Try again.</Text> : null}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { flex: 1, paddingTop: theme.spacing.xl },
-  title: { ...theme.typography.title, color: theme.colors.text },
-  preview: { alignItems: 'center', marginTop: theme.spacing.xl },
+  content: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.xl,
+  },
+  button: {
+    width: '100%',
+    maxWidth: theme.sizing.calibrationDialMaxDiameter,
+    minHeight: theme.sizing.segmentHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: theme.spacing.xl,
+    borderWidth: theme.sizing.borderWidth,
+    borderColor: theme.colors.text,
+  },
+  pressed: { opacity: 0.7 },
+  buttonText: { ...theme.typography.segment, color: theme.colors.text },
+  status: { minHeight: theme.spacing.lg, justifyContent: 'center', marginTop: theme.spacing.md },
+  statusText: { ...theme.typography.segment, color: theme.colors.secondaryText },
 });

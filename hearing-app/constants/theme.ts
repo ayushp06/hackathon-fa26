@@ -19,5 +19,6 @@ export const theme = {
     dialTrackInset: 17,
     dialIndicatorWidth: 4,
     dialValueFontRatio: 0.2,
+    calibrationDialMaxDiameter: 260,
   },
 } as const;
