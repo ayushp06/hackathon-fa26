@@ -10,5 +10,14 @@ export const theme = {
     segment: { fontSize: 14, lineHeight: 18, fontWeight: '600' },
   },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 40 },
-  sizing: { contentMaxWidth: 600, segmentHeight: 56, segmentRadius: 8, borderWidth: 1 },
+  sizing: {
+    contentMaxWidth: 600,
+    segmentHeight: 56,
+    segmentRadius: 8,
+    borderWidth: 1,
+    dialRim: 8,
+    dialTrackInset: 17,
+    dialIndicatorWidth: 4,
+    dialValueFontRatio: 0.2,
+  },
 } as const;
