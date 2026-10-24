@@ -1,3 +1,6 @@
 *.kicad_prl
 *.lck
 *-backups/
+hearing-app/node_modules/
+hearing-app/.expo/
+hearing-app/dist/
