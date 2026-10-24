@@ -12,7 +12,7 @@ export default {
   slug: identity.slug,
   scheme: identity.slug,
   version: '1.0.0',
-  platforms: ['ios', 'android'],
+  platforms: ['ios', 'android', 'web'],
   orientation: 'portrait',
   userInterfaceStyle: 'light',
   backgroundColor: theme.colors.background,

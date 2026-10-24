@@ -11,6 +11,8 @@ npm start
 
 From the Expo terminal, press `a` for an Android emulator or `i` for an iOS simulator. You can also run `npm run android` or `npm run ios`. Use an SDK 58-compatible Expo Go app where available, or create a development build with `npx expo run:android` or `npx expo run:ios`. Expo SDK 58 requires Node.js 22.13+ or 24.3+; Android native builds require Android Studio and the Android SDK, and iOS native builds require macOS and Xcode.
 
+For a phone-sized preview on this computer, run `npm run web`, open the localhost URL shown by Expo in Chrome, then open DevTools and toggle the device toolbar (`Ctrl+Shift+M`). Choose an iPhone-sized viewport such as 393 × 852. This runs the same React Native screens in a browser; iOS-only behavior such as native haptics still needs a real iPhone or an iOS simulator on macOS.
+
 ## Checks
 
 ```sh
