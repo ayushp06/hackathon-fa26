@@ -1,0 +1,1 @@
+The jack footprint copies KiCad 9 Connector_Audio:Jack_3.5mm_CUI_SJ-3523-SMT_Horizontal geometry; pads are renumbered to manufacturer terminals 1=sleeve, 2=tip, 3=ring for the selected SJ-3523-SMT-TR. No footprints are assigned to unselected modules or bare ICs without a verified land-pattern decision.

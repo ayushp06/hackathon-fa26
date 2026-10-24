@@ -1,0 +1,1030 @@
+(kicad_sch (version 20250114) (generator "eeschema") (uuid "9889fb09-4184-47b1-afe8-154c849015b6") (paper "User" 660 520)
+(title_block (title "AURA Breadboard Circuit View") (rev "A") (comment 1 "Only exact documented modules; assembly conditional on hardware checks"))
+(lib_symbols 	(symbol "Device:R"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "R"
+			(at 2.032 0 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "R"
+			(at 0 0 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at -1.778 0 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "R res resistor"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_fp_filters" "R_*"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "R_0_1"
+			(rectangle
+				(start -1.016 -2.54)
+				(end 1.016 2.54)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "R_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 1.27)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 1.27)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	) 	(symbol "Device:C"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0.254)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "C"
+			(at 0.635 2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "C"
+			(at 0.635 -2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 0.9652 -3.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "cap capacitor"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_fp_filters" "C_*"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "C_0_1"
+			(polyline
+				(pts
+					(xy -2.032 0.762) (xy 2.032 0.762)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -2.032 -0.762) (xy 2.032 -0.762)
+				)
+				(stroke
+					(width 0.508)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "C_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 2.794)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 2.794)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	) 	(symbol "Switch:SW_Push"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "SW"
+			(at 1.27 2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "SW_Push"
+			(at 0 -1.524 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 5.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 5.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Push button switch, generic, two pins"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "switch normally-open pushbutton push-button"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "SW_Push_0_1"
+			(circle
+				(center -2.032 0)
+				(radius 0.508)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 1.27) (xy 0 3.048)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(circle
+				(center 2.032 0)
+				(radius 0.508)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 2.54 1.27) (xy -2.54 1.27)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(pin passive line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 5.08 0 180)
+				(length 2.54)
+				(name "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	) 	(symbol "Switch:SW_SPST"
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "SW"
+			(at 0 3.175 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SW_SPST"
+			(at 0 -2.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Single Pole Single Throw (SPST) switch"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "switch lever"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "SW_SPST_0_0"
+			(circle
+				(center -2.032 0)
+				(radius 0.508)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy -1.524 0.254) (xy 1.524 1.778)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(circle
+				(center 2.032 0)
+				(radius 0.508)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "SW_SPST_1_1"
+			(pin passive line
+				(at -5.08 0 0)
+				(length 2.54)
+				(name "A"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 5.08 0 180)
+				(length 2.54)
+				(name "B"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	) (symbol "AURA_BB:NUCLEO_F411RE_USED" (pin_names (offset 1.016)) (pin_numbers (hide yes)) (in_bom yes) (on_board yes)
+      (property "Reference" "M" (at 0 42.1 0) (effects (font (size 1.8 1.8)))) (property "Value" "NUCLEO_F411RE_USED" (at 0 45.1 0) (effects (font (size 1.8 1.8))))
+      (symbol "NUCLEO_F411RE_USED_1_1" (rectangle (start -25.4 38.1) (end 25.4 -38.1) (stroke (width 0.254) (type default)) (fill (type background))) (pin passive line (at 30.48 33.02 180) (length 5.08) (name "CN7-16_3V3" (effects (font (size 1.8 1.8)))) (number "CN7-16_3V3" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 27.940000000000005 180) (length 5.08) (name "CN7-20_GND" (effects (font (size 1.8 1.8)))) (number "CN7-20_GND" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 22.860000000000003 180) (length 5.08) (name "CN10-20_GND" (effects (font (size 1.8 1.8)))) (number "CN10-20_GND" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 17.78 180) (length 5.08) (name "CN10-16_PB12_WS" (effects (font (size 1.8 1.8)))) (number "CN10-16_PB12_WS" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 12.700000000000003 180) (length 5.08) (name "CN10-30_PB13_BCK" (effects (font (size 1.8 1.8)))) (number "CN10-30_PB13_BCK" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 7.6200000000000045 180) (length 5.08) (name "CN10-28_PB14_RX" (effects (font (size 1.8 1.8)))) (number "CN10-28_PB14_RX" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 2.5400000000000027 180) (length 5.08) (name "CN10-26_PB15_TX" (effects (font (size 1.8 1.8)))) (number "CN10-26_PB15_TX" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 -2.539999999999999 180) (length 5.08) (name "CN7-28_PA0" (effects (font (size 1.8 1.8)))) (number "CN7-28_PA0" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 -7.619999999999997 180) (length 5.08) (name "CN7-30_PA1" (effects (font (size 1.8 1.8)))) (number "CN7-30_PA1" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 -12.699999999999996 180) (length 5.08) (name "CN7-32_PA4" (effects (font (size 1.8 1.8)))) (number "CN7-32_PA4" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 -17.779999999999994 180) (length 5.08) (name "CN7-34_PB0" (effects (font (size 1.8 1.8)))) (number "CN7-34_PB0" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 -22.86 180) (length 5.08) (name "CN10-24_PB1" (effects (font (size 1.8 1.8)))) (number "CN10-24_PB1" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 -27.939999999999998 180) (length 5.08) (name "CN10-23_PA8" (effects (font (size 1.8 1.8)))) (number "CN10-23_PA8" (effects (font (size 1.4 1.4))))))) (symbol "AURA_BB:SHILLEHTEK_INMP441" (pin_names (offset 1.016)) (pin_numbers (hide yes)) (in_bom yes) (on_board yes)
+      (property "Reference" "M" (at 0 24.32 0) (effects (font (size 1.8 1.8)))) (property "Value" "SHILLEHTEK_INMP441" (at 0 27.32 0) (effects (font (size 1.8 1.8))))
+      (symbol "SHILLEHTEK_INMP441_1_1" (rectangle (start -25.4 20.32) (end 25.4 -20.32) (stroke (width 0.254) (type default)) (fill (type background))) (pin passive line (at -30.48 15.24 0) (length 5.08) (name "VDD" (effects (font (size 1.8 1.8)))) (number "VDD" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 10.16 0) (length 5.08) (name "GND" (effects (font (size 1.8 1.8)))) (number "GND" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 5.08 0) (length 5.08) (name "SCK" (effects (font (size 1.8 1.8)))) (number "SCK" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 0.0 0) (length 5.08) (name "WS" (effects (font (size 1.8 1.8)))) (number "WS" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -5.08 0) (length 5.08) (name "SD" (effects (font (size 1.8 1.8)))) (number "SD" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -10.159999999999998 0) (length 5.08) (name "L/R" (effects (font (size 1.8 1.8)))) (number "L/R" (effects (font (size 1.4 1.4))))))) (symbol "AURA_BB:ADAFRUIT_PCM5102_6250" (pin_names (offset 1.016)) (pin_numbers (hide yes)) (in_bom yes) (on_board yes)
+      (property "Reference" "M" (at 0 37.019999999999996 0) (effects (font (size 1.8 1.8)))) (property "Value" "ADAFRUIT_PCM5102_6250" (at 0 40.019999999999996 0) (effects (font (size 1.8 1.8))))
+      (symbol "ADAFRUIT_PCM5102_6250_1_1" (rectangle (start -25.4 33.019999999999996) (end 25.4 -33.019999999999996) (stroke (width 0.254) (type default)) (fill (type background))) (pin passive line (at -30.48 27.939999999999998 0) (length 5.08) (name "VIN" (effects (font (size 1.8 1.8)))) (number "VIN" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 22.86 0) (length 5.08) (name "GND" (effects (font (size 1.8 1.8)))) (number "GND" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 17.779999999999998 0) (length 5.08) (name "BCK" (effects (font (size 1.8 1.8)))) (number "BCK" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 12.699999999999998 0) (length 5.08) (name "WSEL" (effects (font (size 1.8 1.8)))) (number "WSEL" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 7.619999999999997 0) (length 5.08) (name "DIN" (effects (font (size 1.8 1.8)))) (number "DIN" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 2.539999999999999 0) (length 5.08) (name "FIL" (effects (font (size 1.8 1.8)))) (number "FIL" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -2.5400000000000027 0) (length 5.08) (name "MU" (effects (font (size 1.8 1.8)))) (number "MU" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -7.6200000000000045 0) (length 5.08) (name "FM" (effects (font (size 1.8 1.8)))) (number "FM" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -12.700000000000003 0) (length 5.08) (name "DE" (effects (font (size 1.8 1.8)))) (number "DE" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -17.78 0) (length 5.08) (name "MCK" (effects (font (size 1.8 1.8)))) (number "MCK" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -22.86 0) (length 5.08) (name "3V" (effects (font (size 1.8 1.8)))) (number "3V" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 27.939999999999998 180) (length 5.08) (name "Lout" (effects (font (size 1.8 1.8)))) (number "Lout" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 22.86 180) (length 5.08) (name "Rout" (effects (font (size 1.8 1.8)))) (number "Rout" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 17.779999999999998 180) (length 5.08) (name "G" (effects (font (size 1.8 1.8)))) (number "G" (effects (font (size 1.4 1.4))))))) (symbol "AURA_BB:MAX97220AEVKIT_PLUS" (pin_names (offset 1.016)) (pin_numbers (hide yes)) (in_bom yes) (on_board yes)
+      (property "Reference" "M" (at 0 26.86 0) (effects (font (size 1.8 1.8)))) (property "Value" "MAX97220AEVKIT_PLUS" (at 0 29.86 0) (effects (font (size 1.8 1.8))))
+      (symbol "MAX97220AEVKIT_PLUS_1_1" (rectangle (start -25.4 22.86) (end 25.4 -22.86) (stroke (width 0.254) (type default)) (fill (type background))) (pin passive line (at -30.48 17.78 0) (length 5.08) (name "VDD" (effects (font (size 1.8 1.8)))) (number "VDD" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 12.700000000000001 0) (length 5.08) (name "GND" (effects (font (size 1.8 1.8)))) (number "GND" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 7.620000000000001 0) (length 5.08) (name "INL-" (effects (font (size 1.8 1.8)))) (number "INL-" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 2.540000000000001 0) (length 5.08) (name "INL+" (effects (font (size 1.8 1.8)))) (number "INL+" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -2.539999999999999 0) (length 5.08) (name "INR-" (effects (font (size 1.8 1.8)))) (number "INR-" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -7.619999999999997 0) (length 5.08) (name "INR+" (effects (font (size 1.8 1.8)))) (number "INR+" (effects (font (size 1.4 1.4))))) (pin passive line (at -30.48 -12.7 0) (length 5.08) (name "JU1_SHDN_SIDE" (effects (font (size 1.8 1.8)))) (number "JU1_SHDN_SIDE" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 17.78 180) (length 5.08) (name "OUTL_PAD" (effects (font (size 1.8 1.8)))) (number "OUTL_PAD" (effects (font (size 1.4 1.4))))) (pin passive line (at 30.48 12.700000000000001 180) (length 5.08) (name "OUTR_PAD" (effects (font (size 1.8 1.8)))) (number "OUTR_PAD" (effects (font (size 1.4 1.4))))))) (symbol "AURA_WIRE:SERIES_R" (pin_names (offset 1.016)) (pin_numbers (hide yes)) (in_bom yes) (on_board yes)
+ (property "Reference" "R" (at 0 -7 0) (effects (font (size 1.7 1.7)))) (property "Value" "R" (at 0 -4 0) (effects (font (size 1.7 1.7))))
+ (symbol "SERIES_R_1_1" (rectangle (start -5.08 2.54) (end 5.08 -2.54) (stroke (width 0.254) (type default)) (fill (type background)))
+  (pin passive line (at -10.16 0 0) (length 5.08) (name "1" (effects (font (size 1 1)))) (number "1" (effects (font (size 1 1)))))
+  (pin passive line (at 10.16 0 180) (length 5.08) (name "2" (effects (font (size 1 1)))) (number "2" (effects (font (size 1 1))))))) 	(symbol "power:+3.3V"
+		(power)
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "#PWR"
+			(at 0 -3.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3.3V"
+			(at 0 3.556 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "global power"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "+3.3V_0_1"
+			(polyline
+				(pts
+					(xy -0.762 1.27) (xy 0 2.54)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 2.54) (xy 0.762 1.27)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(polyline
+				(pts
+					(xy 0 0) (xy 0 2.54)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "+3.3V_1_1"
+			(pin power_in line
+				(at 0 0 90)
+				(length 0)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	) 	(symbol "power:GND"
+		(power)
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "#PWR"
+			(at 0 -6.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 0 -3.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "global power"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "GND_0_1"
+			(polyline
+				(pts
+					(xy 0 0) (xy 0 -1.27) (xy 1.27 -1.27) (xy 0 -2.54) (xy -1.27 -1.27) (xy 0 -1.27)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "GND_1_1"
+			(pin power_in line
+				(at 0 0 270)
+				(length 0)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	) 	(symbol "power:PWR_FLAG"
+		(power)
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 0)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(property "Reference" "#FLG"
+			(at 0 1.905 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 0 3.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ki_keywords" "flag power"
+			(at 0 0 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(symbol "PWR_FLAG_0_0"
+			(pin power_out line
+				(at 0 0 90)
+				(length 0)
+				(name "~"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(symbol "PWR_FLAG_0_1"
+			(polyline
+				(pts
+					(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+				)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(embedded_fonts no)
+	))
+(symbol (lib_id "AURA_BB:NUCLEO_F411RE_USED") (at 85.09 124.46 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "7ecb953c-0088-4966-bb94-d04e6529b637")
+      (property "Reference" "J1" (at 85.09 75.46 0) (effects (font (size 1.8 1.8)))) (property "Value" "NUCLEO-F411RE CN7/CN10" (at 85.09 79.46 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "J1") (unit 1))))) (symbol (lib_id "AURA_BB:SHILLEHTEK_INMP441") (at 314.96 85.09 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "d353a8a2-aadb-438a-b89d-ae6175d9865e")
+      (property "Reference" "M1" (at 314.96 77.09 0) (effects (font (size 1.8 1.8)))) (property "Value" "INMP441 module" (at 314.96 80.59 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "M1") (unit 1))))) (symbol (lib_id "AURA_BB:ADAFRUIT_PCM5102_6250") (at 314.96 250.19 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "34964114-043c-456f-b59a-11cfd642b4ec")
+      (property "Reference" "M2" (at 314.96 242.19 0) (effects (font (size 1.8 1.8)))) (property "Value" "PCM5102 #6250" (at 314.96 245.69 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "M2") (unit 1))))) (symbol (lib_id "AURA_BB:MAX97220AEVKIT_PLUS") (at 549.91 250.19 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "8bc1f429-d33e-4ac0-aec5-021661b7987e")
+      (property "Reference" "M3" (at 549.91 242.19 0) (effects (font (size 1.8 1.8)))) (property "Value" "MAX97220AEVKIT+" (at 549.91 245.69 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "M3") (unit 1))))) (wire (pts (xy 115.57 91.44) (xy 135.89 91.44)) (stroke (width 0) (type default)) (uuid "bbb803fd-164d-4791-9033-62d91eeabb26")) (symbol (lib_id "power:+3.3V") (at 135.89 91.44 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "9b797552-f35f-4109-9a6e-516c0c2e8d21")
+       (property "Reference" "#PWR01" (at 135.89 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 135.89 87.63 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR01") (unit 1))))) (wire (pts (xy 284.48 69.85) (xy 269.24 69.85)) (stroke (width 0) (type default)) (uuid "15dc3b9e-a944-4baf-9a1c-c6a3a39528c4")) (symbol (lib_id "power:+3.3V") (at 269.24 69.85 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "e8d64510-733b-40e0-8280-9bc41934a4b4")
+       (property "Reference" "#PWR02" (at 269.24 69.85 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 269.24 66.04 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR02") (unit 1))))) (wire (pts (xy 284.48 222.25) (xy 269.24 222.25)) (stroke (width 0) (type default)) (uuid "d3105e4a-826e-4503-9a72-29a85086553d")) (symbol (lib_id "power:+3.3V") (at 269.24 222.25 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "e214e1d2-471c-4ebe-bf99-1cf5ff24b270")
+       (property "Reference" "#PWR03" (at 269.24 222.25 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 269.24 218.44 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR03") (unit 1))))) (wire (pts (xy 284.48 247.65) (xy 269.24 247.65)) (stroke (width 0) (type default)) (uuid "06b0b68e-7d7f-497c-97c3-d468db7674c1")) (symbol (lib_id "power:+3.3V") (at 269.24 247.65 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "2847e690-ac18-4d19-bfc1-7a8ddf7f8df1")
+       (property "Reference" "#PWR04" (at 269.24 247.65 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 269.24 243.84 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR04") (unit 1))))) (wire (pts (xy 284.48 252.73) (xy 269.24 252.73)) (stroke (width 0) (type default)) (uuid "c8ef6e6a-57ac-4a0b-b3cf-95098efe2744")) (symbol (lib_id "power:+3.3V") (at 269.24 252.73 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "67fe9b6e-2b18-47d0-b1db-5ca7b3ce46a9")
+       (property "Reference" "#PWR05" (at 269.24 252.73 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 269.24 248.92 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR05") (unit 1))))) (wire (pts (xy 519.43 232.41) (xy 504.19 232.41)) (stroke (width 0) (type default)) (uuid "3989474a-5ee3-44f3-8366-462ea82a728b")) (symbol (lib_id "power:+3.3V") (at 504.19 232.41 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "dabb1851-2cc1-4302-94b2-910fb45ee845")
+       (property "Reference" "#PWR06" (at 504.19 232.41 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 504.19 228.6 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR06") (unit 1))))) (wire (pts (xy 115.57 96.52) (xy 135.89 96.52)) (stroke (width 0) (type default)) (uuid "e3ae3ebd-e0fc-4495-a5d5-a40295784892")) (symbol (lib_id "power:GND") (at 135.89 96.52 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "a8e11b50-efcf-4a2c-a364-596ffb0bd8a3")
+       (property "Reference" "#PWR07" (at 135.89 96.52 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 135.89 100.33 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR07") (unit 1))))) (wire (pts (xy 115.57 101.6) (xy 135.89 101.6)) (stroke (width 0) (type default)) (uuid "51252e7d-2c3c-402e-8bbd-a7efb85c5c5d")) (symbol (lib_id "power:GND") (at 135.89 101.6 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "f90623ca-3365-42c5-8870-b8c6e69d90f0")
+       (property "Reference" "#PWR08" (at 135.89 101.6 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 135.89 105.41 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR08") (unit 1))))) (wire (pts (xy 284.48 74.93) (xy 265.43 74.93)) (stroke (width 0) (type default)) (uuid "fcbc7f35-8f7b-43f5-8165-757d20a96081")) (symbol (lib_id "power:GND") (at 265.43 74.93 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "8bc5fdca-ce07-49eb-8bde-2be4b58d29ba")
+       (property "Reference" "#PWR09" (at 265.43 74.93 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 265.43 78.74 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR09") (unit 1))))) (wire (pts (xy 284.48 95.25) (xy 265.43 95.25)) (stroke (width 0) (type default)) (uuid "10433e99-76a1-4758-a58a-2bf8f252985f")) (symbol (lib_id "power:GND") (at 265.43 95.25 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "3d0d14f2-652a-43a7-a94c-159151b837ba")
+       (property "Reference" "#PWR10" (at 265.43 95.25 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 265.43 99.06 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR10") (unit 1))))) (wire (pts (xy 284.48 227.33) (xy 265.43 227.33)) (stroke (width 0) (type default)) (uuid "1dde4b88-9e46-44d5-9b8d-8e21d5a3c9a7")) (symbol (lib_id "power:GND") (at 265.43 227.33 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "b2e660a4-640a-4a2c-9054-7f7a9e9391bc")
+       (property "Reference" "#PWR11" (at 265.43 227.33 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 265.43 231.14 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR11") (unit 1))))) (wire (pts (xy 284.48 257.81) (xy 265.43 257.81)) (stroke (width 0) (type default)) (uuid "2842441b-33e4-490e-8ea2-93311f7ffd43")) (symbol (lib_id "power:GND") (at 265.43 257.81 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "b29a63e7-cb2a-4a1a-abec-177df64f739f")
+       (property "Reference" "#PWR12" (at 265.43 257.81 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 265.43 261.62 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR12") (unit 1))))) (wire (pts (xy 284.48 262.89) (xy 265.43 262.89)) (stroke (width 0) (type default)) (uuid "4dc3fcf9-ffb1-40a8-aa7a-4b79e0d54521")) (symbol (lib_id "power:GND") (at 265.43 262.89 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "8b1247dd-cc72-4f91-bef0-29e1328a4442")
+       (property "Reference" "#PWR13" (at 265.43 262.89 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 265.43 266.7 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR13") (unit 1))))) (wire (pts (xy 519.43 237.49) (xy 500.38 237.49)) (stroke (width 0) (type default)) (uuid "a4f8f168-5042-4c40-b6e8-d8d24962a8e4")) (symbol (lib_id "power:GND") (at 500.38 237.49 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "529048eb-2a06-4b96-8dc6-d9dbe082a415")
+       (property "Reference" "#PWR14" (at 500.38 237.49 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 500.38 241.3 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR14") (unit 1))))) (wire (pts (xy 519.43 247.65) (xy 500.38 247.65)) (stroke (width 0) (type default)) (uuid "35d2af28-32c4-42c6-8edc-ea838591f492")) (symbol (lib_id "power:GND") (at 500.38 247.65 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "5e5c2304-d5c2-4f72-b384-52836d9e6fc0")
+       (property "Reference" "#PWR15" (at 500.38 247.65 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 500.38 251.46 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR15") (unit 1))))) (wire (pts (xy 519.43 257.81) (xy 500.38 257.81)) (stroke (width 0) (type default)) (uuid "6c3ed346-141b-4abe-ba33-c469bb57c3b9")) (symbol (lib_id "power:GND") (at 500.38 257.81 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "c614d171-c5f8-462b-b67f-06ac15fddaba")
+       (property "Reference" "#PWR16" (at 500.38 257.81 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 500.38 261.62 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR16") (unit 1))))) (wire (pts (xy 345.44 232.41) (xy 364.49 232.41)) (stroke (width 0) (type default)) (uuid "03847018-264f-44b8-bf47-779af662b41b")) (symbol (lib_id "power:GND") (at 364.49 232.41 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "e06ccffb-b581-4883-8f0d-ea42446ce7f7")
+       (property "Reference" "#PWR17" (at 364.49 232.41 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 364.49 236.22 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR17") (unit 1))))) (wire (pts (xy 135.89 91.44) (xy 160.02 91.44)) (stroke (width 0) (type default)) (uuid "95e7ba6a-061e-405f-ac82-90954fe4d176")) (wire (pts (xy 160.02 91.44) (xy 160.02 81.28)) (stroke (width 0) (type default)) (uuid "6c391a85-c2d9-4470-9097-53a49f23178e")) (symbol (lib_id "power:PWR_FLAG") (at 160.02 81.28 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "f2b9efc5-8892-4866-a214-b8c4e893f87b")
+       (property "Reference" "#PWR18" (at 160.02 81.28 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "PWR_FLAG" (at 160.02 77.47 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR18") (unit 1))))) (wire (pts (xy 135.89 96.52) (xy 160.02 96.52)) (stroke (width 0) (type default)) (uuid "d9bdeea0-06c2-4108-8cca-7b5741e55a6b")) (wire (pts (xy 160.02 96.52) (xy 160.02 105.41)) (stroke (width 0) (type default)) (uuid "6cef348b-2957-4203-887d-44dd3b2c2abb")) (symbol (lib_id "power:PWR_FLAG") (at 160.02 105.41 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "a5f52110-765f-4dad-b1ba-8d571376a0a1")
+       (property "Reference" "#PWR19" (at 160.02 105.41 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "PWR_FLAG" (at 160.02 101.6 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR19") (unit 1))))) (symbol (lib_id "Device:C") (at 405.13 91.44 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "ce09ce1a-580a-47e2-aeee-0f180ede9f31")
+      (property "Reference" "C1" (at 405.13 83.44 0) (effects (font (size 1.8 1.8)))) (property "Value" "100n" (at 405.13 86.94 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "C1") (unit 1))))) (wire (pts (xy 405.13 87.63) (xy 405.13 72.39)) (stroke (width 0) (type default)) (uuid "aed0a8c6-38b7-4115-9c68-a141610176ac")) (symbol (lib_id "power:+3.3V") (at 405.13 72.39 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "22f31931-9d2f-4609-ad0f-eadbefde94ac")
+       (property "Reference" "#PWR20" (at 405.13 72.39 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 405.13 68.58 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR20") (unit 1))))) (wire (pts (xy 405.13 95.25) (xy 405.13 111.76)) (stroke (width 0) (type default)) (uuid "b51bc377-95e7-4bf6-ace1-13b89cc2ad5d")) (symbol (lib_id "power:GND") (at 405.13 111.76 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "ecf5560a-6aad-4854-a1b8-583f2bdc05f0")
+       (property "Reference" "#PWR21" (at 405.13 111.76 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 405.13 115.57 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR21") (unit 1))))) (wire (pts (xy 115.57 106.68) (xy 180.34 106.68)) (stroke (width 0) (type default)) (uuid "095fdde4-e759-4832-9afd-71167990544e")) (wire (pts (xy 180.34 106.68) (xy 180.34 85.09)) (stroke (width 0) (type default)) (uuid "dd343fa4-a6f1-4009-9d40-786d28cbf8e8")) (wire (pts (xy 180.34 85.09) (xy 284.48 85.09)) (stroke (width 0) (type default)) (uuid "17af4b37-b8e3-49c0-81bf-7c5429dd9cf3")) (wire (pts (xy 180.34 85.09) (xy 180.34 237.49)) (stroke (width 0) (type default)) (uuid "64809ad5-fbe7-4e09-8b4c-a028c8953244")) (wire (pts (xy 180.34 237.49) (xy 284.48 237.49)) (stroke (width 0) (type default)) (uuid "ca209c8e-f913-45f2-867a-624f18e3b408")) (junction (at 180.34 85.09) (diameter 0) (color 0 0 0 0) (uuid "e67894fd-eb2d-4bd3-bdc0-c03c7b29669f")) (wire (pts (xy 115.57 111.76) (xy 195.58 111.76)) (stroke (width 0) (type default)) (uuid "a86b6fb7-7a1c-402e-9fd5-06bdd03360ca")) (wire (pts (xy 195.58 111.76) (xy 195.58 80.01)) (stroke (width 0) (type default)) (uuid "e6a55be5-67c8-47e9-9b89-a51adfd4364b")) (wire (pts (xy 195.58 80.01) (xy 284.48 80.01)) (stroke (width 0) (type default)) (uuid "3a331bc6-2cda-4994-88da-20c4ad464397")) (wire (pts (xy 195.58 80.01) (xy 195.58 232.41)) (stroke (width 0) (type default)) (uuid "b2394f3a-7c86-480c-bb12-9778112472bd")) (wire (pts (xy 195.58 232.41) (xy 284.48 232.41)) (stroke (width 0) (type default)) (uuid "413b7c42-a38d-4d8c-8286-7ba964c0dd49")) (junction (at 195.58 80.01) (diameter 0) (color 0 0 0 0) (uuid "e8fad209-d768-4d63-a7e6-dee23348b84e")) (wire (pts (xy 115.57 116.84) (xy 209.55 116.84)) (stroke (width 0) (type default)) (uuid "1d47b794-1f46-4117-867b-70de1701b836")) (wire (pts (xy 209.55 116.84) (xy 209.55 90.17)) (stroke (width 0) (type default)) (uuid "1133d997-3d2d-4579-9bfa-8157136b309e")) (wire (pts (xy 209.55 90.17) (xy 284.48 90.17)) (stroke (width 0) (type default)) (uuid "abaca75a-6faa-439c-a9ed-8cc62efcbb75")) (wire (pts (xy 115.57 121.92) (xy 224.79 121.92)) (stroke (width 0) (type default)) (uuid "1154a691-e068-4c07-94b0-3c0de53a224c")) (wire (pts (xy 224.79 121.92) (xy 224.79 242.57)) (stroke (width 0) (type default)) (uuid "dc72dff8-38a7-4c9a-956d-0bfbffd40d62")) (wire (pts (xy 224.79 242.57) (xy 284.48 242.57)) (stroke (width 0) (type default)) (uuid "5db7c6b9-61b3-43dd-888c-f487c430e54b")) (symbol (lib_id "Device:R") (at 260.35 134.62 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "24bf2ae6-2fc5-4b05-8c15-2d272b957872")
+      (property "Reference" "R5" (at 260.35 126.62 0) (effects (font (size 1.8 1.8)))) (property "Value" "100k" (at 260.35 130.12 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R5") (unit 1))))) (wire (pts (xy 260.35 130.81) (xy 260.35 90.17)) (stroke (width 0) (type default)) (uuid "584bb305-090c-4246-b782-4a656beda855")) (wire (pts (xy 260.35 90.17) (xy 284.48 90.17)) (stroke (width 0) (type default)) (uuid "5e20d1f6-7d9f-4425-8781-5a2f0662a0c5")) (junction (at 260.35 90.17) (diameter 0) (color 0 0 0 0) (uuid "224681cb-431c-4c98-ad32-7d951854e247")) (wire (pts (xy 260.35 138.43) (xy 260.35 149.86)) (stroke (width 0) (type default)) (uuid "4ca5cbfa-e39c-45d1-803e-d528a0d318a3")) (symbol (lib_id "power:GND") (at 260.35 149.86 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "ffded3c8-dc7f-41a1-bc6e-2d1037429344")
+       (property "Reference" "#PWR22" (at 260.35 149.86 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 260.35 153.67 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR22") (unit 1))))) (no_connect (at 284.48 267.97) (uuid "98e7cfdf-2901-4483-a779-6cd85749c784")) (no_connect (at 284.48 273.05) (uuid "261a8973-4b39-4caf-95af-7cc87eead30a")) (no_connect (at 580.39 232.41) (uuid "f651d214-706a-481b-93a0-3591c2eb1e4f")) (no_connect (at 580.39 237.49) (uuid "df39b5aa-44bb-46fa-860e-4aef9279e323")) (symbol (lib_id "AURA_WIRE:SERIES_R") (at 420.37 224.79 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "cab99d7d-447e-46a5-9e54-976c0b6f7dd6")
+      (property "Reference" "R1" (at 420.37 215.9 0) (effects (font (size 1.8 1.8)))) (property "Value" "47k" (at 420.37 219.71 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R1") (unit 1))))) (wire (pts (xy 345.44 222.25) (xy 384.81 222.25)) (stroke (width 0) (type default)) (uuid "b8215f9e-ad6c-4eac-b829-0452400d99db")) (wire (pts (xy 384.81 222.25) (xy 384.81 224.79)) (stroke (width 0) (type default)) (uuid "bd5232ad-77f3-4e43-87a1-fc2bff343d23")) (wire (pts (xy 384.81 224.79) (xy 410.21 224.79)) (stroke (width 0) (type default)) (uuid "ac40eedb-0166-4224-af05-52f09da05378")) (wire (pts (xy 430.53 224.79) (xy 459.74 224.79)) (stroke (width 0) (type default)) (uuid "517ec125-03ec-48cf-843d-e37d7fb3a3f1")) (wire (pts (xy 459.74 224.79) (xy 485.14 224.79)) (stroke (width 0) (type default)) (uuid "7dfbd922-c307-4579-bf04-ac89c6eb8cf0")) (wire (pts (xy 485.14 224.79) (xy 485.14 242.57)) (stroke (width 0) (type default)) (uuid "12a8651e-4a0f-40e3-8a40-c815f4211595")) (wire (pts (xy 485.14 242.57) (xy 519.43 242.57)) (stroke (width 0) (type default)) (uuid "001be343-2999-47a7-ab05-aba91e8c9643")) (symbol (lib_id "Device:R") (at 459.74 242.57 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "8213be79-ae2f-4e9e-8a0c-1d6499cfefa1")
+      (property "Reference" "R2" (at 459.74 234.57 0) (effects (font (size 1.8 1.8)))) (property "Value" "10k" (at 459.74 238.07 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R2") (unit 1))))) (wire (pts (xy 459.74 224.79) (xy 459.74 238.76)) (stroke (width 0) (type default)) (uuid "ac36cd6b-65b6-45c4-9953-f4c5b8bfce50")) (junction (at 459.74 224.79) (diameter 0) (color 0 0 0 0) (uuid "99cd07c9-a7e4-4239-aa3e-e9c1eca98672")) (wire (pts (xy 459.74 246.38) (xy 459.74 254.0)) (stroke (width 0) (type default)) (uuid "b616c8fe-9688-4a25-92de-05f48905113f")) (symbol (lib_id "power:GND") (at 459.74 254.0 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "de4baee1-ea3a-4ce6-9bed-303e11866579")
+       (property "Reference" "#PWR23" (at 459.74 254.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 459.74 257.81 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR23") (unit 1))))) (symbol (lib_id "AURA_WIRE:SERIES_R") (at 420.37 299.72 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "b84c6072-af98-434e-b69f-04f598f47fa3")
+      (property "Reference" "R3" (at 420.37 290.83 0) (effects (font (size 1.8 1.8)))) (property "Value" "47k" (at 420.37 294.64 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R3") (unit 1))))) (wire (pts (xy 345.44 227.33) (xy 384.81 227.33)) (stroke (width 0) (type default)) (uuid "edfbf2a5-a749-43bc-920c-8c14cdaef325")) (wire (pts (xy 384.81 227.33) (xy 384.81 299.72)) (stroke (width 0) (type default)) (uuid "8a5d090d-e560-4f91-909b-a463dfb566ad")) (wire (pts (xy 384.81 299.72) (xy 410.21 299.72)) (stroke (width 0) (type default)) (uuid "1ed3342c-2305-4bab-9330-060b7f116372")) (wire (pts (xy 430.53 299.72) (xy 459.74 299.72)) (stroke (width 0) (type default)) (uuid "5a81fecb-6830-4c76-b079-ab988e6460de")) (wire (pts (xy 459.74 299.72) (xy 485.14 299.72)) (stroke (width 0) (type default)) (uuid "178f1746-c46e-4864-a3e2-3fa75028c716")) (wire (pts (xy 485.14 299.72) (xy 485.14 252.73)) (stroke (width 0) (type default)) (uuid "93786547-7ca7-4c39-8211-890caa06ac5a")) (wire (pts (xy 485.14 252.73) (xy 519.43 252.73)) (stroke (width 0) (type default)) (uuid "46ddc2ce-770a-4df3-8fb4-49042b5c3e62")) (symbol (lib_id "Device:R") (at 459.74 317.5 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "826b277b-e498-4a8d-8205-94a45ef006ec")
+      (property "Reference" "R4" (at 459.74 309.5 0) (effects (font (size 1.8 1.8)))) (property "Value" "10k" (at 459.74 313.0 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R4") (unit 1))))) (wire (pts (xy 459.74 299.72) (xy 459.74 313.69)) (stroke (width 0) (type default)) (uuid "3e407aaa-e4b2-451d-b83f-e964d1109712")) (junction (at 459.74 299.72) (diameter 0) (color 0 0 0 0) (uuid "0d971e3a-635a-4c71-890a-1976ac26bd45")) (wire (pts (xy 459.74 321.31) (xy 459.74 328.93)) (stroke (width 0) (type default)) (uuid "fcfa891a-60d2-4597-9c2c-ce27b152ddad")) (symbol (lib_id "power:GND") (at 459.74 328.93 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "d29d21dd-f0a3-42f0-9640-e741b17ff44d")
+       (property "Reference" "#PWR24" (at 459.74 328.93 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 459.74 332.74 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR24") (unit 1))))) (symbol (lib_id "Switch:SW_SPST") (at 495.3 335.28 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "94943430-852e-4671-8c50-827ebd059608")
+      (property "Reference" "SW6" (at 495.3 327.28 0) (effects (font (size 1.8 1.8)))) (property "Value" "LATCHING MUTE" (at 495.3 330.78 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "SW6") (unit 1))))) (wire (pts (xy 115.57 152.4) (xy 144.78 152.4)) (stroke (width 0) (type default)) (uuid "4e869c37-eba0-4293-b45f-3d2f54350607")) (wire (pts (xy 144.78 152.4) (xy 144.78 335.28)) (stroke (width 0) (type default)) (uuid "2d704b1f-2b2a-4371-8aeb-c4a50052175f")) (wire (pts (xy 144.78 335.28) (xy 490.22 335.28)) (stroke (width 0) (type default)) (uuid "c0b998b0-46a8-40cc-a94f-6d05bbfddb8d")) (wire (pts (xy 500.38 335.28) (xy 529.59 335.28)) (stroke (width 0) (type default)) (uuid "01595e9d-c1d5-43b2-b928-8ea9ecf4d23e")) (wire (pts (xy 529.59 335.28) (xy 529.59 262.89)) (stroke (width 0) (type default)) (uuid "a338ef86-d9bf-4d31-a182-9b29d2ae7717")) (wire (pts (xy 529.59 262.89) (xy 519.43 262.89)) (stroke (width 0) (type default)) (uuid "7167e3d6-b06e-4583-8cc4-d90d59da1e76")) (symbol (lib_id "Switch:SW_Push") (at 400.05 355.6 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "a59072e4-bc39-4120-b8ab-6c437e5a9f3e")
+      (property "Reference" "SW1" (at 400.05 347.6 0) (effects (font (size 1.8 1.8)))) (property "Value" "ENC A" (at 400.05 351.1 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "SW1") (unit 1))))) (symbol (lib_id "Device:R") (at 320.04 345.44 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "d9a7abef-547d-4d03-b66f-18ba5bc582cd")
+      (property "Reference" "R6" (at 320.04 337.44 0) (effects (font (size 1.8 1.8)))) (property "Value" "10k" (at 320.04 340.94 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R6") (unit 1))))) (wire (pts (xy 115.57 127.0) (xy 199.39 127.0)) (stroke (width 0) (type default)) (uuid "e664eedc-7a69-4220-825e-b8f8ffe235ce")) (wire (pts (xy 199.39 127.0) (xy 199.39 355.6)) (stroke (width 0) (type default)) (uuid "aa507a63-0329-47e8-820e-4a7cf9280b3e")) (wire (pts (xy 199.39 355.6) (xy 320.04 355.6)) (stroke (width 0) (type default)) (uuid "8f1d76af-9e40-4f8b-813b-c2264839babd")) (wire (pts (xy 320.04 355.6) (xy 320.04 349.25)) (stroke (width 0) (type default)) (uuid "d3e241ee-9581-45fc-820e-caf881b7734c")) (wire (pts (xy 320.04 355.6) (xy 394.97 355.6)) (stroke (width 0) (type default)) (uuid "e4934b43-faa2-4041-8b9a-3cadc6c08932")) (junction (at 320.04 355.6) (diameter 0) (color 0 0 0 0) (uuid "20e48a37-fb24-4e16-9caa-ee7f70bb445f")) (wire (pts (xy 320.04 341.63) (xy 320.04 336.55)) (stroke (width 0) (type default)) (uuid "f94235fa-5bd3-484b-9f7f-7daed5efe21f")) (symbol (lib_id "power:+3.3V") (at 320.04 336.55 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "919e99d5-1958-42dc-bb6e-a685aa8c0dca")
+       (property "Reference" "#PWR25" (at 320.04 336.55 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 320.04 332.74 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR25") (unit 1))))) (wire (pts (xy 405.13 355.6) (xy 435.61 355.6)) (stroke (width 0) (type default)) (uuid "d91749a8-9416-428d-ac23-33e095c3d1a4")) (symbol (lib_id "power:GND") (at 435.61 355.6 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "5e27c5dc-834d-43bb-86cd-ab0725a6c8f6")
+       (property "Reference" "#PWR26" (at 435.61 355.6 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 435.61 359.41 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR26") (unit 1))))) (symbol (lib_id "Switch:SW_Push") (at 400.05 381.0 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "2e995354-781a-4d76-8ece-118005033a6c")
+      (property "Reference" "SW2" (at 400.05 373.0 0) (effects (font (size 1.8 1.8)))) (property "Value" "ENC B" (at 400.05 376.5 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "SW2") (unit 1))))) (symbol (lib_id "Device:R") (at 320.04 370.84 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "76995509-a93d-45f4-86c3-a11983d699a2")
+      (property "Reference" "R7" (at 320.04 362.84 0) (effects (font (size 1.8 1.8)))) (property "Value" "10k" (at 320.04 366.34 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R7") (unit 1))))) (wire (pts (xy 115.57 132.08) (xy 186.69 132.08)) (stroke (width 0) (type default)) (uuid "501751fe-eb56-4176-ac78-a02ca9e08c6c")) (wire (pts (xy 186.69 132.08) (xy 186.69 381.0)) (stroke (width 0) (type default)) (uuid "0ffd584f-7f30-4db3-89e4-3933a719a924")) (wire (pts (xy 186.69 381.0) (xy 320.04 381.0)) (stroke (width 0) (type default)) (uuid "088e03c7-7647-413a-a76e-916c8f9362ae")) (wire (pts (xy 320.04 381.0) (xy 320.04 374.65)) (stroke (width 0) (type default)) (uuid "4950dfd2-aa90-4c9a-815b-609c4d9638c3")) (wire (pts (xy 320.04 381.0) (xy 394.97 381.0)) (stroke (width 0) (type default)) (uuid "185e9870-e22f-489b-8242-56caaf3feaa4")) (junction (at 320.04 381.0) (diameter 0) (color 0 0 0 0) (uuid "e3e1c7bc-ce2e-48ee-9f82-a61bc027fbc1")) (wire (pts (xy 320.04 367.03) (xy 320.04 361.95)) (stroke (width 0) (type default)) (uuid "9c19c15f-03f5-4416-9e5d-853210f6db1a")) (symbol (lib_id "power:+3.3V") (at 320.04 361.95 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "b3927560-eeb1-4c4e-8a33-df9fc7075978")
+       (property "Reference" "#PWR27" (at 320.04 361.95 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 320.04 358.14 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR27") (unit 1))))) (wire (pts (xy 405.13 381.0) (xy 435.61 381.0)) (stroke (width 0) (type default)) (uuid "9565da55-a535-40a6-a842-296b97d52ab5")) (symbol (lib_id "power:GND") (at 435.61 381.0 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "21ddb79d-a4bb-4abd-8a87-3864c734b679")
+       (property "Reference" "#PWR28" (at 435.61 381.0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 435.61 384.81 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR28") (unit 1))))) (symbol (lib_id "Switch:SW_Push") (at 400.05 406.4 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "949dbd75-d113-4535-b0b4-15e3e4010a25")
+      (property "Reference" "SW3" (at 400.05 398.4 0) (effects (font (size 1.8 1.8)))) (property "Value" "ENC PUSH" (at 400.05 401.9 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "SW3") (unit 1))))) (symbol (lib_id "Device:R") (at 320.04 396.24 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "fcc4ccb7-eb4e-44b8-be6c-3cfce38af77f")
+      (property "Reference" "R8" (at 320.04 388.24 0) (effects (font (size 1.8 1.8)))) (property "Value" "10k" (at 320.04 391.74 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R8") (unit 1))))) (wire (pts (xy 115.57 137.16) (xy 173.99 137.16)) (stroke (width 0) (type default)) (uuid "72674ab7-b5bf-4837-a0a5-fde48a2e35ca")) (wire (pts (xy 173.99 137.16) (xy 173.99 406.4)) (stroke (width 0) (type default)) (uuid "998d0df5-e1c9-4d97-b503-00e3fe717a5c")) (wire (pts (xy 173.99 406.4) (xy 320.04 406.4)) (stroke (width 0) (type default)) (uuid "83f13e91-9178-4573-8a5a-f012b8a5ec18")) (wire (pts (xy 320.04 406.4) (xy 320.04 400.05)) (stroke (width 0) (type default)) (uuid "0c6f7075-b62e-41fd-85f1-cc1b48ae8123")) (wire (pts (xy 320.04 406.4) (xy 394.97 406.4)) (stroke (width 0) (type default)) (uuid "07865979-8211-41f1-9253-fa59d96dcbb6")) (junction (at 320.04 406.4) (diameter 0) (color 0 0 0 0) (uuid "fa51c260-8027-4597-b4a5-cdd8683b859c")) (wire (pts (xy 320.04 392.43) (xy 320.04 387.35)) (stroke (width 0) (type default)) (uuid "f22338b0-f421-497f-8ee0-f9a05d083e55")) (symbol (lib_id "power:+3.3V") (at 320.04 387.35 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "3e077b19-5871-4880-93cd-d0c016989fb2")
+       (property "Reference" "#PWR29" (at 320.04 387.35 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 320.04 383.54 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR29") (unit 1))))) (wire (pts (xy 405.13 406.4) (xy 435.61 406.4)) (stroke (width 0) (type default)) (uuid "e1ce041c-a291-4eeb-a39c-4f500ea800bd")) (symbol (lib_id "power:GND") (at 435.61 406.4 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "c21f0d06-dde7-4581-b910-66076ff76b5c")
+       (property "Reference" "#PWR30" (at 435.61 406.4 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 435.61 410.21 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR30") (unit 1))))) (symbol (lib_id "Switch:SW_Push") (at 400.05 431.8 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "52381ce6-05dd-443f-991f-5dc64e7b9d61")
+      (property "Reference" "SW4" (at 400.05 423.8 0) (effects (font (size 1.8 1.8)))) (property "Value" "BUTTON 1" (at 400.05 427.3 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "SW4") (unit 1))))) (symbol (lib_id "Device:R") (at 320.04 421.64 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "46c920a4-bd80-4516-a32b-a05c8a7b78c5")
+      (property "Reference" "R9" (at 320.04 413.64 0) (effects (font (size 1.8 1.8)))) (property "Value" "10k" (at 320.04 417.14 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R9") (unit 1))))) (wire (pts (xy 115.57 142.24) (xy 161.29 142.24)) (stroke (width 0) (type default)) (uuid "5f043969-ec1a-4f23-baab-0678be30f2f5")) (wire (pts (xy 161.29 142.24) (xy 161.29 431.8)) (stroke (width 0) (type default)) (uuid "d7a80be8-fc3f-48d4-931c-69b959dff46b")) (wire (pts (xy 161.29 431.8) (xy 320.04 431.8)) (stroke (width 0) (type default)) (uuid "b99ceeb3-7b95-41e1-928e-a9a42921d2c4")) (wire (pts (xy 320.04 431.8) (xy 320.04 425.45)) (stroke (width 0) (type default)) (uuid "2bb80b1e-a5dc-4a79-a106-7701172c7540")) (wire (pts (xy 320.04 431.8) (xy 394.97 431.8)) (stroke (width 0) (type default)) (uuid "0710f571-18d9-4dc6-ad14-d646c998682e")) (junction (at 320.04 431.8) (diameter 0) (color 0 0 0 0) (uuid "7ce83991-447a-47f3-8545-3b5b72bfb93b")) (wire (pts (xy 320.04 417.83) (xy 320.04 412.75)) (stroke (width 0) (type default)) (uuid "bd8c1ca6-6303-4481-9a8e-239b8a8de8be")) (symbol (lib_id "power:+3.3V") (at 320.04 412.75 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "d43b10c3-565d-4dd9-b472-a424848450cf")
+       (property "Reference" "#PWR31" (at 320.04 412.75 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 320.04 408.94 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR31") (unit 1))))) (wire (pts (xy 405.13 431.8) (xy 435.61 431.8)) (stroke (width 0) (type default)) (uuid "964585b3-7707-4de8-a64a-daf8eed2a54c")) (symbol (lib_id "power:GND") (at 435.61 431.8 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "251ba505-3882-4ca2-b373-8297f2273372")
+       (property "Reference" "#PWR32" (at 435.61 431.8 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 435.61 435.61 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR32") (unit 1))))) (symbol (lib_id "Switch:SW_Push") (at 400.05 457.2 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "e999d114-d6db-4355-984e-74c8d604de7e")
+      (property "Reference" "SW5" (at 400.05 449.2 0) (effects (font (size 1.8 1.8)))) (property "Value" "BUTTON 2" (at 400.05 452.7 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "SW5") (unit 1))))) (symbol (lib_id "Device:R") (at 320.04 447.04 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "221c6e30-90b7-4143-bf5e-96709244ba15")
+      (property "Reference" "R10" (at 320.04 439.04 0) (effects (font (size 1.8 1.8)))) (property "Value" "10k" (at 320.04 442.54 0) (effects (font (size 1.8 1.8))))
+      (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "R10") (unit 1))))) (wire (pts (xy 115.57 147.32) (xy 148.59 147.32)) (stroke (width 0) (type default)) (uuid "cfd29f48-642c-40da-abe4-05edfe17ec3d")) (wire (pts (xy 148.59 147.32) (xy 148.59 457.2)) (stroke (width 0) (type default)) (uuid "f15f490b-f08b-40cf-8bda-0cdbed6eabf7")) (wire (pts (xy 148.59 457.2) (xy 320.04 457.2)) (stroke (width 0) (type default)) (uuid "d20d6a76-c2fa-424e-9c19-41f5797998b8")) (wire (pts (xy 320.04 457.2) (xy 320.04 450.85)) (stroke (width 0) (type default)) (uuid "1da3d6c1-db55-4cf2-a65b-1fe7b9659d61")) (wire (pts (xy 320.04 457.2) (xy 394.97 457.2)) (stroke (width 0) (type default)) (uuid "9465eca7-f98f-482d-91d5-e91cb346fa23")) (junction (at 320.04 457.2) (diameter 0) (color 0 0 0 0) (uuid "b95c5b07-28b0-4589-80c1-b4318f5291b2")) (wire (pts (xy 320.04 443.23) (xy 320.04 438.15)) (stroke (width 0) (type default)) (uuid "296eb550-703c-4e81-956f-21990e4df620")) (symbol (lib_id "power:+3.3V") (at 320.04 438.15 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "a8d67fc2-05b7-4180-8417-527e838bc8c9")
+       (property "Reference" "#PWR33" (at 320.04 438.15 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "+3.3V" (at 320.04 434.34 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR33") (unit 1))))) (wire (pts (xy 405.13 457.2) (xy 435.61 457.2)) (stroke (width 0) (type default)) (uuid "eeaa6afa-b640-4e40-afd6-c818394972ef")) (symbol (lib_id "power:GND") (at 435.61 457.2 0) (unit 1) (in_bom yes) (on_board yes) (dnp no) (uuid "b14f291c-c26a-4920-9672-70099819b08a")
+       (property "Reference" "#PWR34" (at 435.61 457.2 0) (effects (font (size 1.27 1.27)) (hide yes)))
+       (property "Value" "GND" (at 435.61 461.01 0) (effects (font (size 1.4 1.4))))
+       (instances (project "AURA_circuit" (path "/9889fb09-4184-47b1-afe8-154c849015b6" (reference "#PWR34") (unit 1))))) (text "AURA | WIRED CIRCUIT VIEW | documented modules and Nucleo header contacts" (at 330.2 21.59 0) (effects (font (size 2.4 2.4))) (uuid "0722e7e6-136b-4199-8918-2de4b39956b1")) (text "HP_OUT | ONBOARD 3.5 mm JACK" (at 570.23 289.56 0) (effects (font (size 2.1 2.1))) (uuid "2ba3be80-3b69-4a54-8196-e788e0b8b400")) (text "OUTL_PAD / OUTR_PAD are unused external test pads." (at 575.31 298.45 0) (effects (font (size 1.5 1.5))) (uuid "30c483f7-7596-4ed3-8df6-c9a04d486f12")) (text "M3 HP_OUT is its onboard 3.5 mm jack; verify with two dummy loads first." (at 549.91 351.79 0) (effects (font (size 1.8 1.8))) (uuid "7fafdff2-9ed3-4fd1-9852-b0bcbea4ba89")) (text "JU1 shunt removed: find SHDN side by unpowered continuity before wiring PA8." (at 544.83 367.03 0) (effects (font (size 1.8 1.8))) (uuid "f195aae8-b76d-454a-a67b-be44198fa540")) (text "Power symbols join the 3.3 V and GND nets. Green signal wires are true KiCad connections." (at 345.44 495.3 0) (effects (font (size 1.8 1.8))) (uuid "a5a54fa7-627b-4be9-a92f-f09ea4363f0c"))
+)

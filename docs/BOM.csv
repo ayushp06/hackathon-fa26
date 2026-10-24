@@ -1,0 +1,18 @@
+Item,References,Quantity,Value or part,Package or footprint,Status / requirement
+1,J1 J2,1,NUCLEO-F411RE board,CN7 and CN10 board headers,One board represented by two connector symbols; verify board revision
+2,U1,1,INMP441 bare IC,Land pattern TBD,Use TDK package drawing or verified breakout schematic
+3,U2,1,PCM5102A bare IC,Package_SO:TSSOP-20_4.4x6.5mm_P0.65mm,Verify PW/TSSOP-20 ordered variant and orientation
+4,U3,1,MAX97220A bare IC,Land pattern TBD,Must be A suffix; exposed pad to PGND
+5,J3,1,Same Sky SJ-3523-SMT-TR,AURA:Jack_3.5mm_CUI_SJ-3523-SMT-TR,Specified replacement only; original Teensy-compatible jack unresolved
+6,SW1 SW2 SW3,1,Rotary encoder with push,Physical part/footprint TBD,Three logical contacts represent one component
+7,SW4 SW5,2,Normally open momentary button,Physical part/footprint TBD,Passive 3.3 V contacts
+8,SW6,1,Latching SPST manual mute switch,Physical part/footprint TBD,Open holds MAX97220A shutdown low
+9,R1 R2 R3 R4 R5,5,10 kΩ,Resistor_SMD:R_0603_1608Metric,GPIO pullups; select tolerance/rating
+10,R6 R7,2,100 kΩ,Resistor_SMD:R_0603_1608Metric,Mic SD and amplifier SHDN pulldowns
+11,R8 R9 R12 R13,4,47 kΩ,Resistor_SMD:R_0603_1608Metric,Matched pseudo-differential input network
+12,R10 R11 R14 R15,4,4.7 kΩ,Resistor_SMD:R_0603_1608Metric,Matched feedback/reference gain network
+13,C1 C2 C6 C10 C14 C15,6,100 nF,Capacitor_SMD:C_0603_1608Metric,Local bypass; select voltage and dielectric
+14,C3 C7 C16,3,10 µF,Capacitor_SMD:C_0603_1608Metric,Choose MPN with sufficient effective capacitance at 3.3 V; footprint may need change
+15,C4 C5,2,2.2 µF,Capacitor_SMD:C_0603_1608Metric,DAC flying and VNEG capacitors; verify effective value
+16,C8 C9 C11 C12 C13,5,1 µF,Capacitor_SMD:C_0603_1608Metric,Amplifier flying/reservoir and supply bypass capacitors
+17,TP1 TP2 TP3 TP4 TP5 TP6 TP7 TP8 TP9 TP10 TP11,11,Electrical test points,Physical access method TBD,Logical pads/clip points; verify no probe shorts

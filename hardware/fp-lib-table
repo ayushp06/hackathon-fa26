@@ -1,0 +1,1 @@
+(fp_lib_table (lib (name "AURA") (type "KiCad") (uri "${KIPRJMOD}/footprints/AURA.pretty") (options "") (descr "Verified AURA footprint mappings")))
