@@ -91,5 +91,5 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center', gap: theme.spacing.md },
   valueOverlay: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   value: { color: theme.colors.background, fontWeight: '500', fontVariant: ['tabular-nums'] },
-  label: { ...theme.typography.segment, color: theme.colors.secondaryText, textAlign: 'center' },
+  label: { ...theme.typography.segment, color: theme.colors.text, textAlign: 'center' },
 });

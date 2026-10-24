@@ -21,7 +21,7 @@ export function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Feedback settings</Text>
+      <Text accessibilityRole="header" style={styles.title}>Feedback settings</Text>
       <View style={styles.row}>
         <Text style={styles.label}>Haptics</Text>
         <Switch accessibilityLabel="Haptics" value={hapticsEnabled} onValueChange={(value) => toggle('haptics', value)} trackColor={{ false: theme.colors.border, true: theme.colors.text }} thumbColor={theme.colors.background} ios_backgroundColor={theme.colors.border} />

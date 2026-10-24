@@ -1,9 +1,10 @@
-import { Slot, usePathname, useRouter } from 'expo-router';
+import { Stack, usePathname, useRouter } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useReducedMotion } from 'react-native-reanimated';
 import { theme } from '../../constants/theme';
 import { SoundFeedbackProvider } from '../feedback/SoundFeedbackProvider';
 import { useHaptics } from '../feedback/useHaptics';
@@ -31,6 +32,7 @@ function AppContent() {
   const setActiveMode = useAppStore((state) => state.setActiveMode);
   const initialRouteHandled = useRef(false);
   const settings = pathname === '/settings';
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!hydrated) return;
@@ -71,7 +73,7 @@ function AppContent() {
           </Pressable>
           {!settings ? <SegmentedSwitch /> : null}
           <View style={styles.screen}>
-            <Slot />
+            <Stack screenOptions={{ headerShown: false, animation: reducedMotion ? 'none' : 'fade', animationDuration: 180, contentStyle: styles.safeArea }} />
           </View>
         </View>
       </SafeAreaView>

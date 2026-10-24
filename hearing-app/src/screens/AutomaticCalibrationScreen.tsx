@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
-import { theme } from '../../constants/theme';
+import { calibrationDialDiameter, theme } from '../../constants/theme';
 import { RotaryDial } from '../components/RotaryDial';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
@@ -13,7 +14,8 @@ export function AutomaticCalibrationScreen() {
   const recalibrate = useAppStore((state) => state.recalibrate);
   const haptics = useHaptics();
   const sound = useSoundFeedback();
-  const diameter = Math.max(56, Math.min(theme.sizing.calibrationDialMaxDiameter, width - theme.spacing.lg * 4));
+  const [viewportHeight, setViewportHeight] = useState(Infinity);
+  const diameter = calibrationDialDiameter(width, viewportHeight);
   const loading = status === 'loading';
 
   const handleRecalibrate = async () => {
@@ -26,7 +28,7 @@ export function AutomaticCalibrationScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView bounces={false} onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)} contentContainerStyle={styles.content}>
       <RotaryDial
         min={VOLUME_MIN}
         max={VOLUME_MAX}
