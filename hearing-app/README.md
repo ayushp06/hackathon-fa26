@@ -28,13 +28,13 @@ npm test
 - `src/navigation`: shared segmented route switch
 - `src/screens`: Automatic Calibration and Manual layouts
 - `src/components`: reusable SVG rotary dial and circular gesture logic
-- `src/device`: device service interface, mock implementation, and implementation binding
-- `src/state`: Zustand state and AsyncStorage persistence of device and mock calibration data
+- `src/device`: transport interface, mock STM32-facing command implementation, and implementation binding
+- `src/state`: one Zustand app store with AsyncStorage persistence, plus session-only connection state
 
 The mock connection is session-only. The last device ID is stored locally; a restart never claims a live connection. No gain, audio, AI, or DSP controls are implemented. The current hardware documents do not define a BLE radio or GATT protocol. Real BLE needs those details, a native BLE package, platform permissions, and an Expo development build. Expo Go cannot load an arbitrary native BLE package.
 
-The Volume dial uses Zustand state and does not adjust device output. The Recalibrate button simulates an 800 ms operation and stores a timestamped mock result locally. Neither control produces sound. `RotaryDial` accepts `min`, `max`, `step`, `diameter`, `label`, `value`, optional `valueSuffix`, and `onValueChange`; its 270° sweep leaves a gap at the bottom. Screen readers can increment or decrement it as an adjustable control.
+The Volume dial updates local state immediately and sends a simulated command through `DeviceTransport`; it does not adjust physical device output. The Recalibrate button requests a simulated 800 ms operation through the same transport and stores a timestamped mock result locally. `RotaryDial` accepts `min`, `max`, `step`, `diameter`, `label`, `value`, optional `valueSuffix`, and `onValueChange`; its 270° sweep leaves a gap at the bottom. Screen readers can increment or decrement it as an adjustable control.
 
-Manual mode has independent Base Volume, Background Noise Reduction, and Spatial Focus dials. Their 0–100% values are saved with AsyncStorage and do not control hardware yet.
+Manual mode has independent Base Volume, Background Noise Reduction, and Spatial Focus dials. Their 0–100% values are saved with AsyncStorage and sent to the mock transport. The automatic and manual volume values remain separate. The store also persists the active mode and feedback preferences, and migrates values saved by earlier versions. Calibration progress and live connection status stay session-only.
 
 Settings lets the user turn haptics and sounds on or off; haptics default on and sounds default off. Dial steps, mode changes, and mock recalibration use brief feedback when enabled. Bundled sound cues are short and low amplitude, player volume is limited to 18%, and playback follows the device's silent mode. Feedback does not change system volume, request microphone access, or play in the background. Reduced Motion suppresses haptics; active screen readers suppress UI sounds so spoken feedback is not interrupted.

@@ -3,14 +3,14 @@ import { theme } from '../../constants/theme';
 import { RotaryDial } from '../components/RotaryDial';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
-import { useCalibrationStore, VOLUME_MAX, VOLUME_MIN } from '../state/useCalibrationStore';
+import { useAppStore, VOLUME_MAX, VOLUME_MIN } from '../state/useAppStore';
 
 export function AutomaticCalibrationScreen() {
   const { width } = useWindowDimensions();
-  const volume = useCalibrationStore((state) => state.volume);
-  const status = useCalibrationStore((state) => state.status);
-  const setVolume = useCalibrationStore((state) => state.setVolume);
-  const recalibrate = useCalibrationStore((state) => state.recalibrate);
+  const volume = useAppStore((state) => state.volume);
+  const status = useAppStore((state) => state.calibrationStatus);
+  const setVolume = useAppStore((state) => state.setVolume);
+  const recalibrate = useAppStore((state) => state.recalibrate);
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const diameter = Math.max(56, Math.min(theme.sizing.calibrationDialMaxDiameter, width - theme.spacing.lg * 4));

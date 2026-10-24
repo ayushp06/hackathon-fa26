@@ -2,7 +2,7 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { preload, setAudioModeAsync, useAudioPlayer, type AudioPlayer } from 'expo-audio';
 import { AccessibilityInfo } from 'react-native';
-import { useFeedbackSettings } from '../state/useFeedbackSettings';
+import { useAppStore } from '../state/useAppStore';
 import { type FeedbackSound, SoundFeedbackContext } from './useSoundFeedback';
 
 const sources = {
@@ -16,7 +16,7 @@ void Promise.all(Object.values(sources).map((source) => preload(source))).catch(
 const durations = { tick: 80, tap: 100, confirm: 200 } as const;
 
 export function SoundFeedbackProvider({ children }: { children: ReactNode }) {
-  const enabled = useFeedbackSettings((state) => state.soundEnabled);
+  const enabled = useAppStore((state) => state.soundFeedbackEnabled);
   const tick = useAudioPlayer(sources.tick);
   const tap = useAudioPlayer(sources.tap);
   const confirm = useAudioPlayer(sources.confirm);
@@ -75,7 +75,7 @@ export function SoundFeedbackProvider({ children }: { children: ReactNode }) {
     activePlayer.current = player;
     busyUntil.current = now + durations[sound];
     void player.seekTo(0).then(() => {
-      if (activePlayer.current === player && useFeedbackSettings.getState().soundEnabled && !screenReaderRef.current) player.play();
+      if (activePlayer.current === player && useAppStore.getState().soundFeedbackEnabled && !screenReaderRef.current) player.play();
     }).catch(() => {});
   }, [enabled, configured, screenReader, tick, tap, confirm]);
 

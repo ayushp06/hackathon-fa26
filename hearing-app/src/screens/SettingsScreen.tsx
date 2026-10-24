@@ -2,13 +2,13 @@ import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { theme } from '../../constants/theme';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
-import { useFeedbackSettings } from '../state/useFeedbackSettings';
+import { useAppStore } from '../state/useAppStore';
 
 export function SettingsScreen() {
-  const hapticsEnabled = useFeedbackSettings((state) => state.hapticsEnabled);
-  const soundEnabled = useFeedbackSettings((state) => state.soundEnabled);
-  const setHapticsEnabled = useFeedbackSettings((state) => state.setHapticsEnabled);
-  const setSoundEnabled = useFeedbackSettings((state) => state.setSoundEnabled);
+  const hapticsEnabled = useAppStore((state) => state.hapticsEnabled);
+  const soundEnabled = useAppStore((state) => state.soundFeedbackEnabled);
+  const setHapticsEnabled = useAppStore((state) => state.setHapticsEnabled);
+  const setSoundEnabled = useAppStore((state) => state.setSoundFeedbackEnabled);
   const haptics = useHaptics();
   const sound = useSoundFeedback();
 

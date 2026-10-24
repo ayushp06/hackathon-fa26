@@ -1,4 +1,5 @@
 import { Slot, usePathname, useRouter } from 'expo-router';
+import { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { SoundFeedbackProvider } from '../feedback/SoundFeedbackProvider';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { SegmentedSwitch } from '../navigation/SegmentedSwitch';
+import { useAppStore } from '../state/useAppStore';
 
 export default function RootLayout() {
   return (
@@ -24,7 +26,25 @@ function AppContent() {
   const router = useRouter();
   const haptics = useHaptics();
   const sound = useSoundFeedback();
+  const hydrated = useAppStore((state) => state.hydrated);
+  const activeMode = useAppStore((state) => state.activeMode);
+  const setActiveMode = useAppStore((state) => state.setActiveMode);
+  const initialRouteHandled = useRef(false);
   const settings = pathname === '/settings';
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!initialRouteHandled.current) {
+      initialRouteHandled.current = true;
+      if (pathname === '/' && activeMode === 'manual') {
+        router.replace('/manual');
+        return;
+      }
+    }
+    if (pathname === '/' || pathname === '/manual') {
+      setActiveMode(pathname === '/' ? 'automatic' : 'manual');
+    }
+  }, [hydrated, pathname, activeMode, router, setActiveMode]);
 
   const openSettings = () => {
     haptics.selection();
@@ -38,6 +58,8 @@ function AppContent() {
     if (router.canGoBack()) router.back();
     else router.replace('/');
   };
+
+  if (!hydrated) return null;
 
   return (
     <SafeAreaProvider>

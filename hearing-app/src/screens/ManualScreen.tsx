@@ -1,14 +1,14 @@
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { manualDialDiameter, theme } from '../../constants/theme';
 import { RotaryDial } from '../components/RotaryDial';
-import { useManualStore } from '../state/useManualStore';
+import { useAppStore } from '../state/useAppStore';
 
 export function ManualScreen() {
   const { width } = useWindowDimensions();
-  const baseVolume = useManualStore((state) => state.baseVolume);
-  const noiseReduction = useManualStore((state) => state.noiseReduction);
-  const spatialFocus = useManualStore((state) => state.spatialFocus);
-  const setValue = useManualStore((state) => state.setValue);
+  const baseVolume = useAppStore((state) => state.baseVolume);
+  const noiseReduction = useAppStore((state) => state.noiseReduction);
+  const spatialFocus = useAppStore((state) => state.spatialFocus);
+  const setValue = useAppStore((state) => state.setValue);
   const diameter = manualDialDiameter(width);
 
   return (

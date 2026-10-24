@@ -3,8 +3,30 @@ export type HearingDevice = {
   name: string;
 };
 
-export interface DeviceService {
-  scan(): Promise<HearingDevice[]>;
-  connect(id: string): Promise<HearingDevice>;
+export type DeviceMode = 'automatic' | 'manual';
+export type CalibrationStatus = 'idle' | 'loading' | 'complete' | 'error';
+export type CalibrationResult = { simulated: boolean; completedAt: string; volumePercent: number };
+export type DeviceAcknowledgment = { accepted: boolean; simulated: boolean; sequence: number };
+export type DeviceStatus = {
+  simulated: boolean;
+  connected: boolean;
+  volume: number;
+  baseVolume: number;
+  noiseReduction: number;
+  spatialFocus: number;
+  calibrationStatus: CalibrationStatus;
+};
+
+export interface DeviceTransport {
+  connect(id?: string): Promise<HearingDevice>;
   disconnect(): Promise<void>;
+  setVolume(value: number, mode: DeviceMode): Promise<DeviceAcknowledgment>;
+  setNoiseReduction(value: number): Promise<DeviceAcknowledgment>;
+  setSpatialFocus(value: number): Promise<DeviceAcknowledgment>;
+  startCalibration(volume: number): Promise<CalibrationResult>;
+  getStatus(): Promise<DeviceStatus>;
+}
+
+export interface DeviceService extends DeviceTransport {
+  scan(): Promise<HearingDevice[]>;
 }

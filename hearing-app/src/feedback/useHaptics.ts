@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import { AccessibilityInfo, Platform } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
-import { useFeedbackSettings } from '../state/useFeedbackSettings';
+import { useAppStore } from '../state/useAppStore';
 import { isReady } from './feedbackTiming';
 
 let lastDialAt = -Infinity;
@@ -11,7 +11,7 @@ let lastSelectionAt = -Infinity;
 let lastSuccessAt = -Infinity;
 
 export function useHaptics() {
-  const enabled = useFeedbackSettings((state) => state.hapticsEnabled);
+  const enabled = useAppStore((state) => state.hapticsEnabled);
   const [reducedMotion, setReducedMotion] = useState(useReducedMotion());
 
   useEffect(() => {
