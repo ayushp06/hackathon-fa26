@@ -23,7 +23,8 @@ npm test
 
 - `app.config.ts`: placeholder display name, slug, and native application IDs
 - `constants/theme.ts`: colors, typography, spacing, and sizing
-- `src/app`: Expo Router routes for Automatic Calibration and Manual
+- `src/app`: Expo Router routes for Automatic Calibration, Manual, and feedback settings
+- `src/feedback`: throttled haptics and preloaded local UI sounds
 - `src/navigation`: shared segmented route switch
 - `src/screens`: Automatic Calibration and Manual layouts
 - `src/components`: reusable SVG rotary dial and circular gesture logic
@@ -35,3 +36,5 @@ The mock connection is session-only. The last device ID is stored locally; a res
 The Volume dial uses Zustand state and does not adjust device output. The Recalibrate button simulates an 800 ms operation and stores a timestamped mock result locally. Neither control produces sound. `RotaryDial` accepts `min`, `max`, `step`, `diameter`, `label`, `value`, optional `valueSuffix`, and `onValueChange`; its 270° sweep leaves a gap at the bottom. Screen readers can increment or decrement it as an adjustable control.
 
 Manual mode has independent Base Volume, Background Noise Reduction, and Spatial Focus dials. Their 0–100% values are saved with AsyncStorage and do not control hardware yet.
+
+Settings lets the user turn haptics and sounds on or off; haptics default on and sounds default off. Dial steps, mode changes, and mock recalibration use brief feedback when enabled. Bundled sound cues are short and low amplitude, player volume is limited to 18%, and playback follows the device's silent mode. Feedback does not change system volume, request microphone access, or play in the background. Reduced Motion suppresses haptics; active screen readers suppress UI sounds so spoken feedback is not interrupted.

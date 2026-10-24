@@ -1,6 +1,8 @@
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { theme } from '../../constants/theme';
 import { RotaryDial } from '../components/RotaryDial';
+import { useHaptics } from '../feedback/useHaptics';
+import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { useCalibrationStore, VOLUME_MAX, VOLUME_MIN } from '../state/useCalibrationStore';
 
 export function AutomaticCalibrationScreen() {
@@ -9,8 +11,19 @@ export function AutomaticCalibrationScreen() {
   const status = useCalibrationStore((state) => state.status);
   const setVolume = useCalibrationStore((state) => state.setVolume);
   const recalibrate = useCalibrationStore((state) => state.recalibrate);
+  const haptics = useHaptics();
+  const sound = useSoundFeedback();
   const diameter = Math.max(56, Math.min(theme.sizing.calibrationDialMaxDiameter, width - theme.spacing.lg * 4));
   const loading = status === 'loading';
+
+  const handleRecalibrate = async () => {
+    haptics.selection();
+    sound.tap();
+    if (await recalibrate()) {
+      haptics.success();
+      sound.confirm();
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -28,7 +41,7 @@ export function AutomaticCalibrationScreen() {
         accessibilityRole="button"
         accessibilityState={{ disabled: loading, busy: loading }}
         disabled={loading}
-        onPress={() => void recalibrate()}
+        onPress={() => void handleRecalibrate()}
         style={({ pressed }) => [styles.button, pressed && styles.pressed]}
       >
         <Text style={styles.buttonText}>{loading ? 'Recalibrating…' : 'Recalibrate'}</Text>

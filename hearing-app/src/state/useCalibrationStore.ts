@@ -11,7 +11,7 @@ type CalibrationState = {
   status: 'idle' | 'loading' | 'complete' | 'error';
   lastResult: MockCalibrationResult | null;
   setVolume: (volume: number) => void;
-  recalibrate: () => Promise<void>;
+  recalibrate: () => Promise<boolean>;
 };
 
 export const useCalibrationStore = create<CalibrationState>()(
@@ -24,13 +24,15 @@ export const useCalibrationStore = create<CalibrationState>()(
         if (Number.isFinite(volume)) set({ volume: Math.min(VOLUME_MAX, Math.max(VOLUME_MIN, Math.round(volume))) });
       },
       recalibrate: async () => {
-        if (get().status === 'loading') return;
+        if (get().status === 'loading') return false;
         set({ status: 'loading' });
         try {
           const lastResult = await mockCalibrate(get().volume);
           set({ lastResult, status: 'complete' });
+          return true;
         } catch {
           set({ status: 'error' });
+          return false;
         }
       },
     }),

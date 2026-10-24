@@ -3,6 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedProps } from 'react-native-reanimated';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import { theme } from '../../constants/theme';
+import { useHaptics } from '../feedback/useHaptics';
+import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { angleToValue, clamp, START_ANGLE, stepScale, SWEEP_ANGLE, valueToAngle } from './rotaryMath';
 import { useRotaryGesture } from './useRotaryGesture';
 
@@ -26,7 +28,14 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
 
   const radius = diameter / 2;
   const currentValue = clamp(value, min, max);
-  const { angle, gesture } = useRotaryGesture({ value: currentValue, min, max, step, diameter, onValueChange });
+  const haptics = useHaptics();
+  const sound = useSoundFeedback();
+  const handleValueChange = (nextValue: number) => {
+    onValueChange(nextValue);
+    haptics.dialStep(nextValue, min, max);
+    sound.tick();
+  };
+  const { angle, gesture } = useRotaryGesture({ value: currentValue, min, max, step, diameter, onValueChange: handleValueChange });
   const trackRadius = radius - theme.sizing.dialTrackInset;
   const start = valueToAngle(min, min, max) * Math.PI / 180;
   const end = (START_ANGLE + SWEEP_ANGLE) * Math.PI / 180;
@@ -44,7 +53,7 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
   const changeBy = (direction: number) => {
     const nextAngle = valueToAngle(clamp(currentValue + direction * step, min, max), min, max);
     const nextValue = angleToValue(nextAngle, min, max, step, stepScale(min, step));
-    if (nextValue !== currentValue) onValueChange(nextValue);
+    if (nextValue !== currentValue) handleValueChange(nextValue);
   };
 
   return (

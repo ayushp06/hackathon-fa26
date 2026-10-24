@@ -14,7 +14,10 @@ export default {
   platforms: ['ios', 'android'],
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
-  plugins: ['expo-router'],
+  plugins: [
+    'expo-router',
+    ['expo-audio', { microphonePermission: false, recordAudioAndroid: false, enableBackgroundPlayback: false, enableBackgroundRecording: false }],
+  ],
   experiments: { typedRoutes: true },
   ios: { bundleIdentifier: identity.applicationId },
   android: { package: identity.applicationId },

@@ -1,6 +1,8 @@
-import { Link, usePathname } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { theme } from '../../constants/theme';
+import { useHaptics } from '../feedback/useHaptics';
+import { useSoundFeedback } from '../feedback/useSoundFeedback';
 
 const segments = [
   { label: 'Automatic Calibration', href: '/' },
@@ -9,21 +11,29 @@ const segments = [
 
 export function SegmentedSwitch() {
   const pathname = usePathname();
+  const router = useRouter();
+  const haptics = useHaptics();
+  const sound = useSoundFeedback();
 
   return (
     <View style={styles.track} accessibilityRole="tablist">
       {segments.map(({ label, href }) => {
         const active = pathname === href;
         return (
-          <Link key={href} href={href} replace asChild>
-            <Pressable
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              style={[styles.segment, active && styles.activeSegment]}
-            >
-              <Text style={[styles.label, active && styles.activeLabel]}>{label}</Text>
-            </Pressable>
-          </Link>
+          <Pressable
+            key={href}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            onPress={() => {
+              if (active) return;
+              haptics.selection();
+              sound.tap();
+              router.replace(href);
+            }}
+            style={[styles.segment, active && styles.activeSegment]}
+          >
+            <Text style={[styles.label, active && styles.activeLabel]}>{label}</Text>
+          </Pressable>
         );
       })}
     </View>

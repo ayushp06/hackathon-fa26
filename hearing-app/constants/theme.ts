@@ -21,6 +21,8 @@ export const theme = {
     dialValueFontRatio: 0.2,
     calibrationDialMaxDiameter: 260,
     manualDialMaxDiameter: 180,
+    minimumTouchTarget: 44,
+    settingsRowHeight: 64,
   },
 } as const;
 
