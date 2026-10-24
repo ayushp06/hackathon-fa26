@@ -11,8 +11,11 @@ export default {
   slug: identity.slug,
   scheme: identity.slug,
   version: '1.0.0',
+  platforms: ['ios', 'android'],
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
+  plugins: ['expo-router'],
+  experiments: { typedRoutes: true },
   ios: { bundleIdentifier: identity.applicationId },
   android: { package: identity.applicationId },
 } satisfies ExpoConfig;

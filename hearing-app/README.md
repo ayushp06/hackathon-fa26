@@ -22,10 +22,11 @@ npm test
 ## Structure
 
 - `app.config.ts`: placeholder display name, slug, and native application IDs
-- `src/navigation`: typed stack navigation
-- `src/screens`: plain Home, Device, and Settings placeholders
+- `constants/theme.ts`: colors, typography, spacing, and sizing
+- `src/app`: Expo Router routes for Automatic Calibration and Manual
+- `src/navigation`: shared segmented route switch
+- `src/screens`: plain screen foundations
 - `src/device`: device service interface, mock implementation, and implementation binding
 - `src/state`: Zustand state and AsyncStorage persistence of the last device ID
-- `src/theme`: platform light and dark defaults in one place
 
 The mock connection is session-only. The last device ID is stored locally; a restart never claims a live connection. No gain, audio, AI, or DSP controls are implemented. The current hardware documents do not define a BLE radio or GATT protocol. Real BLE needs those details, a native BLE package, platform permissions, and an Expo development build. Expo Go cannot load an arbitrary native BLE package.
