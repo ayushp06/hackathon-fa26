@@ -136,6 +136,17 @@ export function createHardwareServer({ directory, commandTimeout = 2200 } = {}) 
         }
         if (!Number.isInteger(data.value) || data.value < min || data.value > max) throw error('Control value is outside its allowed range.', 400);
         reply(200, await command(id, data.value));
+      } else if (route === '/api/noise-feedback' || route === '/api/noise-adaptation' || route === '/api/noise-preferences') {
+        if ((await snapshot()).protocol !== 4) throw error('Flash MIC4 firmware for adaptive noise controls.', 422);
+        if (route === '/api/noise-feedback') {
+          if (!Number.isInteger(data.value) || data.value < 0 || data.value > 100) throw error('Correction must be an integer from 0 to 100.', 400);
+          reply(200, await command(14, data.value));
+        } else if (route === '/api/noise-adaptation') {
+          if (typeof data.enabled !== 'boolean') throw error('enabled must be a boolean.', 400);
+          reply(200, await command(15, data.enabled ? 1 : 0));
+        } else {
+          reply(200, await command(16, 0));
+        }
       } else if (route === '/api/restart') {
         const restart = queue.catch(() => {}).then(async () => {
           const before = await snapshot();
