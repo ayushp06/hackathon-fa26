@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xl,
     borderWidth: theme.sizing.borderWidth,
     borderColor: theme.colors.text,
+    borderRadius: theme.sizing.segmentRadius,
   },
   pressed: { opacity: 0.7 },
   buttonText: { ...theme.typography.segment, color: theme.colors.text },

@@ -5,6 +5,7 @@ import { Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useReducedMotion } from 'react-native-reanimated';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { theme } from '../../constants/theme';
 import { SoundFeedbackProvider } from '../feedback/SoundFeedbackProvider';
 import { useHaptics } from '../feedback/useHaptics';
@@ -76,8 +77,11 @@ function AppContent({ framed }: { framed: boolean }) {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
         <View style={[styles.content, framed && styles.previewContent]}>
-          {onboardingCompleted && !onboarding ? <Pressable accessibilityRole="button" onPress={settings ? closeSettings : openSettings} style={styles.settingsLink}>
-            <Text style={styles.settingsText}>{settings ? 'Done' : 'Settings'}</Text>
+          {onboardingCompleted && !onboarding ? <Pressable accessibilityRole="button" accessibilityLabel={settings ? 'Done' : 'Settings'} onPress={settings ? closeSettings : openSettings} style={styles.settingsLink}>
+            {settings ? <Text style={styles.settingsText}>Done</Text> : <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={theme.colors.secondaryText} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none">
+              <Path d="M12 2.5 14 3l.6 2.1a7.4 7.4 0 0 1 1.5.9l2.1-.5 1.5 1.5-.5 2.1a7.4 7.4 0 0 1 .9 1.5l2.1.6v2l-2.1.6a7.4 7.4 0 0 1-.9 1.5l.5 2.1-1.5 1.5-2.1-.5a7.4 7.4 0 0 1-1.5.9L14 21.5h-2l-.6-2.1a7.4 7.4 0 0 1-1.5-.9l-2.1.5-1.5-1.5.5-2.1a7.4 7.4 0 0 1-.9-1.5L3.8 13v-2l2.1-.6a7.4 7.4 0 0 1 .9-1.5l-.5-2.1 1.5-1.5 2.1.5a7.4 7.4 0 0 1 1.5-.9L12 2.5Z" />
+              <Circle cx={13} cy={12} r={3} />
+            </Svg>}
           </Pressable> : null}
           <View style={styles.screen}>
             <Stack screenOptions={{ headerShown: false, animation: reducedMotion ? 'none' : 'fade', animationDuration: 180, contentStyle: styles.safeArea }} />
