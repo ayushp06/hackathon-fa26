@@ -34,9 +34,11 @@ test('noise reduction, spatial focus, and speech amplification change distinct s
 
 test('frequency response uses log-spaced Hz positions and gain in dB', () => {
   const width = 360;
-  assert.ok(Math.abs(responseX(20, width) - 38) < 0.01);
-  assert.ok(Math.abs(responseX(20000, width) - 344) < 0.01);
-  assert.ok(Math.abs(responseX(200, width) - responseX(20, width) - (responseX(2000, width) - responseX(200, width))) < 0.01);
+  assert.ok(Math.abs(responseX(80, width) - 38) < 0.01);
+  assert.ok(Math.abs(responseX(12000, width) - 344) < 0.01);
+  assert.ok(Math.abs(responseX(250, width) - responseX(125, width) - (responseX(500, width) - responseX(250, width))) < 0.01);
+  assert.ok(responseX(125, width) > 38 + 20);
+  assert.ok(responseX(8000, width) < 344 - 20);
   assert.equal(responseGainAtY(responseY(8)), 8);
   assert.equal(responseGainAtY(-50), 12);
   assert.equal(responseGainAtY(300), -12);
@@ -45,7 +47,7 @@ test('frequency response uses log-spaced Hz positions and gain in dB', () => {
   assert.equal(responseBandAtX(responseX(1000, width), width), 'mid');
   assert.equal(responseBandAtX(responseX(8000, width), width), 'treble');
   assert.equal(responseDbAt(1000, [0, 0, 0, 6, 0, 0, 0]), 6);
-  assert.equal(responseDbAt(20, [0, 0, 0, 6, 0, 0, 0]), 0);
+  assert.equal(responseDbAt(80, [0, 0, 0, 6, 0, 0, 0]), 0);
   assert.ok(frequencyResponsePath(width, [0, 0, 0, 0, 0, 0, 0]).includes(`${responseY(0).toFixed(1)}`));
 });
 

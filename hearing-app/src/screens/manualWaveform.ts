@@ -4,10 +4,12 @@ const plotTop = 30;
 const plotHeight = 120;
 const plotLeft = 38;
 const plotRight = 16;
+const responseMinHz = 80;
+const responseMaxHz = 12000;
 
 export function responseX(frequency: number, width: number) {
   'worklet';
-  return plotLeft + Math.log10(frequency / 20) / 3 * (width - plotLeft - plotRight);
+  return plotLeft + Math.log10(frequency / responseMinHz) / Math.log10(responseMaxHz / responseMinHz) * (width - plotLeft - plotRight);
 }
 
 export function responseY(gain: number) {
@@ -30,7 +32,7 @@ export function responseBandAtX(x: number, width: number): EqControl {
 
 export function responseDbAt(frequency: number, gains: readonly number[]) {
   'worklet';
-  const anchors = [20, ...eqBands.map((band) => band.frequency), 20000];
+  const anchors = [responseMinHz, ...eqBands.map((band) => band.frequency), responseMaxHz];
   const values = [0, ...gains, 0];
   for (let index = 1; index < anchors.length; index++) {
     if (frequency <= anchors[index]) {
@@ -48,7 +50,7 @@ export function frequencyResponsePath(width: number, gains: readonly number[]) {
   const anchors = eqBands.map((band) => band.frequency);
   let anchorIndex = 0;
   for (let index = 0; index <= 120; index++) {
-    const frequency = 20 * 1000 ** (index / 120);
+    const frequency = responseMinHz * (responseMaxHz / responseMinHz) ** (index / 120);
     if (anchorIndex < anchors.length && frequency >= anchors[anchorIndex]) {
       const anchor = anchors[anchorIndex];
       points.push(`L ${responseX(anchor, width).toFixed(1)} ${responseY(gains[anchorIndex]).toFixed(1)}`);
