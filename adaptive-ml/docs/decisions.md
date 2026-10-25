@@ -25,3 +25,14 @@
    No hyperparameter search or real audio data. Exact-match precedence can introduce
    a discontinuity near contradictory examples; DSP smoothing remains external.
    FIFO does not solve preference drift, and duplicate detection is exact float equality.
+
+7. IMPLEMENTED partial feedback: retain `pl_correct` as explicit full-vector supervision
+   and add `pl_correct_masked` with one unsigned-char selector per output. Byte arrays
+   avoid a bit-width limit and bit manipulation. Only selected targets are validated
+   and stored; empty masks fail transactionally. Identical contexts merge masks and
+   overwrite only selected targets, preserving prior supervision for other outputs.
+   Weight normalization, familiarity attenuation, exact-match precedence and baseline
+   fallback are per output. Public scalar familiarity remains maximum across outputs
+   for compatibility; it must not be interpreted as all-output confidence. FIFO still
+   evicts whole contexts and can forget any dimension's old preferences. Host model
+   grows 368→432 bytes (example 20→24 with alignment); no heap or persistence format.

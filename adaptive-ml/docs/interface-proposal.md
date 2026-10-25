@@ -14,7 +14,7 @@ one microphone (`../../docs/hardware_architecture.md`). No shared files will be 
 All following fields are PROPOSED, not agreed with DSP/app owners:
 
 CONFIRMED module implementation: `../include/preference.h` currently fixes 3 features,
-2 outputs and 16 examples; `pl_init`, `pl_predict`, `pl_correct`, `pl_reset` and
+2 outputs and 16 examples; `pl_init`, `pl_predict`, `pl_correct`, `pl_correct_masked`, `pl_reset` and
 `pl_set_baseline` implement the module-side operations below. Their adoption as a
 team integration interface remains PROPOSED. Array lengths are caller obligations.
 
@@ -24,9 +24,17 @@ team integration interface remains PROPOSED. Array lengths are caller obligation
 - Baseline: individual finite normalized absolute parameter vector [0,1], supplied by
   caller and within configured per-dimension limits. It is not inferred from silence.
 - Prediction: absolute bounded parameter vector plus signed adjustment relative to
-  baseline and familiarity [0,1]. Dimensions are abstract and continuous, not presets.
-- Correction: explicit context + absolute preferred parameter vector. Only explicit
-  correction calls update examples. No interaction is not feedback.
+  baseline and familiarity [0,1]. Weight sums, similarity attenuation and baseline
+  fallback are independent per output and use only corrections for that output.
+  Scalar familiarity is the maximum across outputs, not all-output confidence.
+  Dimensions are abstract and continuous, not presets.
+- Correction: explicit context + absolute preferred parameter vector + per-output
+  unsigned-char mask (`PL_OUTPUTS` entries, nonzero means explicitly corrected).
+  `pl_correct_masked` ignores unselected target entries, rejects invalid selected
+  entries and null/empty masks without mutation. Stored `pl_example.corrected`
+  records supervision. Duplicate contexts merge only selected outputs; FIFO eviction
+  clears all prior masks in the replaced slot. `pl_correct` remains full-vector
+  supervision, equivalent to an all-selected mask. No interaction is not feedback.
 - Inference is read-only; updates, baseline changes and reset are separate operations.
   Reset clears examples, preserving configuration/baseline. Baseline replacement clears
   examples to prevent mixing personal configurations. Model storage is caller-owned.
@@ -41,7 +49,7 @@ event ownership and synchronization of physical/app corrections; CPU/RAM/latency
 model persistence and schema versioning; real communication protocol.
 
 Future event envelope (PROPOSED, outside learner API): context sequence/time, schema
-version, applied/predicted parameters, explicit preferred target, correction source
+version, applied/predicted parameters, explicit preferred target and feedback mask, correction source
 and baseline version. Caller must align corrections to the context the user heard.
 
 Future STM32 path (PROPOSED): calibration → baseline; extracted features → inference →

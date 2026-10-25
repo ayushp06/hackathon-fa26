@@ -7,6 +7,10 @@ baseline changes. `tests/test_scenarios.c` checks nearby interpolation, exact un
 fallback, 1,000 repeated transition cycles without updates, 1,001 bound-check queries,
 FIFO overflow and reset. `simulation/evaluate.c` checks deterministic replica agreement
 and improvement over constant baseline on its synthetic nearby test set.
+`tests/test_partial.c` additionally checks single-output isolation, merged masks,
+preserved prior preferences, independent per-output weights/attenuation, exact versus
+nearby evidence, rejected empty/invalid events without mutation, full-vector equivalence,
+determinism, bounds, FIFO mask clearing and reset.
 
 ## Reproducible methodology
 
@@ -36,7 +40,8 @@ GCC 13.2.0 on Windows and GCC 15.2.0 on Ubuntu; rounded to six decimal places:
 
 The 90% nearby MAE reduction applies only to this constructed dataset. Unfamiliar
 outputs exactly equal baseline, so no improvement is expected there. Host model
-storage is 368 bytes on these 64-bit builds; target ABI size and execution time must be
+storage after adding partial-feedback masks is 432 bytes on these 64-bit builds
+(previously 368); metrics above remain unchanged for full-vector training. Target ABI size and execution time must be
 measured on STM32. No embedded compilation or hardware timing has been verified.
 
 ## Limitations
