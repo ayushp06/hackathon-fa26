@@ -5,6 +5,7 @@ import { deviceService } from '../device/deviceService';
 import type { CalibrationResult, CalibrationStatus, DeviceMode } from '../device/types';
 import { type HearingTestDocument, restoreHearingTestDocument } from '../hearingTest/document';
 import { type ToneTestResult, restoreToneTestResult } from '../hearingTest/toneTest';
+import { type HearingPreferences, type PreliminaryAudioProfile, restoreHearingPreferences, toPreliminaryAudioProfile } from './hearingPreferences';
 import { migrateLegacyState, shouldSkipOnboarding } from './legacyState';
 import { normalizeManualValue, type ManualControl } from './manualValues';
 
@@ -24,7 +25,8 @@ type AppState = Record<ManualControl, number> & {
   hearingTestFile: HearingTestDocument | null;
   hearingTestResponses: boolean[] | null;
   hearingTestResult: ToneTestResult | null;
-  hearingPreferences: { vocalTones: boolean; backgroundNoise: boolean; softerTones: boolean } | null;
+  hearingPreferences: HearingPreferences | null;
+  preliminaryAudioProfile: PreliminaryAudioProfile | null;
   setVolume: (value: number) => void;
   setValue: (control: ManualControl, value: number) => void;
   setActiveMode: (mode: DeviceMode) => void;
@@ -34,7 +36,7 @@ type AppState = Record<ManualControl, number> & {
   saveHearingTestFile: (file: HearingTestDocument) => void;
   clearHearingTestFile: () => void;
   saveHearingTestResult: (result: ToneTestResult) => void;
-  completeOnboarding: (preferences: NonNullable<AppState['hearingPreferences']>) => void;
+  completeOnboarding: (preferences: HearingPreferences) => void;
 };
 
 type SavedAppState = Pick<AppState, 'volume' | 'baseVolume' | 'noiseReduction' | 'spatialFocus' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'onboardingCompleted' | 'hearingTestFile' | 'hearingTestResponses' | 'hearingTestResult' | 'hearingPreferences'>;
@@ -88,6 +90,7 @@ export const useAppStore = create<AppState>()(
       hearingTestResponses: null,
       hearingTestResult: null,
       hearingPreferences: null,
+      preliminaryAudioProfile: null,
       setVolume: (value) => {
         const volume = normalizeManualValue(value);
         if (volume === null) return;
@@ -111,7 +114,7 @@ export const useAppStore = create<AppState>()(
       saveHearingTestFile: (hearingTestFile) => set({ hearingTestFile, hearingTestResponses: null, hearingTestResult: null }),
       clearHearingTestFile: () => set({ hearingTestFile: null }),
       saveHearingTestResult: (hearingTestResult) => set({ hearingTestResult, hearingTestResponses: null, hearingTestFile: null }),
-      completeOnboarding: (hearingPreferences) => set({ hearingPreferences, onboardingCompleted: true }),
+      completeOnboarding: (hearingPreferences) => set({ hearingPreferences, preliminaryAudioProfile: toPreliminaryAudioProfile(hearingPreferences), onboardingCompleted: true }),
       recalibrate: async () => {
         if (get().calibrationStatus === 'loading') return false;
         set({ calibrationStatus: 'loading', transportError: null });
@@ -131,6 +134,7 @@ export const useAppStore = create<AppState>()(
       storage,
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<SavedAppState>;
+        const hearingPreferences = restoreHearingPreferences(saved.hearingPreferences);
         const percent = (value: unknown, fallback: number) =>
           typeof value === 'number' ? normalizeManualValue(value) ?? fallback : fallback;
         return {
@@ -147,7 +151,8 @@ export const useAppStore = create<AppState>()(
           hearingTestFile: restoreHearingTestDocument(saved.hearingTestFile),
           hearingTestResponses: Array.isArray(saved.hearingTestResponses) && saved.hearingTestResponses.every((value) => typeof value === 'boolean') ? saved.hearingTestResponses : null,
           hearingTestResult: restoreToneTestResult(saved.hearingTestResult),
-          hearingPreferences: saved.hearingPreferences && typeof saved.hearingPreferences.vocalTones === 'boolean' && typeof saved.hearingPreferences.backgroundNoise === 'boolean' && typeof saved.hearingPreferences.softerTones === 'boolean' ? saved.hearingPreferences : null,
+          hearingPreferences,
+          preliminaryAudioProfile: hearingPreferences ? toPreliminaryAudioProfile(hearingPreferences) : null,
         };
       },
       partialize: ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }) =>

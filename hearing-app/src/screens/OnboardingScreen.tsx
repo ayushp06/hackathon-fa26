@@ -4,11 +4,11 @@ import { theme } from '../../constants/theme';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { pickHearingTestDocument, previewHearingTestDocument, removeHearingTestDocument } from '../hearingTest/importDocument';
+import type { HearingPreferences } from '../state/hearingPreferences';
 import { useAppStore } from '../state/useAppStore';
 import { HearingTestScreen } from './HearingTestScreen';
 
 type Step = 'question' | 'import' | 'test' | 'preferences';
-type Preferences = { vocalTones: boolean; backgroundNoise: boolean; softerTones: boolean };
 
 function fileSize(bytes: number | null) {
   if (bytes === null) return 'Size unavailable';
@@ -26,7 +26,7 @@ export function OnboardingScreen() {
   const [path, setPath] = useState<'import' | 'test'>('test');
   const [error, setError] = useState('');
   const [picking, setPicking] = useState(false);
-  const [preferences, setPreferences] = useState<Partial<Preferences>>({});
+  const [preferences, setPreferences] = useState<Partial<HearingPreferences>>({});
   const choose = (next: Step) => {
     haptics.selection();
     sound.tap();
@@ -113,8 +113,8 @@ export function OnboardingScreen() {
   };
 
   const finish = () => {
-    if (preferences.vocalTones === undefined || preferences.backgroundNoise === undefined || preferences.softerTones === undefined) return;
-    completeOnboarding(preferences as Preferences);
+    if (preferences.vocalTones === undefined || preferences.backgroundNoise === undefined || preferences.toneEmphasis === undefined) return;
+    completeOnboarding({ vocalTones: preferences.vocalTones, backgroundNoise: preferences.backgroundNoise, toneEmphasis: preferences.toneEmphasis });
     haptics.success();
     sound.confirm();
   };
@@ -167,8 +167,8 @@ export function OnboardingScreen() {
         <Text style={styles.body}>Choose what you prefer. You can review your choices before finishing.</Text>
         <Preference label="Vocal tones?" choices={[['Yes', true], ['No', false]]} value={preferences.vocalTones} onChange={(value) => setPreferences((current) => ({ ...current, vocalTones: value }))} />
         <Preference label="Background noise?" choices={[['Yes', true], ['No', false]]} value={preferences.backgroundNoise} onChange={(value) => setPreferences((current) => ({ ...current, backgroundNoise: value }))} />
-        <Preference label="Emphasize softer or louder tones?" choices={[['Softer', true], ['Louder', false]]} value={preferences.softerTones} onChange={(value) => setPreferences((current) => ({ ...current, softerTones: value }))} />
-        <Action label="Go to Home" onPress={finish} disabled={Object.keys(preferences).length !== 3} />
+        <Preference label="Emphasize softer or louder tones?" choices={[['Softer', 'softer'], ['Louder', 'louder'], ['Neither', 'neither']]} value={preferences.toneEmphasis} onChange={(value) => setPreferences((current) => ({ ...current, toneEmphasis: value }))} />
+        <Action label="Finish Setup" onPress={finish} disabled={preferences.vocalTones === undefined || preferences.backgroundNoise === undefined || preferences.toneEmphasis === undefined} />
       </> : null}
 
       {error && step !== 'import' ? <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text> : null}
@@ -182,12 +182,12 @@ function Action({ label, onPress, disabled, secondary }: { label: string; onPres
   </Pressable>;
 }
 
-function Preference({ label, choices, value, onChange }: { label: string; choices: [string, boolean][]; value: boolean | undefined; onChange: (value: boolean) => void }) {
+function Preference<T extends boolean | HearingPreferences['toneEmphasis']>({ label, choices, value, onChange }: { label: string; choices: [string, T][]; value: T | undefined; onChange: (value: T) => void }) {
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   return <View style={styles.preference}>
     <Text style={styles.preferenceLabel}>{label}</Text>
-    <View style={styles.choices}>
+    <View accessibilityRole="radiogroup" accessibilityLabel={label} style={styles.choices}>
       {choices.map(([text, choice]) => <Pressable key={text} accessibilityRole="radio" accessibilityLabel={`${label} ${text}`} accessibilityState={{ checked: value === choice }} onPress={() => { haptics.selection(); sound.tap(); onChange(choice); }} style={[styles.choice, value === choice && styles.selectedChoice]}>
         <Text style={[styles.choiceText, value === choice && styles.selectedChoiceText]}>{text}</Text>
       </Pressable>)}
@@ -220,10 +220,10 @@ const styles = StyleSheet.create({
   note: { fontSize: 14, lineHeight: 20, color: theme.colors.secondaryText, marginTop: theme.spacing.md, marginBottom: theme.spacing.lg },
   preference: { marginBottom: theme.spacing.lg },
   preferenceLabel: { fontSize: 18, lineHeight: 24, color: theme.colors.text, marginBottom: theme.spacing.sm },
-  choices: { flexDirection: 'row', gap: theme.spacing.sm },
-  choice: { flex: 1, minHeight: theme.sizing.minimumTouchTarget, borderWidth: 1, borderColor: theme.colors.text, alignItems: 'center', justifyContent: 'center' },
+  choices: { flexDirection: 'row', padding: theme.spacing.xs, borderWidth: theme.sizing.borderWidth, borderColor: theme.colors.border, borderRadius: theme.sizing.segmentRadius },
+  choice: { flex: 1, minHeight: theme.sizing.minimumTouchTarget, alignItems: 'center', justifyContent: 'center', paddingHorizontal: theme.spacing.sm, borderRadius: theme.sizing.segmentRadius - theme.spacing.xs },
   selectedChoice: { backgroundColor: theme.colors.text },
-  choiceText: { ...theme.typography.segment, color: theme.colors.text },
+  choiceText: { ...theme.typography.segment, color: theme.colors.text, textAlign: 'center' },
   selectedChoiceText: { color: theme.colors.background },
   error: { ...theme.typography.segment, color: theme.colors.text, marginTop: theme.spacing.md },
 });
