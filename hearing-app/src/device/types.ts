@@ -15,6 +15,7 @@ export type DeviceStatus = {
   noiseReduction: number;
   spatialFocus: number;
   speechAmplification: number;
+  // Simulated signed EQ gains in dB; no hardware DSP is applied.
   bass: number;
   mid: number;
   treble: number;

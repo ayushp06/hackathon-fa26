@@ -13,9 +13,9 @@ export class MockDeviceTransport implements DeviceService {
     noiseReduction: 50,
     spatialFocus: 50,
     speechAmplification: 50,
-    bass: 50,
-    mid: 50,
-    treble: 50,
+    bass: 0,
+    mid: 0,
+    treble: 0,
     calibrationStatus: 'idle',
   };
 
@@ -37,6 +37,10 @@ export class MockDeviceTransport implements DeviceService {
 
   private assertPercent(value: number) {
     if (!Number.isInteger(value) || value < 0 || value > 100) throw new RangeError('Control must be an integer from 0 to 100');
+  }
+
+  private assertEqGain(value: number) {
+    if (!Number.isInteger(value) || value < -12 || value > 12) throw new RangeError('EQ gain must be an integer from -12 to +12 dB');
   }
 
   // The mock accepts commands without a connection so the app works without hardware.
@@ -66,19 +70,19 @@ export class MockDeviceTransport implements DeviceService {
   }
 
   async setBass(value: number) {
-    this.assertPercent(value);
+    this.assertEqGain(value);
     this.status.bass = value;
     return this.acknowledge();
   }
 
   async setMid(value: number) {
-    this.assertPercent(value);
+    this.assertEqGain(value);
     this.status.mid = value;
     return this.acknowledge();
   }
 
   async setTreble(value: number) {
-    this.assertPercent(value);
+    this.assertEqGain(value);
     this.status.treble = value;
     return this.acknowledge();
   }

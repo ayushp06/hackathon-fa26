@@ -7,7 +7,7 @@ import { type HearingTestDocument, restoreHearingTestDocument } from '../hearing
 import { type ToneTestResult, restoreToneTestResult } from '../hearingTest/toneTest';
 import { type HearingPreferences, type PreliminaryAudioProfile, restoreHearingPreferences, toPreliminaryAudioProfile } from './hearingPreferences';
 import { migrateLegacyState, shouldSkipOnboarding } from './legacyState';
-import { normalizeManualValue, type ManualControl } from './manualValues';
+import { isEqControl, migratePercentEqGain, normalizeEqGain, normalizeManualValue, type ManualControl } from './manualValues';
 
 export const VOLUME_MIN = 0;
 export const VOLUME_MAX = 100;
@@ -41,7 +41,7 @@ type AppState = Record<ManualControl, number> & {
 
 type SavedAppState = Pick<AppState, ManualControl | 'volume' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'onboardingCompleted' | 'hearingTestFile' | 'hearingTestResponses' | 'hearingTestResult' | 'hearingPreferences'>;
 
-const storage = createJSONStorage<SavedAppState>(() => ({
+const storage = createJSONStorage<Partial<SavedAppState>>(() => ({
   getItem: async (name) => {
     const current = await AsyncStorage.getItem(name);
     if (current !== null) return current;
@@ -79,9 +79,9 @@ export const useAppStore = create<AppState>()(
       noiseReduction: 50,
       spatialFocus: 50,
       speechAmplification: 50,
-      bass: 50,
-      mid: 50,
-      treble: 50,
+      bass: 0,
+      mid: 0,
+      treble: 0,
       activeMode: 'automatic',
       hapticsEnabled: true,
       soundFeedbackEnabled: false,
@@ -102,7 +102,7 @@ export const useAppStore = create<AppState>()(
         void deviceService.setVolume(volume, 'automatic').catch((error) => set({ transportError: errorMessage(error) }));
       },
       setValue: (control, value) => {
-        const normalized = normalizeManualValue(value);
+        const normalized = isEqControl(control) ? normalizeEqGain(value) : normalizeManualValue(value);
         if (normalized === null) return;
         set({ [control]: normalized, transportError: null });
         const command = control === 'baseVolume' ? deviceService.setVolume(normalized, 'manual')
@@ -136,8 +136,14 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'hearing-app-state',
-      version: 1,
+      version: 2,
       storage,
+      migrate: (persisted, version) => {
+        const saved = persisted as Partial<SavedAppState>;
+        return version < 2
+          ? { ...saved, bass: migratePercentEqGain(saved.bass), mid: migratePercentEqGain(saved.mid), treble: migratePercentEqGain(saved.treble) }
+          : saved;
+      },
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<SavedAppState>;
         const hearingPreferences = restoreHearingPreferences(saved.hearingPreferences);
@@ -150,9 +156,9 @@ export const useAppStore = create<AppState>()(
           noiseReduction: percent(saved.noiseReduction, current.noiseReduction),
           spatialFocus: percent(saved.spatialFocus, current.spatialFocus),
           speechAmplification: percent(saved.speechAmplification, current.speechAmplification),
-          bass: percent(saved.bass, current.bass),
-          mid: percent(saved.mid, current.mid),
-          treble: percent(saved.treble, current.treble),
+          bass: typeof saved.bass === 'number' ? normalizeEqGain(saved.bass) ?? current.bass : current.bass,
+          mid: typeof saved.mid === 'number' ? normalizeEqGain(saved.mid) ?? current.mid : current.mid,
+          treble: typeof saved.treble === 'number' ? normalizeEqGain(saved.treble) ?? current.treble : current.treble,
           activeMode: saved.activeMode === 'manual' ? 'manual' : 'automatic',
           hapticsEnabled: typeof saved.hapticsEnabled === 'boolean' ? saved.hapticsEnabled : current.hapticsEnabled,
           soundFeedbackEnabled: typeof saved.soundFeedbackEnabled === 'boolean' ? saved.soundFeedbackEnabled : current.soundFeedbackEnabled,

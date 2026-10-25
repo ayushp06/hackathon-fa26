@@ -1,12 +1,16 @@
 export function manualWaveformPath(bass: number, mid: number, treble: number) {
+  'worklet';
   const points: string[] = [];
-  for (let index = 0; index <= 60; index += 1) {
-    const position = index / 60;
+  const bassAmplitude = 3.5 * Math.pow(10, bass / 20);
+  const midAmplitude = 3.5 * Math.pow(10, mid / 20);
+  const trebleAmplitude = 3.5 * Math.pow(10, treble / 20);
+  for (let index = 0; index <= 120; index += 1) {
+    const position = index / 120;
     const envelope = Math.sin(Math.PI * position) ** 2;
-    const wave = (bass / 100) * 8 * Math.sin(position * Math.PI * 4)
-      + (mid / 100) * 12 * Math.sin(position * Math.PI * 12)
-      + (treble / 100) * 8 * Math.sin(position * Math.PI * 28);
-    points.push(`${index === 0 ? 'M' : 'L'} ${index * 5} ${(50 - envelope * wave).toFixed(1)}`);
+    const wave = bassAmplitude * Math.sin(position * Math.PI * 4)
+      + midAmplitude * Math.sin(position * Math.PI * 14)
+      + trebleAmplitude * Math.sin(position * Math.PI * 34);
+    points.push(`${index === 0 ? 'M' : 'L'} ${index * 2.5} ${(50 - envelope * wave).toFixed(1)}`);
   }
   return points.join(' ');
 }
