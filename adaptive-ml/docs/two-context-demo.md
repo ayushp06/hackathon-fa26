@@ -7,6 +7,10 @@ This is a host-tested experimental feature, default AUDIO_ADAPTIVE_ML=OFF.
 ARM compilation and physical autonomous correction/recall remain pending.
 Host success is not physical STM32 validation or hearing benefit.
 
+The app now learns on completed dial release. The UI steps below reflect that
+flow; see [current app validation](../../hearing-app/LEARNING.md) for its host and
+browser tests. These do not establish physical hardware validation.
+
 ## Evidence and policy
 
 From `adaptive-ml/`: `make test evaluate test-dsp`.
@@ -59,16 +63,16 @@ constant third input. Saturation/floor/quantization can erase distinctions.
 3. In Settings, choose **Reset Learning**, then **Confirm Reset Learning** (queued
    clear then enable). Return to Manual. Hold A steady >=300 ms (prefer >=1 s after a scene change); confirm
    applied baseline near50. Select noise reduction80, release dial and keep it idle,
-   then press **Remember this adjustment** ONCE. Confirmation waits for the pending
-   ordinary setter acknowledgment; it sends only ID14, not an extra setter. Wait for accepted message and
+   and let release automatically submit the correction. Confirmation waits for the
+   final setter acknowledgment; it sends only ID14, not an extra setter. Wait for Preference learned and
    matching status=0 acknowledgment. Debug counters: corrections1/examples1/enabled1.
    The two-second hold is global even if you immediately move to B.
 4. Establish B, wait >=2.4 s and verify baseline near50 before teaching. Select30,
-   release and press **Remember this adjustment** ONCE. Verify corrections2/examples2,
+   release and wait for Preference learned. Verify corrections2/examples2,
    enabled1, and capture its commandSequence. Wait >=2.4 s.
 5. Return A, wait >=2.4 s; device target should approach80 within +/-10. Return B,
    wait >=2.4 s; target should approach30. Repeat ten round trips without touching
-   dials, Remember, Resume, profiles, reconnect, or replay commands. Telemetry can
+   dials, profiles, reconnect, or replay commands. Telemetry can
    refresh both the displayed dial and device target without sending a setter. Record timestamps, context,
    target, counters and commandSequence. The sequence must stay unchanged while
    target follows context; debugger must show enabled1/corrections2/examples2.
@@ -100,31 +104,30 @@ occur; the existing applied target may remain. Fix clock/reference/spatial/fault
 conditions with the hardware owner, reestablish stability, and clear/reteach only
 if restarting the demonstration. For ambiguous contexts change reproducible levels
 or geometry and measure separation before retrying, not learning coefficients.
-Pause via app or `-Action disable`, lower ordinary strength/volume if needed; clear
+Pause via `-Action disable`, lower ordinary strength/volume if needed; clear
 then enable in a known stable scene to reset preference state. Board restart loses
 memory and requires a fresh two-correction demonstration. Never flash automatically.
 
 ## Boundaries and outstanding validation
 
-Source path: ManualScreen.dial/useAppStore.setValue -> HardwareDeviceService.set/flush
+Source path: ManualScreen.dial/useAppStore.setValue -> NoiseLearning -> HardwareDeviceService.set/flush
 -> POST /api/control -> server command ID1 -> MicSpeakerBridge.PollAppCommand ->
 10-byte A5 5A frame/CRC -> PC_Audio_Poll -> Controls_Command/manual override.
-Explicit confirmation uses confirmNoiseReduction -> waits for pending writes and
+Completed release waits for the final setter acknowledgment -> confirmNoiseReduction ->
 checks final desired/acknowledged value -> ONE feedback request, no redundant setter ->
 /api/noise-feedback -> same queue ID14 -> Adaptive_Command ->
 adaptive_runtime_correct -> pl_correct_masked(output0). IDs15/16 use
 setNoiseAdaptation/clearNoisePreferences and /noise-adaptation /noise-preferences.
 Controls_AdaptiveAck -> Controls_BeginBlock -> MIC4 -> ReportStatus -> JSON ->
-/api/status -> HardwareConnection updates appliedNoiseReduction/displayed dial
-through setState without setters.
+/api/status -> HardwareConnection/syncNoiseStatus update the target and idle dial
+without setters, preserving any newer pending selection.
 Inference: actual input RMS -> Adaptive_ObserveBlock mailbox -> foreground Poll ->
 runtime prediction -> Controls_SetAdaptiveStrength -> BeginBlock -> Noise_SetStrength.
 
 C# frame serialization/retry and firmware parser/ack linkage were inspected, not
 physically exercised. No ARM toolchain or connected target validation was available;
-no measured target CPU/RAM/flash conclusions follow. App dependencies are absent,
-so lint/typecheck/Expo build are pending; direct dependency-free app tests can run.
-App dials are locked during confirmation/reset. No authoritative ML capability/mode
-telemetry exists. Automatic-on-slider-release correction remains app-team work; do not
-combine it with duplicate Remember events when integrated. Revalidate against that
-revision with its owner. No teammate files were edited for this compatibility fix.
+no measured target CPU/RAM/flash conclusions follow. Current app typecheck, lint,
+unit/API/emulated-flow tests and browser-emulator checks pass; see the app validation
+notes. New edits queue behind pending feedback; reset cancels queued edits and locks
+dials. No authoritative ML capability/mode telemetry exists. No firmware algorithm
+or driver was changed by the app integration.

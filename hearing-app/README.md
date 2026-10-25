@@ -9,13 +9,18 @@ explicitly labeled mock controls.
 Use the app-control firmware and current two-microphone wiring described in
 [hardware app setup](../audio_passthrough/APP_CONTROL.md). After `npm ci`, run
 `.\scripts\start-hardware-app.ps1` from the repository root and open
-http://localhost:8081. Choose **Connect USB** to apply saved settings and use
+http://localhost:8081. Choose **Connect USB** and use
 the dials. Volume, noise-reduction strength, speech-band gain and EQ run on the
-STM32; **Relearn noise** resets its NLMS filter. Spatial Focus is disabled because
-this microphone configuration has no directional-processing implementation.
+STM32; **Relearn noise** resets its NLMS filter.
 The connection panel displays live microphone levels and reports missing clocks
-or a stopped stream. A disconnected dial saves its desired value without
-claiming to have changed hardware. Use the helper's `-Stop` switch to stop it.
+or a stopped stream. Connecting never replays saved controls. Noise adjustment
+requires a connection. Use the helper's `-Stop` switch to stop it.
+
+With approved ML-enabled firmware, turn **Background Noise Reduction** and release
+the dial to learn that preference automatically. There is no Save/Remember step.
+Settings → **Reset Learning** clears the previous judge's preferences and enables
+automatic adaptation without restarting audio. See [learning and demo instructions](LEARNING.md)
+for the command flow, validation results, and firmware requirements.
 
 ## Run
 
@@ -50,8 +55,9 @@ npm test
 
 Connections are session-only. The last device ID is stored locally; a restart
 never claims a live connection. The browser uses the USB audio bridge and
-acknowledged firmware DSP controls. Hearing calibration and AI are not
-implemented. The current hardware does not define a BLE radio or GATT protocol;
+acknowledged firmware DSP controls. Hearing calibration is not implemented;
+adaptive preference learning requires `AUDIO_ADAPTIVE_ML=ON` in the approved image.
+The current hardware does not define a BLE radio or GATT protocol;
 mobile hardware transport needs those additions and a development build.
 
 The Volume dial updates local state immediately and sends a command through
@@ -70,10 +76,10 @@ digital transients. The two new controls default to zero; previously simulated
 spatial settings are reset during saved-state migration. Advanced
 has Bass, Mid and Treble plus a seven-point EQ editor; Treble uses a 4 kHz shelf
 because the 8 kHz point is Nyquist at 16 kHz sampling. Settings are saved with
-AsyncStorage and applied through the selected transport. The graph and waveform
+AsyncStorage; only deliberate dial adjustments send controls. The graph and waveform
 are illustrative, not measured audio. The store also persists mode and feedback
 preferences; learning progress and connection state remain session-only.
 
 Settings lets the user turn haptics and sounds on or off; haptics default on and sounds default off. Dial steps, mode changes, and mock recalibration use brief feedback when enabled. Bundled sound cues are short and low amplitude, player volume is limited to 18%, and playback follows the device's silent mode. Feedback does not change system volume, request microphone access, or play in the background. Reduced Motion suppresses haptics; active screen readers suppress UI sounds so spoken feedback is not interrupted.
 
-Settings also has one locally saved sound profile. Save or update it after tuning the volume, noise controls and EQ; Restore applies those values again, muting the connected device while changing the controls and restoring the saved volume last. It does not save feedback preferences or claim to measure hearing.
+Settings also has one locally saved sound profile. Restore changes local dial values without sending controls or training. Noise reduction keeps its current pending selection or device target. Adjust a dial to apply a new value to the device. The profile does not save feedback preferences or measure hearing.

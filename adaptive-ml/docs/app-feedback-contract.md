@@ -1,8 +1,9 @@
 # App-to-ML feedback contract
 
 Firmware under test is pinned to `ba961a4`, not this branch's newest docs/tool commits.
-App/server inspected and merged from `origin/main` at `7f13e6e`.
-The app now implements explicit feedback and mode routes; firmware remains unchanged.
+The app flow on `main` now learns on completed user adjustments; firmware remains
+unchanged by that app work. See [app learning instructions](../../hearing-app/LEARNING.md)
+for current UI behavior and host validation.
 See [two-context runbook](two-context-demo.md) for validation limits and results.
 
 ## Implemented path and wire contract
@@ -57,39 +58,41 @@ Model counters/context/mode still require debugger inspection.
 
 ## Current app responsibilities and remaining gaps
 
-`ManualScreen.dial` -> `useAppStore.setValue` -> `setNoiseReduction` sends ordinary
-ID 1 only. The user finishes adjusting; `set`/`flush` coalesce ordinary writes over
-60 ms and wait for firmware acknowledgment. `Remember this adjustment` invokes
-`confirmNoiseReduction`, which waits for pending writes and requires the final
-requested value to equal the acknowledged value. It submits ONE feedback request
-without another ordinary setter. Successful confirmation consumes that candidate;
-repeating it without a fresh adjustment is rejected. Noise adjustments and concurrent
-confirmations are blocked during the operation. Firmware records output 0 for the
-current valid context, enables autonomy and holds the correction for two seconds.
+`ManualScreen.dial` -> `useAppStore.setValue` -> `NoiseLearning` queues deliberate
+adjustments. Ordinary ID 1 setters can follow intermediate movements; `set`/`flush`
+coalesce writes over 60 ms and wait for firmware acknowledgment. Successful gesture
+finalization commits exactly one final value. Keyboard commits debounce after key
+release; accessibility actions debounce their final user-initiated change. A held
+pointer gesture has no commit timer. There is no Remember button.
+
+The controller waits for the final setter acknowledgment, then calls the existing
+`confirmNoiseReduction`, which requires requested and acknowledged values to match
+and submits ONE ID 14 request without another setter. Attempting feedback consumes
+that candidate even on failure; another request requires a fresh adjustment. A new
+interaction stays editable while older feedback is pending, but its commands wait
+behind the previous interaction. Older results cannot overwrite newer selection or
+status. Firmware records output 0 for the current valid context, enables autonomy
+and holds the correction for two seconds.
 
 No service retry creates additional corrections; bridge retries reuse the sequence.
-An HTTP timeout is ambiguous: inspect counters/ack before another user confirmation.
-`HardwareConnection` polls `getStatus` and directly updates `appliedNoiseReduction`
-and the displayed `noiseReduction` through `setState`, without invoking setters.
-The UI has separate selected/device-target fields, but polling can refresh both.
+An HTTP timeout is ambiguous: inspect counters/ack before another deliberate adjustment.
+`HardwareConnection` polls `getStatus` and passes its target to `syncNoiseStatus`.
+This updates `appliedNoiseReduction` and updates the dial only when no selection
+is pending, without invoking setters. Pending/device-target values are separate.
 Telemetry is never training. Hydration restores local state only; connect/restart
 no longer replay saved controls, and profile restoration is local-only.
 
-Resume/Pause call `setNoiseAdaptation`. Settings **Reset Learning** (with confirmation)
-calls `resetLearning`: the server serializes ID16 then ID15 as one queued operation,
+Settings **Reset Learning** invalidates unfinished/queued interactions, waits for
+commands already in flight, and calls `resetLearning` with confirmation. The server
+serializes ID16 then ID15 as one queued operation,
 clearing preferences and enabling autonomy; baseline50 applies after valid features.
 The lower-level `clearNoisePreferences` route still clears and disables. These are
 hardware-specific methods, not additions to the generic mock DeviceService API.
-`runNoiseOperation`/`noiseBusy` lock UI adjustments during confirmation/reset; the
-service also guards noise setters. An ordinary dial change outside these actions
-still pauses autonomy without training. Current mode requires debugger inspection;
-UI success text records a past acknowledgment only.
-
-Automatic correction on completed slider release is app-team work in progress,
-not implemented by this PR. It must reuse the acknowledged final-value check and
-single ID14 path, never train on intermediate drag, hydration, reconnect or telemetry,
-and must not submit both release feedback and a duplicate Remember action. Revalidate
-the workflow with the app owner when that change lands; no app files are edited here.
+`noiseBusy` locks dials during reset. The controller serializes corrections; the
+service also guards setters during a feedback request. Cancelled gestures never
+train. Reset, telemetry, hydration, reconnect and profile restore never initiate
+feedback. Current mode requires debugger inspection; UI automatic/success text
+records a past acknowledgment only and reconnect shows mode unconfirmed.
 
 Remaining dependencies: explicit ML capability/mode/context/counter telemetry,
 context/time and playback-latency alignment, calibrated baseline import, physical
@@ -101,3 +104,7 @@ ordering. `adaptive-ml/tests/app-queue.test.mjs` additionally connects the actua
 service through real HTTP to the actual server and command file, verifying IDs,
 unique sequences, coalescing, rejection and telemetry without writes. Its status
 publisher emulates firmware acknowledgments; it does NOT run C# serial or hardware.
+`tests/app_learning.test.mjs` adds completed-adjustment A/B protocol emulation and
+recall without writes. Component/controller/store tests cover event provenance,
+pending selections, overlapping edits and cancellation. See the app instructions
+for the distinction between protocol emulation and synthetic real-DSP model tests.
