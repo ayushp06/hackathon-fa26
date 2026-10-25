@@ -18,10 +18,12 @@ export class HardwareDeviceService implements DeviceService {
   private desired = new Map<Control, number>();
   private waiting = new Map<Control, { value: number; resolve: (ack: DeviceAcknowledgment) => void; reject: (error: unknown) => void }[]>();
   private flushing = false;
+  private noiseOperation = false;
+  private acknowledgedNoiseReduction: number | null = null;
 
   private async request<T>(route: string, data?: object): Promise<T> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), route === '/relearn' || route === '/restart' ? 7000 : 4500);
+    const timeout = setTimeout(() => controller.abort(), ['/relearn', '/restart', '/reset-learning'].includes(route) ? 7000 : 4500);
     try {
       const response = await fetch(address + route, {
         signal: controller.signal,
@@ -43,13 +45,7 @@ export class HardwareDeviceService implements DeviceService {
     this.connecting = true;
     try {
       const device = await this.request<HearingDevice>('/connect', { id });
-      this.connected = true;
-      // Mute before applying saved EQ; restore desired volume last.
-      await this.request('/control', { control: 'volume', value: 0 });
-      for (const [control, value] of this.desired) {
-        if (control !== 'volume') await this.request('/control', { control, value });
-      }
-      await this.request('/control', { control: 'volume', value: this.desired.get('volume') ?? 50 });
+      this.acknowledgedNoiseReduction = null;
       this.connected = true;
       return device;
     } catch (failure) {
@@ -69,6 +65,7 @@ export class HardwareDeviceService implements DeviceService {
   }
 
   private set(control: Control, value: number) {
+    if (control === 'noiseReduction' && this.noiseOperation) return Promise.reject(new Error('Wait for the current learning action.'));
     const percent = control === 'volume' || control === 'noiseReduction' || control === 'speechAmplification' || control === 'reduceLoudSounds' || control === 'spatialFocus';
     if (!Number.isInteger(value) || value < (percent ? 0 : -12) || value > (percent ? 100 : 12)) {
       return Promise.reject(new RangeError('Control value outside its allowed range'));
@@ -88,6 +85,7 @@ export class HardwareDeviceService implements DeviceService {
       this.waiting.delete(control);
       try {
         const ack = await this.request<DeviceAcknowledgment>('/control', { control, value: requests[requests.length - 1].value });
+        if (control === 'noiseReduction' && ack.accepted) this.acknowledgedNoiseReduction = requests[requests.length - 1].value;
         for (const request of requests) request.resolve(ack);
       } catch (failure) {
         for (const request of requests) request.reject(failure);
@@ -98,13 +96,29 @@ export class HardwareDeviceService implements DeviceService {
   setVolume(value: number) { return this.set('volume', value); }
   setNoiseReduction(value: number) { return this.set('noiseReduction', value); }
   async confirmNoiseReduction(value: number) {
-    const ack = await this.setNoiseReduction(value);
-    if (!ack.accepted) throw new Error('Connect the STM32 before confirming a correction.');
-    if (this.desired.get('noiseReduction') !== value) throw new Error('Noise reduction changed while confirming. Try again.');
-    return this.request<DeviceAcknowledgment>('/noise-feedback', { value });
+    if (this.noiseOperation) throw new Error('Wait for the current learning action.');
+    this.noiseOperation = true;
+    try {
+      while (this.flushing) await new Promise((resolve) => setTimeout(resolve, 10));
+      if (!this.connected || this.desired.get('noiseReduction') !== value || this.acknowledgedNoiseReduction !== value) {
+        throw new Error('Adjust the noise reduction dial before remembering a correction.');
+      }
+      const ack = await this.request<DeviceAcknowledgment>('/noise-feedback', { value });
+      this.acknowledgedNoiseReduction = null;
+      return ack;
+    } finally { this.noiseOperation = false; }
   }
   setNoiseAdaptation(enabled: boolean) { return this.request<DeviceAcknowledgment>('/noise-adaptation', { enabled }); }
   clearNoisePreferences() { return this.request<DeviceAcknowledgment>('/noise-preferences', {}); }
+  async resetLearning() {
+    if (this.noiseOperation) throw new Error('Wait for the current learning action.');
+    this.noiseOperation = true;
+    try {
+      while (this.flushing) await new Promise((resolve) => setTimeout(resolve, 10));
+      this.acknowledgedNoiseReduction = null;
+      return await this.request<HardwareStatus>('/reset-learning', {});
+    } finally { this.noiseOperation = false; }
+  }
   setReduceLoudSounds(value: number) { return this.set('reduceLoudSounds', value); }
   setSpeechAmplification(value: number) { return this.set('speechAmplification', value); }
   setBass(value: number) { return this.set('bass', value); }

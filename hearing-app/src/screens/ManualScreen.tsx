@@ -34,7 +34,7 @@ export function ManualScreen() {
   const values = useAppStore();
   const connected = useDeviceStore((state) => !!state.connectedDevice);
   const [noiseAction, setNoiseAction] = useState<string | null>(null);
-  const [noiseBusy, setNoiseBusy] = useState(false);
+  const noiseBusy = values.noiseBusy;
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const [viewport, setViewport] = useState({ width: windowWidth, height: Infinity });
@@ -63,7 +63,7 @@ export function ManualScreen() {
 
   const dial = ([control, label]: [DialControl, string], size: number) => {
     const eq = control === 'bass' || control === 'mid' || control === 'treble';
-    return <RotaryDial key={control} min={eq ? -12 : 0} max={eq ? 12 : 100} step={1} diameter={size} label={label} value={values[control]} valueSuffix={eq ? ' dB' : '%'} onValueChange={(value) => {
+    return <RotaryDial key={control} min={eq ? -12 : 0} max={eq ? 12 : 100} step={1} diameter={size} label={label} value={values[control]} valueSuffix={eq ? ' dB' : '%'} disabled={noiseBusy} onValueChange={(value) => {
       if (control === 'noiseReduction') setNoiseAction(null);
       if (control === 'volume') values.setVolume(value);
       else values.setValue(control, value);
@@ -71,13 +71,13 @@ export function ManualScreen() {
   };
 
   const runNoiseAction = async (action: () => Promise<unknown>, success: string) => {
-    setNoiseBusy(true); setNoiseAction(null);
-    try { await action(); setNoiseAction(success); }
+    setNoiseAction(null);
+    try { await values.runNoiseOperation(action); setNoiseAction(success); }
     catch (error) { setNoiseAction(error instanceof Error ? error.message : 'Noise control failed.'); }
-    finally { setNoiseBusy(false); }
   };
 
   const changeEqFromGraph = (band: EqControl, value: number) => {
+    if (noiseBusy) return;
     values.setValue(band, value);
     const landmark = isDialLandmark(value, -12, 12);
     haptics.dialStep(value, -12, 12, landmark);
@@ -100,7 +100,6 @@ export function ManualScreen() {
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.confirmNoiseReduction(useAppStore.getState().noiseReduction), 'Correction accepted. Automatic adaptation resumed.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Remember this adjustment</Text></Pressable>
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.setNoiseAdaptation(true), 'Automatic adaptation resumed.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Resume automatic adaptation</Text></Pressable>
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.setNoiseAdaptation(false), 'Automatic adaptation paused.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Pause automatic adaptation</Text></Pressable>
-          <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.clearNoisePreferences(), 'Learned preferences cleared. Automatic adaptation paused.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Clear learned preferences</Text></Pressable>
         </View>
         {noiseAction ? <Text accessibilityLiveRegion="polite" style={styles.description}>{noiseAction}</Text> : null}
       </View> : null}
@@ -113,7 +112,7 @@ export function ManualScreen() {
           <View style={styles.advancedRow}>
             {advancedControls.map((item) => <View key={item[0]} style={styles.advancedColumn}>{dial(item, advancedDiameter)}</View>)}
           </View>
-          <EditableWaveform gains={eqBands.map(({ control }) => values[control])} noiseReduction={values.noiseReduction} spatialFocus={values.spatialFocus} speechAmplification={values.speechAmplification} onEqChange={changeEqFromGraph} />
+          <View pointerEvents={noiseBusy ? 'none' : 'auto'}><EditableWaveform gains={eqBands.map(({ control }) => values[control])} noiseReduction={values.noiseReduction} spatialFocus={values.spatialFocus} speechAmplification={values.speechAmplification} onEqChange={changeEqFromGraph} /></View>
         </View>
       </Animated.View>
     </ScrollView>
