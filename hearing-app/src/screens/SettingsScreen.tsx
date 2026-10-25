@@ -5,7 +5,6 @@ import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { useAppStore } from '../state/useAppStore';
 import { hardwareMode } from '../device/deviceService';
-import { hardwareDeviceService } from '../device/hardwareDeviceService';
 import { useDeviceStore } from '../state/useDeviceStore';
 
 export function SettingsScreen() {
@@ -16,7 +15,7 @@ export function SettingsScreen() {
   const savedProfile = useAppStore((state) => state.savedProfile);
   const restoringProfile = useAppStore((state) => state.restoringProfile);
   const noiseBusy = useAppStore((state) => state.noiseBusy);
-  const runNoiseOperation = useAppStore((state) => state.runNoiseOperation);
+  const resetNoiseLearning = useAppStore((state) => state.resetNoiseLearning);
   const connected = useDeviceStore((state) => !!state.connectedDevice);
   const saveProfile = useAppStore((state) => state.saveProfile);
   const restoreProfile = useAppStore((state) => state.restoreProfile);
@@ -54,12 +53,7 @@ export function SettingsScreen() {
     setConfirmReset(false);
     setResetMessage('');
     try {
-      await runNoiseOperation(async () => {
-        await hardwareDeviceService.resetLearning();
-        const status = await hardwareDeviceService.getStatus();
-        if (!status.connected) throw new Error('Device disconnected after reset. Check its status.');
-        useAppStore.setState({ appliedNoiseReduction: status.noiseReduction, noiseReduction: status.noiseReduction });
-      });
+      await resetNoiseLearning();
       setResetMessage('Learning ready. The target will return to 50% when valid acoustic features are processed.');
     } catch (error) { setResetMessage(error instanceof Error ? error.message : 'Reset Learning failed.'); }
   };

@@ -107,3 +107,24 @@ test('a deliberate correction waits for the ordinary setter acknowledgment witho
   assert.equal(calls.filter(({ route, data }) => route === '/control' && data.control === 'noiseReduction').length, 1);
   await assert.rejects(service.confirmNoiseReduction(68), /Adjust the noise reduction dial/);
 });
+
+test('a rejected correction consumes the user decision and cannot be replayed after polling or reconnect', async (t) => {
+  const original = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(url);
+    if (url.endsWith('/noise-feedback')) return Response.json({ error: 'unstable acoustic context' }, { status: 422 });
+    if (url.endsWith('/status')) return Response.json({ connected: true, values: { noiseReduction: 76 } });
+    return Response.json({ accepted: true, sequence: calls.length });
+  };
+  t.after(() => { globalThis.fetch = original; });
+  const service = new HardwareDeviceService();
+  await service.connect();
+  await service.setNoiseReduction(76);
+  await assert.rejects(service.confirmNoiseReduction(76), /unstable acoustic context/);
+  await service.getStatus();
+  await assert.rejects(service.confirmNoiseReduction(76), /Adjust the noise reduction dial/);
+  await service.connect();
+  await assert.rejects(service.confirmNoiseReduction(76), /Adjust the noise reduction dial/);
+  assert.equal(calls.filter((url) => url.endsWith('/noise-feedback')).length, 1);
+});

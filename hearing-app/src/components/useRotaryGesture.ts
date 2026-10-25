@@ -12,9 +12,11 @@ type Options = {
   diameter: number;
   disabled?: boolean;
   onValueChange: (value: number) => void;
+  onInteractionStart: (value: number) => void;
+  onInteractionEnd: (value: number, cancelled: boolean) => void;
 };
 
-export function useRotaryGesture({ value, min, max, step, diameter, disabled = false, onValueChange }: Options) {
+export function useRotaryGesture({ value, min, max, step, diameter, disabled = false, onValueChange, onInteractionStart, onInteractionEnd }: Options) {
   const angle = useSharedValue(valueToAngle(value, min, max));
   const rawAngle = useSharedValue(valueToAngle(value, min, max));
   const lastPointer = useSharedValue<number | null>(null);
@@ -41,6 +43,7 @@ export function useRotaryGesture({ value, min, max, step, diameter, disabled = f
     onBegin: (event) => {
       'worklet';
       dragging.value = true;
+      scheduleOnRN(onInteractionStart, lastValue.value);
       rawAngle.value = valueToAngle(lastValue.value, min, max);
       const distance = Math.hypot(event.x - radius, event.y - radius);
       lastPointer.value = distance < radius * 0.22 ? null : pointerAngle(event.x, event.y, radius);
@@ -66,12 +69,13 @@ export function useRotaryGesture({ value, min, max, step, diameter, disabled = f
         scheduleOnRN(onValueChange, nextValue);
       }
     },
-    onFinalize: () => {
+    onFinalize: (event) => {
       'worklet';
       dragging.value = false;
       lastPointer.value = null;
       rawAngle.value = valueToAngle(lastValue.value, min, max);
       angle.value = withTiming(valueToAngle(lastValue.value, min, max), { duration: 120 });
+      scheduleOnRN(onInteractionEnd, lastValue.value, event.canceled);
     },
   });
 

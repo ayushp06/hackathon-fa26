@@ -103,9 +103,8 @@ export class HardwareDeviceService implements DeviceService {
       if (!this.connected || this.desired.get('noiseReduction') !== value || this.acknowledgedNoiseReduction !== value) {
         throw new Error('Adjust the noise reduction dial before remembering a correction.');
       }
-      const ack = await this.request<DeviceAcknowledgment>('/noise-feedback', { value });
       this.acknowledgedNoiseReduction = null;
-      return ack;
+      return await this.request<DeviceAcknowledgment>('/noise-feedback', { value });
     } finally { this.noiseOperation = false; }
   }
   setNoiseAdaptation(enabled: boolean) { return this.request<DeviceAcknowledgment>('/noise-adaptation', { enabled }); }

@@ -1,7 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { deviceService } from '../device/deviceService';
+import { deviceService, hardwareMode } from '../device/deviceService';
+import { hardwareDeviceService } from '../device/hardwareDeviceService';
+import { NoiseLearning, type NoiseLearningState } from '../device/noiseLearning';
 import type { CalibrationResult, CalibrationStatus, DeviceMode } from '../device/types';
 import { migrateLegacyState } from './legacyState';
 import { isEqControl, migratePercentEqGain, normalizeEqGain, normalizeManualValue, restoreSharedVolume, type ManualControl } from './manualValues';
@@ -23,7 +25,12 @@ type AppState = Record<ManualControl, number> & {
   savedProfile: SoundProfile | null;
   restoringProfile: boolean;
   noiseBusy: boolean;
-  runNoiseOperation: (action: () => Promise<unknown>) => Promise<void>;
+  noiseLearning: NoiseLearningState;
+  beginNoiseAdjustment: () => void;
+  finishNoiseAdjustment: (value: number) => void;
+  cancelNoiseAdjustment: () => void;
+  syncNoiseStatus: (connected: boolean, target: number | null) => void;
+  resetNoiseLearning: () => Promise<void>;
   saveProfile: () => void;
   restoreProfile: () => Promise<boolean>;
   setVolume: (value: number) => void;
@@ -66,6 +73,16 @@ function validResult(value: unknown): value is CalibrationResult {
     && normalizeManualValue(result.volumePercent) === result.volumePercent;
 }
 
+const noiseLearning = new NoiseLearning(hardwareDeviceService, (state) => {
+  useAppStore.setState({
+    noiseLearning: state,
+    noiseBusy: state.phase === 'resetting',
+    appliedNoiseReduction: state.target,
+    ...(state.pendingValue !== null ? { noiseReduction: state.pendingValue }
+      : state.target !== null ? { noiseReduction: state.target } : {}),
+  });
+});
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -92,18 +109,18 @@ export const useAppStore = create<AppState>()(
       savedProfile: null,
       restoringProfile: false,
       noiseBusy: false,
-      runNoiseOperation: async (action) => {
-        if (get().noiseBusy) throw new Error('Wait for the current learning action.');
-        set({ noiseBusy: true });
-        try { await action(); }
-        finally { set({ noiseBusy: false }); }
-      },
+      noiseLearning: noiseLearning.state,
+      beginNoiseAdjustment: () => noiseLearning.begin(get().noiseReduction),
+      finishNoiseAdjustment: (value) => noiseLearning.finish(value),
+      cancelNoiseAdjustment: () => noiseLearning.cancel(),
+      syncNoiseStatus: (connected, target) => noiseLearning.observe(connected, target),
+      resetNoiseLearning: () => noiseLearning.reset(),
       saveProfile: () => set({ savedProfile: soundProfileFrom(get()) }),
       restoreProfile: async () => {
         const profile = get().savedProfile;
         if (!profile || get().restoringProfile || get().noiseBusy) return false;
         set({ restoringProfile: true, transportError: null });
-        set({ ...profile, noiseReduction: get().appliedNoiseReduction ?? get().noiseReduction, restoringProfile: false });
+        set({ ...profile, noiseReduction: get().noiseReduction, restoringProfile: false });
         return true;
       },
       setVolume: (value) => {
@@ -115,6 +132,10 @@ export const useAppStore = create<AppState>()(
       setValue: (control, value) => {
         const normalized = isEqControl(control) ? normalizeEqGain(value) : normalizeManualValue(value);
         if (normalized === null || get().noiseBusy) return;
+        if (control === 'noiseReduction' && hardwareMode) {
+          noiseLearning.change(normalized);
+          return;
+        }
         set({ [control]: normalized, transportError: null });
         const command = control === 'noiseReduction' ? deviceService.setNoiseReduction(normalized)
           : control === 'reduceLoudSounds' ? deviceService.setReduceLoudSounds(normalized)

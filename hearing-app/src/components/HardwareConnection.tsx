@@ -24,13 +24,13 @@ export function HardwareConnection() {
         const next = await hardwareDeviceService.getStatus();
         if (!stopped) {
           setStatus(next); setError(next.error);
-          useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null, ...(next.connected ? { noiseReduction: next.noiseReduction } : {}) });
+          useAppStore.getState().syncNoiseStatus(next.connected, next.noiseReduction);
           if (!next.connected) useDeviceStore.setState({ connectedDevice: null });
         }
       } catch {
         if (!stopped) {
           setStatus(null); setError(null);
-          useAppStore.setState({ appliedNoiseReduction: null });
+          useAppStore.getState().syncNoiseStatus(false, null);
           useDeviceStore.setState({ connectedDevice: null });
         }
       }
@@ -48,7 +48,7 @@ export function HardwareConnection() {
       else await device.connect('stm32-usb');
       const next = await hardwareDeviceService.getStatus();
       setStatus(next);
-      useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null, ...(next.connected ? { noiseReduction: next.noiseReduction } : {}) });
+      useAppStore.getState().syncNoiseStatus(next.connected, next.noiseReduction);
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Connection failed'); }
     finally { setBusy(false); }
   };
@@ -60,7 +60,7 @@ export function HardwareConnection() {
       useAppStore.setState({ transportError: null });
       const next = await hardwareDeviceService.getStatus();
       setStatus(next); setError(null);
-      useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null, ...(next.connected ? { noiseReduction: next.noiseReduction } : {}) });
+      useAppStore.getState().syncNoiseStatus(next.connected, next.noiseReduction);
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Restart failed'); }
     finally { setBusy(false); }
   };
@@ -81,7 +81,7 @@ export function HardwareConnection() {
           <Text style={styles.buttonText}>{calibrationStatus === 'loading' ? 'Learning… stay quiet' : 'Relearn noise'}</Text>
         </Pressable>
       </View>
-    </> : <Text style={styles.note}>Connect to apply your saved dial settings.</Text>}
+    </> : <Text style={styles.note}>Connect to adjust sound and teach your preferences.</Text>}
     {visibleError ? <Text accessibilityLiveRegion="polite" style={styles.error}>{visibleError.startsWith('USB bridge unavailable.') ? 'Could not connect to USB hardware.' : visibleError}</Text> : null}
   </View>;
 }

@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedProps } from 'react-native-reanimated';
@@ -8,6 +8,7 @@ import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { angleToValue, clamp, isDialLandmark, stepScale, valueToAngle } from './rotaryMath';
 import { useRotaryGesture } from './useRotaryGesture';
+import { DialInteraction } from './dialInteraction';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 
@@ -21,9 +22,12 @@ type Props = {
   valueSuffix?: string;
   disabled?: boolean;
   onValueChange: (value: number) => void;
+  onInteractionStart?: () => void;
+  onValueCommit?: (value: number) => void;
+  onInteractionCancel?: () => void;
 };
 
-export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix = '', disabled = false, onValueChange }: Props) {
+export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix = '', disabled = false, onValueChange, onInteractionStart, onValueCommit, onInteractionCancel }: Props) {
   if (![min, max, step, diameter, value].every(Number.isFinite) || max <= min || step <= 0 || diameter < 56) {
     throw new Error('RotaryDial requires finite values, max > min, step > 0, and diameter >= 56');
   }
@@ -41,7 +45,26 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
     if (landmark) sound.tap();
     else sound.tick();
   };
-  const { angle, gesture } = useRotaryGesture({ value: currentValue, min, max, step, diameter, disabled, onValueChange: handleValueChange });
+  const [interaction] = useState(() => new DialInteraction({
+    start: () => onInteractionStart?.(), change: handleValueChange,
+    finish: (next) => onValueCommit?.(next), cancel: () => onInteractionCancel?.(),
+  }));
+  useEffect(() => {
+    interaction.updateCallbacks({
+      start: () => onInteractionStart?.(), change: handleValueChange,
+      finish: (next) => onValueCommit?.(next), cancel: () => onInteractionCancel?.(),
+    });
+  });
+  useEffect(() => {
+    if (disabled) interaction.cancel();
+    return () => interaction.cancel();
+  }, [disabled, interaction]);
+  const { angle, gesture } = useRotaryGesture({
+    value: currentValue, min, max, step, diameter, disabled,
+    onValueChange: (next) => interaction.change(next),
+    onInteractionStart: (next) => interaction.begin(next),
+    onInteractionEnd: (next, cancelled) => { if (cancelled) interaction.cancel(); else interaction.finish(next); },
+  });
   const marks = Array.from({ length: 5 }, (_, index) => min + (max - min) * index / 4);
   const ticks = Array.from({ length: 9 }, (_, index) => min + (max - min) * index / 8);
   const numeralSize = Math.max(9, diameter * 0.07);
@@ -58,10 +81,12 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
     return { d: `M ${radius + alongX * radius * 0.49} ${radius + alongY * radius * 0.49} L ${baseX + acrossX} ${baseY + acrossY} L ${baseX - acrossX} ${baseY - acrossY} Z` };
   });
 
-  const changeBy = (direction: number) => {
-    const nextAngle = valueToAngle(clamp(currentValue + direction * step, min, max), min, max);
+  const changeBy = (direction: number, keyboard = false) => {
+    if (disabled) return;
+    const previous = interaction.value ?? currentValue;
+    const nextAngle = valueToAngle(clamp(previous + direction * step, min, max), min, max);
     const nextValue = angleToValue(nextAngle, min, max, step, stepScale(min, step));
-    if (nextValue !== currentValue) handleValueChange(nextValue);
+    if (nextValue !== previous) interaction.discrete(nextValue, keyboard);
   };
 
   return (
@@ -76,11 +101,13 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
           onKeyDown={(event) => {
             const key = (event as typeof event & { key?: string }).key;
             if (disabled) return;
-            if (key === 'ArrowUp' || key === 'ArrowRight') { event.preventDefault(); changeBy(1); }
-            if (key === 'ArrowDown' || key === 'ArrowLeft') { event.preventDefault(); changeBy(-1); }
-            if (key === 'Home') { event.preventDefault(); handleValueChange(min); }
-            if (key === 'End') { event.preventDefault(); handleValueChange(max); }
+            if (key === 'ArrowUp' || key === 'ArrowRight') { event.preventDefault(); changeBy(1, true); }
+            if (key === 'ArrowDown' || key === 'ArrowLeft') { event.preventDefault(); changeBy(-1, true); }
+            if (key === 'Home' && currentValue !== min) { event.preventDefault(); interaction.discrete(min, true); }
+            if (key === 'End' && currentValue !== max) { event.preventDefault(); interaction.discrete(max, true); }
           }}
+          onKeyUp={() => interaction.keyUp()}
+          onBlur={() => interaction.keyUp()}
           accessibilityLabel={label}
           accessibilityValue={{ min, max, now: currentValue, text: readout }}
           aria-valuemin={min}

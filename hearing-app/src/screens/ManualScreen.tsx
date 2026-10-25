@@ -12,7 +12,6 @@ import { eqBands, type EqControl, type ManualControl } from '../state/manualValu
 import { useAppStore } from '../state/useAppStore';
 import { EditableWaveform } from './EditableWaveform';
 import { hardwareMode } from '../device/deviceService';
-import { hardwareDeviceService } from '../device/hardwareDeviceService';
 import { useDeviceStore } from '../state/useDeviceStore';
 
 type DialControl = ManualControl | 'volume';
@@ -33,8 +32,17 @@ export function ManualScreen() {
   const router = useRouter();
   const values = useAppStore();
   const connected = useDeviceStore((state) => !!state.connectedDevice);
-  const [noiseAction, setNoiseAction] = useState<string | null>(null);
   const noiseBusy = values.noiseBusy;
+  const learning = values.noiseLearning;
+  const learningMessage = !connected ? 'Connect USB to learn your preferences.'
+    : learning.phase === 'adjusting' ? 'Adjusting manually… release to learn.'
+    : learning.phase === 'saving' ? 'Learning your preference…'
+    : learning.phase === 'learned' ? 'Preference learned · automatic adaptation enabled.'
+    : learning.phase === 'automatic' ? 'Automatic adaptation enabled.'
+    : learning.phase === 'resetting' ? 'Resetting learning…'
+    : learning.phase === 'error' ? learning.error
+    : learning.phase === 'paused' ? 'Adjustment cancelled. Adjust again to teach your preference.'
+    : 'Ready to learn · automatic mode unconfirmed.';
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const [viewport, setViewport] = useState({ width: windowWidth, height: Infinity });
@@ -63,17 +71,14 @@ export function ManualScreen() {
 
   const dial = ([control, label]: [DialControl, string], size: number) => {
     const eq = control === 'bass' || control === 'mid' || control === 'treble';
-    return <RotaryDial key={control} min={eq ? -12 : 0} max={eq ? 12 : 100} step={1} diameter={size} label={label} value={values[control]} valueSuffix={eq ? ' dB' : '%'} disabled={noiseBusy} onValueChange={(value) => {
-      if (control === 'noiseReduction') setNoiseAction(null);
+    return <RotaryDial key={control} min={eq ? -12 : 0} max={eq ? 12 : 100} step={1} diameter={size} label={label} value={values[control]} valueSuffix={eq ? ' dB' : '%'} disabled={noiseBusy || (hardwareMode && control === 'noiseReduction' && !connected)}
+      onInteractionStart={hardwareMode && control === 'noiseReduction' ? values.beginNoiseAdjustment : undefined}
+      onValueCommit={hardwareMode && control === 'noiseReduction' ? values.finishNoiseAdjustment : undefined}
+      onInteractionCancel={hardwareMode && control === 'noiseReduction' ? values.cancelNoiseAdjustment : undefined}
+      onValueChange={(value) => {
       if (control === 'volume') values.setVolume(value);
       else values.setValue(control, value);
     }} />;
-  };
-
-  const runNoiseAction = async (action: () => Promise<unknown>, success: string) => {
-    setNoiseAction(null);
-    try { await values.runNoiseOperation(action); setNoiseAction(success); }
-    catch (error) { setNoiseAction(error instanceof Error ? error.message : 'Noise control failed.'); }
   };
 
   const changeEqFromGraph = (band: EqControl, value: number) => {
@@ -95,13 +100,9 @@ export function ManualScreen() {
         {primaryControls.map((item) => <View key={item[0]} style={[styles.column, { width: item[0] === 'speechAmplification' ? '100%' : columnWidth }]}>{dial(item, diameter)}</View>)}
       </View>
       {hardwareMode ? <View style={styles.noiseActions}>
-        <Text style={[styles.description, styles.noiseStatus]}>Background noise reduction · selected {values.noiseReduction}% · device target {connected && values.appliedNoiseReduction !== null ? `${values.appliedNoiseReduction}%` : 'unavailable'}</Text>
-        <View style={styles.noiseButtons}>
-          <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.confirmNoiseReduction(useAppStore.getState().noiseReduction), 'Correction accepted. Automatic adaptation resumed.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Remember this adjustment</Text></Pressable>
-          <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.setNoiseAdaptation(true), 'Automatic adaptation resumed.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Resume automatic adaptation</Text></Pressable>
-          <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.setNoiseAdaptation(false), 'Automatic adaptation paused.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Pause automatic adaptation</Text></Pressable>
-        </View>
-        {noiseAction ? <Text accessibilityLiveRegion="polite" style={[styles.description, styles.noiseStatus]}>{noiseAction}</Text> : null}
+        <Text accessibilityLiveRegion="polite" style={[styles.description, styles.noiseStatus]}>{learningMessage}</Text>
+        <Text style={[styles.description, styles.noiseStatus]}>{learning.pendingValue !== null ? `Your adjustment ${learning.pendingValue}% · ` : ''}Device target {connected && values.appliedNoiseReduction !== null ? `${values.appliedNoiseReduction}%` : 'unavailable'}</Text>
+        <Text style={[styles.description, styles.noiseStatus]}>Adjust once, then release. Wavelength learns your preference. Automatic mode reflects the last acknowledged app action.</Text>
       </View> : null}
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: advancedOpen }} onPress={toggleAdvanced} style={[styles.advancedButton, styles.advancedToggle]}>
         <Text style={styles.advancedText}>Advanced</Text>
@@ -136,6 +137,4 @@ const styles = StyleSheet.create({
   advancedColumn: { flex: 1, alignItems: 'center' },
   noiseActions: { marginTop: theme.spacing.lg, alignItems: 'center' },
   noiseStatus: { textAlign: 'center' },
-  noiseButtons: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.spacing.sm },
-  noiseButton: { marginTop: theme.spacing.sm, alignSelf: 'center' },
 });
