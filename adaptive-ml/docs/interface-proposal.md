@@ -13,6 +13,11 @@ one microphone (`../../docs/hardware_architecture.md`). No shared files will be 
 
 All following fields are PROPOSED, not agreed with DSP/app owners:
 
+CONFIRMED module implementation: `../include/preference.h` currently fixes 3 features,
+2 outputs and 16 examples; `pl_init`, `pl_predict`, `pl_correct`, `pl_reset` and
+`pl_set_baseline` implement the module-side operations below. Their adoption as a
+team integration interface remains PROPOSED. Array lengths are caller obligations.
+
 - Acoustic context: fixed compile-time feature count; finite normalized values [0,1].
   Each dimension must eventually have a versioned name, scaling and missing-data rule.
   Invalid/missing contexts are rejected; no fabricated values or dB measurements.

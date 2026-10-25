@@ -12,9 +12,16 @@
    persistence and preference drift policy. Evaluate before selecting a final model.
 
 5. IMPLEMENTED prototype: 3 features, 2 outputs, capacity 16, configurable compact
-   distance radius. Squared triangular weights avoid distant examples dominating by
-   count. Maximum similarity attenuates the target toward baseline; it is familiarity,
+   distance radius. Compact weights exclude examples outside the radius; multiple
+   nearby examples still affect the average. Maximum similarity attenuates the target
+   toward baseline; it is familiarity,
    not calibrated statistical confidence. Exact duplicate contexts use latest target
    without consuming capacity or refreshing FIFO age. Baseline changes clear memory.
    Limits reject invalid targets/baselines; predictions additionally clamp rounding.
    Linear scan is O(capacity × (features + outputs)); no heap or recursive calls.
+
+6. Evaluation uses a deliberately simple synthetic linear target function and four
+   explicit corrections. It tests locality/fallback, not algorithm superiority.
+   No hyperparameter search or real audio data. Exact-match precedence can introduce
+   a discontinuity near contradictory examples; DSP smoothing remains external.
+   FIFO does not solve preference drift, and duplicate detection is exact float equality.
