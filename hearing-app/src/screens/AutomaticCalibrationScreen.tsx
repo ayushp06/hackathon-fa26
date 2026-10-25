@@ -21,10 +21,17 @@ export function AutomaticCalibrationScreen() {
     sound.tap();
     router.push('/manual');
   };
+  const openMission = () => {
+    haptics.selection();
+    sound.tap();
+    router.push('/mission');
+  };
 
   return (
     <ScrollView bounces={false} showsVerticalScrollIndicator={false} onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)} contentContainerStyle={styles.content}>
-      <Text accessibilityRole="header" style={styles.title}>Wavelength</Text>
+      <Pressable accessibilityRole="button" accessibilityLabel="Wavelength, Our Mission" accessibilityHint="Opens the Our Mission page" onPress={openMission} style={({ pressed }) => [styles.titleLink, pressed && styles.pressed]}>
+        <Text style={styles.title}>Wavelength</Text>
+      </Pressable>
       <RotaryDial
         min={VOLUME_MIN}
         max={VOLUME_MAX}
@@ -53,7 +60,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: theme.spacing.xl,
   },
-  title: { ...theme.typography.title, fontSize: 40, lineHeight: 48, letterSpacing: -1, color: theme.colors.text, textAlign: 'center', marginBottom: theme.spacing.xl },
+  titleLink: { minHeight: theme.sizing.minimumTouchTarget, marginBottom: theme.spacing.xl, justifyContent: 'center' },
+  title: { ...theme.typography.title, fontSize: 40, lineHeight: 48, letterSpacing: -1, color: theme.colors.text, textAlign: 'center' },
   button: {
     width: '100%',
     maxWidth: theme.sizing.calibrationDialMaxDiameter,
