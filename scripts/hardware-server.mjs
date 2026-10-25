@@ -56,29 +56,31 @@ export function createHardwareServer({ directory, commandTimeout = 2200 } = {}) 
     };
   }
 
-  async function command(id, value) {
-    const job = queue.catch(() => {}).then(async () => {
-      const initial = await snapshot();
-      if (!initial.connected) throw error(initial.error || 'Connect the STM32 first.');
-      const requestedSequence = ++sequence;
-      const temporary = `${commandPath}.${requestedSequence}.tmp`;
-      await writeFile(temporary, `${id} ${value} ${requestedSequence}`, 'utf8');
-      await replaceFile(temporary, commandPath);
-      const deadline = Date.now() + commandTimeout;
-      while (Date.now() < deadline) {
-        const current = await snapshot();
-        if (!current.connected) throw error(current.error || 'Audio stream disconnected.');
-        if (current.commandSequence === requestedSequence) {
-          if (current.commandStatus !== 0) throw error('The STM32 rejected this command.', 422);
-          return { accepted: true, simulated: false, sequence: requestedSequence, values: current.values };
-        }
-        await sleep(25);
+  async function sendCommand(id, value) {
+    const initial = await snapshot();
+    if (!initial.connected) throw error(initial.error || 'Connect the STM32 first.');
+    const requestedSequence = ++sequence;
+    const temporary = `${commandPath}.${requestedSequence}.tmp`;
+    await writeFile(temporary, `${id} ${value} ${requestedSequence}`, 'utf8');
+    await replaceFile(temporary, commandPath);
+    const deadline = Date.now() + commandTimeout;
+    while (Date.now() < deadline) {
+      const current = await snapshot();
+      if (!current.connected) throw error(current.error || 'Audio stream disconnected.');
+      if (current.commandSequence === requestedSequence) {
+        if (current.commandStatus !== 0) throw error('The STM32 rejected this command.', 422);
+        return { accepted: true, simulated: false, sequence: requestedSequence, values: current.values };
       }
-      throw error('The STM32 did not acknowledge the command. Check playback and reset the board if needed.', 504);
-    });
+      await sleep(25);
+    }
+    throw error('The STM32 did not acknowledge the command. Check playback and reset the board if needed.', 504);
+  }
+  function enqueue(work) {
+    const job = queue.catch(() => {}).then(work);
     queue = job;
     return job;
   }
+  const command = (id, value) => enqueue(() => sendCommand(id, value));
 
   async function body(request) {
     let text = '';
@@ -136,7 +138,7 @@ export function createHardwareServer({ directory, commandTimeout = 2200 } = {}) 
         }
         if (!Number.isInteger(data.value) || data.value < min || data.value > max) throw error('Control value is outside its allowed range.', 400);
         reply(200, await command(id, data.value));
-      } else if (route === '/api/noise-feedback' || route === '/api/noise-adaptation' || route === '/api/noise-preferences') {
+      } else if (route === '/api/noise-feedback' || route === '/api/noise-adaptation' || route === '/api/noise-preferences' || route === '/api/reset-learning') {
         if ((await snapshot()).protocol !== 4) throw error('Flash MIC4 firmware for adaptive noise controls.', 422);
         if (route === '/api/noise-feedback') {
           if (!Number.isInteger(data.value) || data.value < 0 || data.value > 100) throw error('Correction must be an integer from 0 to 100.', 400);
@@ -144,6 +146,12 @@ export function createHardwareServer({ directory, commandTimeout = 2200 } = {}) 
         } else if (route === '/api/noise-adaptation') {
           if (typeof data.enabled !== 'boolean') throw error('enabled must be a boolean.', 400);
           reply(200, await command(15, data.enabled ? 1 : 0));
+        } else if (route === '/api/reset-learning') {
+          reply(200, await enqueue(async () => {
+            await sendCommand(16, 0);
+            await sendCommand(15, 1);
+            return snapshot();
+          }));
         } else {
           reply(200, await command(16, 0));
         }

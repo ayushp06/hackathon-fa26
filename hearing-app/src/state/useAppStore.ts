@@ -5,7 +5,7 @@ import { deviceService } from '../device/deviceService';
 import type { CalibrationResult, CalibrationStatus, DeviceMode } from '../device/types';
 import { migrateLegacyState } from './legacyState';
 import { isEqControl, migratePercentEqGain, normalizeEqGain, normalizeManualValue, restoreSharedVolume, type ManualControl } from './manualValues';
-import { applySoundProfile, soundProfileFrom, validSoundProfile, type SoundProfile } from './soundProfile';
+import { soundProfileFrom, validSoundProfile, type SoundProfile } from './soundProfile';
 
 export const VOLUME_MIN = 0;
 export const VOLUME_MAX = 100;
@@ -22,6 +22,8 @@ type AppState = Record<ManualControl, number> & {
   hydrated: boolean;
   savedProfile: SoundProfile | null;
   restoringProfile: boolean;
+  noiseBusy: boolean;
+  runNoiseOperation: (action: () => Promise<unknown>) => Promise<void>;
   saveProfile: () => void;
   restoreProfile: () => Promise<boolean>;
   setVolume: (value: number) => void;
@@ -89,31 +91,30 @@ export const useAppStore = create<AppState>()(
       hydrated: false,
       savedProfile: null,
       restoringProfile: false,
+      noiseBusy: false,
+      runNoiseOperation: async (action) => {
+        if (get().noiseBusy) throw new Error('Wait for the current learning action.');
+        set({ noiseBusy: true });
+        try { await action(); }
+        finally { set({ noiseBusy: false }); }
+      },
       saveProfile: () => set({ savedProfile: soundProfileFrom(get()) }),
       restoreProfile: async () => {
         const profile = get().savedProfile;
-        if (!profile || get().restoringProfile) return false;
+        if (!profile || get().restoringProfile || get().noiseBusy) return false;
         set({ restoringProfile: true, transportError: null });
-        try {
-          await applySoundProfile(profile, deviceService);
-          set({ ...profile });
-          return true;
-        } catch (error) {
-          set({ volume: 0, transportError: errorMessage(error) });
-          return false;
-        } finally {
-          set({ restoringProfile: false });
-        }
+        set({ ...profile, noiseReduction: get().appliedNoiseReduction ?? get().noiseReduction, restoringProfile: false });
+        return true;
       },
       setVolume: (value) => {
         const volume = normalizeManualValue(value);
-        if (volume === null) return;
+        if (volume === null || get().noiseBusy) return;
         set({ volume, transportError: null });
         void deviceService.setVolume(volume).catch((error) => set({ transportError: errorMessage(error) }));
       },
       setValue: (control, value) => {
         const normalized = isEqControl(control) ? normalizeEqGain(value) : normalizeManualValue(value);
-        if (normalized === null) return;
+        if (normalized === null || get().noiseBusy) return;
         set({ [control]: normalized, transportError: null });
         const command = control === 'noiseReduction' ? deviceService.setNoiseReduction(normalized)
           : control === 'reduceLoudSounds' ? deviceService.setReduceLoudSounds(normalized)
@@ -129,7 +130,7 @@ export const useAppStore = create<AppState>()(
       setHapticsEnabled: (hapticsEnabled) => set({ hapticsEnabled }),
       setSoundFeedbackEnabled: (soundFeedbackEnabled) => set({ soundFeedbackEnabled }),
       recalibrate: async () => {
-        if (get().calibrationStatus === 'loading') return false;
+        if (get().calibrationStatus === 'loading' || get().noiseBusy) return false;
         set({ calibrationStatus: 'loading', transportError: null });
         try {
           const lastResult = await deviceService.startCalibration(get().volume);
@@ -180,22 +181,6 @@ export const useAppStore = create<AppState>()(
       partialize: ({ volume, noiseReduction, reduceLoudSounds, spatialFocus, speechAmplification, bass, mid, treble, eq250, eq500, eq2000, eq4000, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, savedProfile }) =>
         ({ volume, noiseReduction, reduceLoudSounds, spatialFocus, speechAmplification, bass, mid, treble, eq250, eq500, eq2000, eq4000, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, savedProfile }),
       onRehydrateStorage: () => (state, error) => {
-        if (state) {
-          void Promise.all([
-            deviceService.setVolume(state.volume),
-            deviceService.setNoiseReduction(state.noiseReduction),
-            deviceService.setReduceLoudSounds(state.reduceLoudSounds),
-            deviceService.setSpatialFocus(state.spatialFocus),
-            deviceService.setSpeechAmplification(state.speechAmplification),
-            deviceService.setBass(state.bass),
-            deviceService.setMid(state.mid),
-            deviceService.setTreble(state.treble),
-            deviceService.setFineEq(250, state.eq250),
-            deviceService.setFineEq(500, state.eq500),
-            deviceService.setFineEq(2000, state.eq2000),
-            deviceService.setFineEq(4000, state.eq4000),
-          ]).catch((commandError) => useAppStore.setState({ transportError: errorMessage(commandError) }));
-        }
         useAppStore.setState({ hydrated: true, transportError: error ? errorMessage(error) : null });
       },
     },

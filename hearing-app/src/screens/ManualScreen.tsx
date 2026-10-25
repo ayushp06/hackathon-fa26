@@ -34,7 +34,7 @@ export function ManualScreen() {
   const values = useAppStore();
   const connected = useDeviceStore((state) => !!state.connectedDevice);
   const [noiseAction, setNoiseAction] = useState<string | null>(null);
-  const [noiseBusy, setNoiseBusy] = useState(false);
+  const noiseBusy = values.noiseBusy;
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const [viewport, setViewport] = useState({ width: windowWidth, height: Infinity });
@@ -63,7 +63,7 @@ export function ManualScreen() {
 
   const dial = ([control, label]: [DialControl, string], size: number) => {
     const eq = control === 'bass' || control === 'mid' || control === 'treble';
-    return <RotaryDial key={control} min={eq ? -12 : 0} max={eq ? 12 : 100} step={1} diameter={size} label={label} value={values[control]} valueSuffix={eq ? ' dB' : '%'} onValueChange={(value) => {
+    return <RotaryDial key={control} min={eq ? -12 : 0} max={eq ? 12 : 100} step={1} diameter={size} label={label} value={values[control]} valueSuffix={eq ? ' dB' : '%'} disabled={noiseBusy} onValueChange={(value) => {
       if (control === 'noiseReduction') setNoiseAction(null);
       if (control === 'volume') values.setVolume(value);
       else values.setValue(control, value);
@@ -71,13 +71,13 @@ export function ManualScreen() {
   };
 
   const runNoiseAction = async (action: () => Promise<unknown>, success: string) => {
-    setNoiseBusy(true); setNoiseAction(null);
-    try { await action(); setNoiseAction(success); }
+    setNoiseAction(null);
+    try { await values.runNoiseOperation(action); setNoiseAction(success); }
     catch (error) { setNoiseAction(error instanceof Error ? error.message : 'Noise control failed.'); }
-    finally { setNoiseBusy(false); }
   };
 
   const changeEqFromGraph = (band: EqControl, value: number) => {
+    if (noiseBusy) return;
     values.setValue(band, value);
     const landmark = isDialLandmark(value, -12, 12);
     haptics.dialStep(value, -12, 12, landmark);
@@ -95,16 +95,15 @@ export function ManualScreen() {
         {primaryControls.map((item) => <View key={item[0]} style={[styles.column, { width: item[0] === 'speechAmplification' ? '100%' : columnWidth }]}>{dial(item, diameter)}</View>)}
       </View>
       {hardwareMode ? <View style={styles.noiseActions}>
-        <Text style={styles.description}>Background noise reduction · selected {values.noiseReduction}% · device target {connected && values.appliedNoiseReduction !== null ? `${values.appliedNoiseReduction}%` : 'unavailable'}</Text>
+        <Text style={[styles.description, styles.noiseStatus]}>Background noise reduction · selected {values.noiseReduction}% · device target {connected && values.appliedNoiseReduction !== null ? `${values.appliedNoiseReduction}%` : 'unavailable'}</Text>
         <View style={styles.noiseButtons}>
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.confirmNoiseReduction(useAppStore.getState().noiseReduction), 'Correction accepted. Automatic adaptation resumed.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Remember this adjustment</Text></Pressable>
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.setNoiseAdaptation(true), 'Automatic adaptation resumed.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Resume automatic adaptation</Text></Pressable>
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.setNoiseAdaptation(false), 'Automatic adaptation paused.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Pause automatic adaptation</Text></Pressable>
-          <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.clearNoisePreferences(), 'Learned preferences cleared. Automatic adaptation paused.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Clear learned preferences</Text></Pressable>
         </View>
-        {noiseAction ? <Text accessibilityLiveRegion="polite" style={styles.description}>{noiseAction}</Text> : null}
+        {noiseAction ? <Text accessibilityLiveRegion="polite" style={[styles.description, styles.noiseStatus]}>{noiseAction}</Text> : null}
       </View> : null}
-      <Pressable accessibilityRole="button" accessibilityState={{ expanded: advancedOpen }} onPress={toggleAdvanced} style={styles.advancedButton}>
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded: advancedOpen }} onPress={toggleAdvanced} style={[styles.advancedButton, styles.advancedToggle]}>
         <Text style={styles.advancedText}>Advanced</Text>
         <Svg width={16} height={16} viewBox="0 0 16 16" pointerEvents="none"><Path d={advancedOpen ? 'M 2 11 L 8 5 L 14 11' : 'M 2 5 L 8 11 L 14 5'} fill="none" stroke={theme.colors.text} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></Svg>
       </Pressable>
@@ -113,7 +112,7 @@ export function ManualScreen() {
           <View style={styles.advancedRow}>
             {advancedControls.map((item) => <View key={item[0]} style={styles.advancedColumn}>{dial(item, advancedDiameter)}</View>)}
           </View>
-          <EditableWaveform gains={eqBands.map(({ control }) => values[control])} noiseReduction={values.noiseReduction} spatialFocus={values.spatialFocus} speechAmplification={values.speechAmplification} onEqChange={changeEqFromGraph} />
+          <View pointerEvents={noiseBusy ? 'none' : 'auto'}><EditableWaveform gains={eqBands.map(({ control }) => values[control])} noiseReduction={values.noiseReduction} spatialFocus={values.spatialFocus} speechAmplification={values.speechAmplification} onEqChange={changeEqFromGraph} /></View>
         </View>
       </Animated.View>
     </ScrollView>
@@ -129,12 +128,14 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: theme.spacing.lg, columnGap: theme.spacing.md, marginTop: theme.spacing.xl },
   column: { alignItems: 'center' },
   advancedButton: { minHeight: theme.sizing.minimumTouchTarget, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm, paddingHorizontal: theme.spacing.md, borderWidth: 1, borderColor: theme.colors.text, borderRadius: theme.sizing.segmentRadius, marginTop: theme.spacing.xl },
+  advancedToggle: { alignSelf: 'center' },
   advancedText: { ...theme.typography.segment, color: theme.colors.text },
   advancedClip: { overflow: 'hidden' },
   advanced: { paddingTop: theme.spacing.lg },
   advancedRow: { flexDirection: 'row', gap: theme.spacing.sm },
   advancedColumn: { flex: 1, alignItems: 'center' },
-  noiseActions: { marginTop: theme.spacing.lg },
-  noiseButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
-  noiseButton: { marginTop: theme.spacing.sm },
+  noiseActions: { marginTop: theme.spacing.lg, alignItems: 'center' },
+  noiseStatus: { textAlign: 'center' },
+  noiseButtons: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.spacing.sm },
+  noiseButton: { marginTop: theme.spacing.sm, alignSelf: 'center' },
 });
