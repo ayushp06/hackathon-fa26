@@ -1,5 +1,77 @@
 # Validation on 2026-10-24
 
+## Full DSP controls / MIC4, 2026-10-25
+
+Built and flashed the app-control firmware with readback verification on the
+NUCLEO-F411RE (ST-LINK 066DFF495365495067185639, COM8, 3.25 V). The image uses
+30,328 bytes of flash and 10,208 bytes of RAM. Wavelength-v2 release artifacts
+remain intact. MIC4 adds applied loud-sound reduction and spatial controls.
+
+Host tests verified all seven EQ boost/cut responses and speech EQ gain, mute,
+command bounds and idempotent relearning, quiet-signal preservation, sustained
+compression, transient peak limits, compressor bypass, and rapid EQ changes.
+Spatial tests verified broadside preservation, partial focus, missing-reference
+fallback, and 15.18 dB attenuation of a synthetic side-arriving 4 kHz tone for
+38.1 mm spacing. These are synthetic signal checks, not room measurements or
+proof of speech intelligibility. Existing synthetic NLMS tests still pass.
+All 34 app tests, TypeScript checking, lint, and the loopback API test passed.
+
+On the board, `scripts/check-dsp-hardware.ps1` received matching applied-value
+acknowledgments for all twelve settings. Spatial Focus at 100 reported active
+with reference audio present; mute produced output RMS zero after its ramp.
+The script restored every initial setting. During the recorded control-check
+interval, packet count advanced from 13,439 to 14,115 without increments in
+missing packets, CRC errors, underruns, or overflow resets. The maximum DSP
+callback rose from 251,329 to 256,458 cycles (2.67 ms at 96 MHz), below the
+384,000-cycle / 4 ms block deadline.
+
+The complete playback run did accumulate PC transport errors before that
+interval: 485 missing packets, 10 CRC errors, 11 underruns, and 51 playback
+queue resets at its start. Thus this is successful control and processing
+validation, not a sustained glitch-free audio result. Audible quality,
+microphone matching/orientation, real-room directivity, and acoustic output
+levels remain unmeasured. Spatial Focus assumes parallel microphones with the
+desired source perpendicular to their 38 mm spacing; it is a blend rather than
+an angular field-of-view setting. Existing intermittent I2S framing faults
+remain a known hardware limit.
+After restarting the PC helpers, a dual-receiver synchronization fault (code 6)
+was reported. The MIC4 loopback API's explicit `/api/restart` command succeeded
+and restored live streaming with both receivers; the new protocol retains
+fault recovery. This recurrence confirms that the framing issue is unresolved.
+
+## Live app controls, 2026-10-25
+
+The app-control image built and flashed with readback verification. Current
+firmware at that earlier check used 29,544 bytes of flash and 9,760 bytes of RAM. Existing Wavelength-v2
+release artifacts were preserved. Host tests passed all seven EQ boost/cut
+responses, speech-band gain, mute, command bounds, applied settings and duplicate
+relearn handling. NLMS tests additionally checked 0/50/100 percent wet mixes.
+The loopback HTTP test checked rejected origins, offline commands, range limits,
+firmware acknowledgment, timeout failure and disconnect muting.
+
+On the real board, the local API received matching acknowledgments for volume,
+noise-reduction strength, speech gain and all seven EQ controls. Setting volume
+to zero produced output RMS zero. A headless Edge browser connected through the
+actual app, dragged Volume from 40 to 75, changed Bass to +3 dB by keyboard,
+and verified those applied values in STM32 telemetry. The Relearn noise button
+completed a real two-second reset/learning check with reference audio present.
+Spatial Focus was disabled, and the browser reported no JavaScript errors.
+An explicit USB board restart returned fresh boot telemetry successfully.
+
+One steady playback interval exceeded 10,000 packets with both inputs and no
+packet loss, CRC failures or audio underruns. Other intervals during browser
+startup/control testing accumulated PC playback resets, underruns and serial
+loss; do not treat the UI integration as a sustained glitch-free audio result.
+DSP callback maxima observed during app tests were approximately 224,000–233,000
+cycles (2.3–2.4 ms at 96 MHz), within the 4 ms block deadline.
+
+The reference WS loopback was intermittently absent, including in the original
+Wavelength-v2 image. The app-control build preserves voice processing if the
+reference cannot start and explicitly reports that cancellation is bypassed.
+When both clocks were present, real dual-input NLMS operated. Running I2S3 also
+produced intermittent framing faults after successful intervals; this remains
+unresolved. The app reports the stopped stream and offers explicit restart.
+
 ## Wavelength-v2 release check on 2026-10-25
 
 The separate-data receiver is now built, flashed and tested on hardware.

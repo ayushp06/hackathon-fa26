@@ -1,6 +1,8 @@
 param(
     [string]$Port = 'COM8',
     [int]$DeviceIndex = 0,
+    [ValidateRange(0, 8)]
+    [double]$Gain = 1,
     [switch]$Stop,
     [switch]$NoWeb
 )
@@ -46,7 +48,7 @@ if (-not $NoWeb -and -not (Test-Path -LiteralPath (Join-Path $wavelengthRoot 'he
 & (Join-Path $PSScriptRoot 'play-mic.ps1') -Stop
 $oldHardwareCommand = Join-Path $wavelengthBuild 'hardware-command.txt'
 if (Test-Path -LiteralPath $oldHardwareCommand) { Remove-Item -LiteralPath $oldHardwareCommand }
-& (Join-Path $PSScriptRoot 'play-mic.ps1') -Port $Port -DeviceIndex $DeviceIndex -Background
+& (Join-Path $PSScriptRoot 'play-mic.ps1') -Port $Port -DeviceIndex $DeviceIndex -Gain $Gain -Background
 Start-WavelengthHelper 'hardware-api' @('scripts/hardware-server.mjs')
 if (-not $NoWeb) {
     Start-WavelengthHelper 'hardware-web' @('hearing-app/node_modules/expo/bin/cli','start','hearing-app','--web','--host','localhost','--port','8081','--max-workers','2')

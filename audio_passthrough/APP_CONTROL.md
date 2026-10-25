@@ -149,4 +149,11 @@ Run app typecheck/lint/tests from hearing-app/, and
 applied values, invalid commands and idempotent resets against the firmware DSP.
 See VALIDATION.md for live board and browser results.
 
+With MIC4 playback already running and the app idle, run
+`.\scripts\check-dsp-hardware.ps1` to check all twelve acknowledged controls,
+spatial activation and mute, then restore the initial settings. It writes
+`build/dsp-hardware-check.json`. Do not move app dials during this check.
+For quiet testing, the app launcher accepts `-Gain 0.25` as a PC-side gain;
+this is separate from the firmware Volume dial.
+
 Filter coefficients follow the [W3C Audio EQ Cookbook](https://www.w3.org/TR/audio-eq-cookbook/).
