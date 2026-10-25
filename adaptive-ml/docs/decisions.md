@@ -36,3 +36,9 @@
    for compatibility; it must not be interpreted as all-output confidence. FIFO still
    evicts whole contexts and can forget any dimension's old preferences. Host model
    grows 368→432 bytes (example 20→24 with alignment); no heap or persistence format.
+
+8. Integration review against main `803033a`: keep this PR standalone. Firmware
+   now performs dual-mic NLMS and exports digital RMS; app communication is still
+   mocked. Neither provides a continuous preference-control contract. Retain abstract
+   dimensions and the existing algorithm; defer firmware linking, normalization,
+   correction transport and target timing to a separate coordinated integration task.

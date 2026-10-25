@@ -2,12 +2,29 @@
 
 ## Status
 
-CONFIRMED (repository at f7ab6ee): app transport is mocked; its public controls now
-include volume, noise reduction, spatial focus, speech amplification, bass/mid/treble.
-See `../../hearing-app/src/device/types.ts`. These names do not establish working DSP.
-`../../hearing-app/src/state/manualValues.ts` defines signed app EQ ranges; these are
-not adopted by this module. No firmware is tracked. Hardware documentation describes
-one microphone (`../../docs/hardware_architecture.md`). No shared files will be edited.
+CONFIRMED (reviewed `origin/main` at `803033a`; these upstream files are not yet
+in this feature branch): app transport remains mocked in
+`../../hearing-app/src/device/deviceService.ts`. `src/device/types.ts` and
+`src/state/manualValues.ts` under that app define volume, noise reduction, spatial
+focus, speech amplification and seven EQ bands. These app values are not adopted
+as learner dimensions and do not establish working firmware controls.
+
+Firmware now exists under `../../audio_passthrough/`. `Core/Src/audio.c`:
+`process_half` handles 64-frame blocks at nominal 16 kHz in DMA callbacks.
+`Core/Src/noise_filter.c`: `Noise_Process` implements NLMS and computes digital
+primary/reference/output RMS, exported through `NoiseStats` and MIC2 serial packets.
+Runtime controls are only `Noise_SetEnabled` and `Noise_RequestReset`, invoked by
+`Core/Src/pc_audio.c`: `PC_Audio_Poll` for commands b/n/r. There is no continuous
+runtime parameter setter or normalized ML context contract. NLMS coefficient
+adaptation is distinct from user preference learning.
+
+`../../releases/Wavelength-v2/manifest.json` selects dual separate-data microphones
+and PC serial playback; the DAC is silent in that configuration. Its README and
+`audio_passthrough/VALIDATION.md` record short hardware checks and intermittent
+I2S3 framing faults, not sustained reliability or measured hearing benefit.
+Older `../../docs/hardware_architecture.md` describes a single-mic design;
+`docs/pin_mapping.md` assigns PA4 to encoder push while v2 uses PA4 for I2S3 WS.
+Resolve the wiring with the hardware owner before integration. No shared files are edited.
 
 ## Proposed module contract
 
@@ -43,10 +60,12 @@ team integration interface remains PROPOSED. Array lengths are caller obligation
 
 ## BLOCKED integration details
 
-Feature extraction availability, definitions, frame duration, cadence and timestamps;
-DSP parameter units/ranges and supported algorithms; baseline calibration mapping;
+Selection/normalization of available RMS statistics or new features, context window,
+inference cadence and timestamps (audio blocks are already 4 ms nominal);
+continuous DSP parameter units/ranges and supported controls; baseline calibration mapping;
 event ownership and synchronization of physical/app corrections; CPU/RAM/latency budget;
-model persistence and schema versioning; real communication protocol.
+model persistence and schema versioning; app-to-device preference protocol (the
+existing PCM serial protocol is not a calibration/correction transport).
 
 Future event envelope (PROPOSED, outside learner API): context sequence/time, schema
 version, applied/predicted parameters, explicit preferred target and feedback mask, correction source

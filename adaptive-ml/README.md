@@ -87,5 +87,8 @@ host `sizeof(pl_example)` grows 20→24 bytes and `sizeof(pl_model)` 368→432 b
 Prediction remains 20 bytes; inference uses small per-output stack arrays, no heap.
 Target ABI size/stack and timing still require STM32 measurement.
 
-The app and STM32/DSP remain separate teammate workstreams. The repository has no
-root README; adding one is a possible future shared housekeeping task, outside this scope.
+The app and STM32/DSP remain separate teammate workstreams. Main at `803033a` now
+includes a root README and `audio_passthrough/` firmware with dual-microphone NLMS
+and serial PC playback. This module is not linked into that firmware. NLMS learns
+filter coefficients from audio; it does not learn user processing preferences.
+See `docs/interface-proposal.md` for confirmed upstream interfaces and remaining gaps.
