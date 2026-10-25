@@ -25,19 +25,20 @@ const advancedControls: [DialControl, string][] = [
   ['bass', 'Bass'], ['mid', 'Mid'], ['treble', 'Treble'],
 ];
 export function ManualScreen() {
-  const { width } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
   const router = useRouter();
   const values = useAppStore();
   const haptics = useHaptics();
   const sound = useSoundFeedback();
-  const [viewportHeight, setViewportHeight] = useState(Infinity);
+  const [viewport, setViewport] = useState({ width: windowWidth, height: Infinity });
+  const width = Math.min(windowWidth, viewport.width);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const advancedHeight = useSharedValue(0);
   const advancedStyle = useAnimatedStyle(() => ({
     height: withTiming(advancedOpen ? advancedHeight.value : 0, { duration: 260 }),
     opacity: withTiming(advancedOpen ? 1 : 0, { duration: 220 }),
   }));
-  const diameter = manualDialDiameter(width, viewportHeight);
+  const diameter = manualDialDiameter(width, viewport.height);
   const advancedDiameter = advancedDialDiameter(width);
   const columnWidth = (Math.min(width, theme.sizing.contentMaxWidth) - theme.spacing.lg * 2 - theme.spacing.md) / 2;
 
@@ -67,7 +68,7 @@ export function ManualScreen() {
   };
 
   return (
-    <ScrollView bounces={false} showsVerticalScrollIndicator={false} onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)} contentContainerStyle={styles.content}>
+    <ScrollView bounces={false} showsVerticalScrollIndicator={false} onLayout={(event) => setViewport({ width: event.nativeEvent.layout.width + theme.spacing.lg * 2, height: event.nativeEvent.layout.height })} contentContainerStyle={styles.content}>
       <Pressable accessibilityRole="button" accessibilityLabel="Back to Home" onPress={goHome} style={styles.backButton}><Text style={styles.backText}>‹ Home</Text></Pressable>
       <Text accessibilityRole="header" style={styles.title}>Manual Recalibration</Text>
       <Text style={styles.description}>Adjust each dial to shape your sound. Changes save automatically.</Text>

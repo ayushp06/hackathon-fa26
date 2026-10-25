@@ -1,7 +1,7 @@
 import { Stack, usePathname, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useReducedMotion } from 'react-native-reanimated';
@@ -12,16 +12,30 @@ import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { useAppStore } from '../state/useAppStore';
 
 export default function RootLayout() {
-  return (
+  const { width, height } = useWindowDimensions();
+  const framed = Platform.OS === 'web' && width >= 700 && height >= 640;
+  const app = (
     <GestureHandlerRootView style={styles.root}>
       <SoundFeedbackProvider>
-        <AppContent />
+        <AppContent framed={framed} />
       </SoundFeedbackProvider>
     </GestureHandlerRootView>
   );
+  if (!framed) return app;
+  return (
+    <View style={styles.previewBackdrop}>
+      <View style={[styles.phoneFrame, { height: Math.min(852, height - 32) }]}>
+        <View style={styles.phoneScreen}>
+          {app}
+        </View>
+        <View pointerEvents="none" style={styles.island} />
+        <View pointerEvents="none" style={styles.homeIndicator} />
+      </View>
+    </View>
+  );
 }
 
-function AppContent() {
+function AppContent({ framed }: { framed: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const haptics = useHaptics();
@@ -61,7 +75,7 @@ function AppContent() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
-        <View style={styles.content}>
+        <View style={[styles.content, framed && styles.previewContent]}>
           {onboardingCompleted && !onboarding ? <Pressable accessibilityRole="button" onPress={settings ? closeSettings : openSettings} style={styles.settingsLink}>
             <Text style={styles.settingsText}>{settings ? 'Done' : 'Settings'}</Text>
           </Pressable> : null}
@@ -75,6 +89,11 @@ function AppContent() {
 }
 
 const styles = StyleSheet.create({
+  previewBackdrop: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8E1D6', padding: theme.spacing.md },
+  phoneFrame: { width: 414, borderRadius: 56, padding: 10, backgroundColor: '#171717', shadowColor: '#171717', shadowOffset: { width: 0, height: 22 }, shadowOpacity: 0.24, shadowRadius: 34, elevation: 18 },
+  phoneScreen: { flex: 1, borderRadius: 46, overflow: 'hidden', backgroundColor: theme.colors.background },
+  island: { position: 'absolute', alignSelf: 'center', top: 20, width: 108, height: 30, borderRadius: 18, backgroundColor: '#171717' },
+  homeIndicator: { position: 'absolute', alignSelf: 'center', bottom: 19, width: 110, height: 4, borderRadius: 2, backgroundColor: '#171717' },
   root: { flex: 1 },
   safeArea: { flex: 1, backgroundColor: theme.colors.background },
   content: {
@@ -85,6 +104,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.lg,
   },
+  previewContent: { paddingTop: theme.spacing.lg + 32, paddingBottom: theme.spacing.lg },
   screen: { flex: 1 },
   settingsLink: { alignSelf: 'flex-end', minHeight: theme.sizing.minimumTouchTarget, justifyContent: 'center' },
   settingsText: { ...theme.typography.segment, color: theme.colors.secondaryText },
