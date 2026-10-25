@@ -28,17 +28,24 @@ Silence maps to zero; extreme values saturate; no division by a measured level.
 Context = [primary level, reference level, 0.5 unused compatibility constant].
 Processed output RMS is never an input. No environment classification is claimed.
 
-## Planned concurrency and behavior
+## Implemented concurrency and behavior
 
 ISR accumulates capped integer RMS and publishes a 100 ms mailbox. Foreground copies
 the small mailbox with interrupts briefly masked; no log, inference or training in ISR.
-Only new fresh contexts are processed; require several stable windows before recall.
+Only new fresh contexts are processed: three windows within 0.03 normalized units
+per feature, no gap over 250 ms. Contexts older than 250 ms, silent inputs, missing
+reference and spatial mode cannot infer or train. Radius is 0.15 normalized RMS distance.
 Model is foreground-only; parameters use the existing block-boundary Controls handoff.
 Regular app commands, hydration, initialization and intermediate dial movement never
 train. Manual strength or legacy bypass pauses autonomous control. Explicit feedback
 must refer to a fresh stable context and holds the correction before subsequent inference.
-No flash writes; learning is session-only. Reset/enable semantics and debug framing
-will be documented with implementation. Option is off by default until bench validation.
+No flash writes; learning is session-only. `AUDIO_ADAPTIVE_ML` is OFF by default and
+requires APP_CONTROL, NLMS and PC_STREAM. Enabling it initializes baseline strength
+50 and autonomous inference; app strength hydration pauses it without training.
+Use CMake for this experiment; existing CubeIDE configuration remains unchanged.
+The foreground duration including normalization/inference is counted by DWT in
+`g_adaptive_stats.inference_max_cycles`; it includes IRQ preemption. Audio callback
+timing/deadline guards remain intact. No target measurements exist yet.
 
 ## Remaining coordination
 

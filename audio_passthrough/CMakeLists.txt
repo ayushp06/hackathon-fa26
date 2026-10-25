@@ -9,6 +9,18 @@ add_executable(AudioPassthrough
     Core/Src/stm32f4xx_it.c Core/Src/system_stm32f4xx.c Core/Src/syscalls.c
     Core/Startup/startup_stm32f411xe.s ${HAL_SOURCES})
 set_target_properties(AudioPassthrough PROPERTIES SUFFIX .elf)
+option(AUDIO_ADAPTIVE_ML "Experimental foreground preference learning for NLMS strength" OFF)
+if(AUDIO_ADAPTIVE_ML)
+    if(NOT AUDIO_APP_CONTROL OR NOT AUDIO_NLMS OR NOT AUDIO_PC_STREAM)
+        message(FATAL_ERROR "Adaptive ML requires app controls, NLMS and PC streaming")
+    endif()
+    target_compile_definitions(AudioPassthrough PRIVATE AUDIO_ADAPTIVE_ML)
+    target_sources(AudioPassthrough PRIVATE Core/Src/adaptive_audio.c
+        ../adaptive-ml/src/preference.c ../adaptive-ml/embedded/ml_features.c
+        ../adaptive-ml/embedded/ml_runtime.c)
+    target_include_directories(AudioPassthrough PRIVATE
+        ../adaptive-ml/include ../adaptive-ml/embedded)
+endif()
 option(AUDIO_PIN_PROBE "Run a one-time GPIO activity and SD weak-pull test" OFF)
 if(AUDIO_PIN_PROBE)
     target_compile_definitions(AudioPassthrough PRIVATE AUDIO_PIN_PROBE)

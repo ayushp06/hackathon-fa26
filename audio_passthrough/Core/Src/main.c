@@ -2,6 +2,10 @@
 #include "audio.h"
 #include "pc_audio.h"
 #include "reference_capture.h"
+#ifdef AUDIO_ADAPTIVE_ML
+#include "adaptive_audio.h"
+#include "audio_controls.h"
+#endif
 #include <stdio.h>
 #include <string.h>
 
@@ -113,6 +117,9 @@ int main(void)
         uint32_t now = HAL_GetTick();
 #ifdef AUDIO_PC_STREAM
         PC_Audio_Poll();
+#endif
+#ifdef AUDIO_ADAPTIVE_ML
+        Adaptive_Poll(now,!g_audio_stats.fault && !g_control_stats.spatial);
 #endif
 #ifdef AUDIO_PIN_PROBE
         if (!probed && now - probe_start >= 500U) {

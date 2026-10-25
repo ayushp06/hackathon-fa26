@@ -1,6 +1,9 @@
 #include "audio_controls.h"
 #ifdef AUDIO_APP_CONTROL
 #include "noise_filter.h"
+#ifdef AUDIO_ADAPTIVE_ML
+#include "adaptive_audio.h"
+#endif
 #include <math.h>
 #include <string.h>
 #ifndef CONTROL_HOST_TEST
@@ -92,6 +95,9 @@ void Controls_Command(uint8_t id,int8_t value,uint32_t sequence)
     } else if (id==CONTROL_COUNT) {
         ++next.relearns;
     } else {
+#ifdef AUDIO_ADAPTIVE_ML
+        if (id==1U) Adaptive_ManualOverride(); /* setters never train */
+#endif
         next.value[id]=value;
         design_all(&next);
     }
@@ -123,6 +129,22 @@ void Controls_BeginBlock(void)
     g_control_stats.relearns=requested.relearns;
     generation=requested.generation;
 }
+
+#ifdef AUDIO_ADAPTIVE_ML
+void Controls_SetAdaptiveStrength(uint32_t percent)
+{
+    if (percent>100U) percent=100U;
+    if (requested.value[1]==(int8_t)percent) return;
+#ifndef CONTROL_HOST_TEST
+    uint32_t mask=__get_PRIMASK(); __disable_irq();
+#endif
+    requested.value[1]=(int8_t)percent;
+    ++requested.generation;
+#ifndef CONTROL_HOST_TEST
+    __DMB(); __set_PRIMASK(mask);
+#endif
+}
+#endif
 
 void Controls_Process24(int32_t *samples,uint32_t count)
 {
