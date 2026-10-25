@@ -7,7 +7,7 @@ import { createHardwareServer, replaceFile } from '../scripts/hardware-server.mj
 import { HardwareDeviceService } from '../hearing-app/src/device/hardwareDeviceService.ts';
 import { NoiseLearning } from '../hearing-app/src/device/noiseLearning.ts';
 
-test('app → HTTP queue → command-file emulator learns A/B and observes recall without writing', async (t) => {
+for (const recallPublicationDelay of [0, 40]) test(`app → HTTP queue → command-file emulator learns A/B and observes recall without writing (publication delay ${recallPublicationDelay} ms)`, async (t) => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'wavelength-learning-'));
   const statusPath = path.join(directory, 'hardware-status.json');
   const commandPath = path.join(directory, 'hardware-command.txt');
@@ -20,9 +20,13 @@ test('app → HTTP queue → command-file emulator learns A/B and observes recal
   let automatic = false;
   let rejectId = -1;
   let stopped = false;
+  let publicationDelay = 0;
   const publish = async () => {
     state.timestampMs = Date.now();
-    await writeFile(statusPath + '.tmp', JSON.stringify(state));
+    // Capture the target and its timestamp together, before delayed file publication.
+    const publication = JSON.stringify(state);
+    if (publicationDelay) await new Promise((resolve) => setTimeout(resolve, publicationDelay));
+    await writeFile(statusPath + '.tmp', publication);
     await replaceFile(statusPath + '.tmp', statusPath);
   };
   await publish();
@@ -78,14 +82,28 @@ test('app → HTTP queue → command-file emulator learns A/B and observes recal
   }
   assert.deepEqual(commands.map(([id, value]) => [id, value]), [[16, 0], [15, 1], [1, 83], [14, 83], [1, 27], [14, 27]]);
   const beforeRecall = commands.length;
+  const recallSequence = (await service.getStatus()).commandSequence;
+  publicationDelay = recallPublicationDelay;
   for (const [scene, value] of [['A', 83], ['B', 27], ['A', 83], ['B', 27]]) {
+    const switchedAt = Date.now();
     environment = scene;
-    await new Promise((resolve) => setTimeout(resolve, 15));
-    const status = await service.getStatus();
+    const deadline = performance.now() + 2000;
+    let status;
+    do {
+      status = await service.getStatus();
+      assert.equal(status.connected, true);
+      assert.equal(status.commandSequence, recallSequence, 'Recall must not issue commands.');
+      // Poll for fresh evidence, never for the expected target: wrong predictions must fail.
+      if (status.timestampMs > switchedAt) break;
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    } while (performance.now() < deadline);
+    assert.ok(status.timestampMs > switchedAt,
+      `No fresh ${scene} telemetry after ${switchedAt}; last publication: ${JSON.stringify(status)}`);
     learning.observe(status.connected, status.noiseReduction);
     assert.equal(learning.state.target, value);
   }
   assert.equal(commands.length, beforeRecall);
+  publicationDelay = 0;
   await service.disconnect();
   const beforeReconnect = commands.length;
   await service.connect();
