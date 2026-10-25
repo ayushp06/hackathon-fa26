@@ -42,3 +42,21 @@
    mocked. Neither provides a continuous preference-control contract. Retain abstract
    dimensions and the existing algorithm; defer firmware linking, normalization,
    correction transport and target timing to a separate coordinated integration task.
+
+9. Embedded slice from main `b29a601`: reuse its existing continuous smoothed NLMS
+   strength rather than adding another wet/dry implementation. Map two real input
+   RMS statistics plus one documented neutral input; pin unsupported output 1 to
+   baseline. Mean 25 block measurements, require three stable windows, infer in
+   foreground and publish through Controls at block boundaries. Explicit reserved
+   debug commands train output 0; ordinary setters pause autonomy without training.
+   Session-only memory and opt-in build avoid flash wear and preserve default builds.
+   Synthetic real-DSP tests validate mechanics; no target/hardware claims follow.
+
+10. Task13: merge main `5f4b4f4` without production policy changes. Real-DSP two-context host test recalls80/30 from one correction each over ten round trips; identical RMS cannot distinguish contradictory preferences. Preserve radius, baseline and hold. Current app explicit confirmation and queued14/15/16 are implemented; remaining gaps and hardware-only checks are in two-context-demo.md. Hardware remains pinned ba961a4.
+
+11. Task14: preserve app main `7f13e6e` exactly. Confirmation waits for the already
+    requested final setter acknowledgment and emits one ID14 without a redundant
+    ID1. Extend real HTTP/queue tests for pending ack, concurrent/duplicate rejection,
+    offline/reconnect non-training and failed setters. Update runbooks for local-only
+    hydration/profile restore and Settings Reset Learning. No production policy or
+    firmware change; default ML OFF, target build and physical validation pending.

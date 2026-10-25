@@ -19,4 +19,9 @@ void Controls_Init(void);
 void Controls_Command(uint8_t id, int8_t value, uint32_t sequence);
 void Controls_BeginBlock(void);
 void Controls_Process24(int32_t *samples, uint32_t count);
+#ifdef AUDIO_ADAPTIVE_ML
+/* Foreground only; existing block-boundary publication, not a feedback event. */
+void Controls_SetAdaptiveStrength(uint32_t percent);
+void Controls_AdaptiveAck(uint32_t sequence, uint8_t status);
+#endif
 #endif

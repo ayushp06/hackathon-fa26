@@ -3,6 +3,9 @@
 #include "pc_audio.h"
 #include "noise_filter.h"
 #include "reference_capture.h"
+#ifdef AUDIO_ADAPTIVE_ML
+#include "adaptive_audio.h"
+#endif
 #include "audio_controls.h"
 #include <string.h>
 
@@ -65,6 +68,9 @@ HAL_StatusTypeDef Audio_Start(void)
     Noise_Init();
 #ifdef AUDIO_APP_CONTROL
     Controls_Init();
+#ifdef AUDIO_ADAPTIVE_ML
+    Adaptive_Init();
+#endif
 #endif
 #endif
 #ifdef AUDIO_DUAL_DATA
@@ -223,6 +229,10 @@ static void process_half(uint32_t half)
         Controls_BeginBlock();
 #endif
         Noise_Process(primary_block, reference_block, clean_block);
+#ifdef AUDIO_ADAPTIVE_ML
+        Adaptive_ObserveBlock(g_noise_stats.primary_rms,g_noise_stats.reference_rms,
+            g_noise_stats.reference_present && !g_control_stats.spatial,HAL_GetTick());
+#endif
 #ifdef AUDIO_APP_CONTROL
         Controls_Process24(clean_block,NOISE_BLOCK);
 #endif
