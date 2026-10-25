@@ -1,13 +1,14 @@
 # Wavelength — STM32F411RE audio
 
-The current release is [Wavelength-v2](releases/Wavelength-v2/README.md):
-two INMP441 microphones, CMSIS-DSP NLMS noise reduction, and USB serial playback
-through the computer's AUX output. Both inputs and active filtering were checked
-on the NUCLEO-F411RE. Intermittent I2S3 framing errors can stop capture and require
-a board reset; continuous operation is not yet reliable.
+The current saved release is [Wavelength-v3](releases/Wavelength-v3/README.md):
+the browser companion app, acknowledged STM32 DSP controls, two INMP441
+microphones, and USB serial audio through the computer's AUX output. The
+firmware, matching PC player, full source snapshot, active dial settings and
+checksums are preserved together. Intermittent I2S3 framing errors remain a
+known limitation; use Restart audio if capture stops.
 
-The single-microphone baseline is preserved as
-[Wavelength-v1](releases/Wavelength-v1/README.md). Filter behavior, controls and
+Earlier checkpoints are preserved as [Wavelength-v1](releases/Wavelength-v1/README.md)
+and [Wavelength-v2](releases/Wavelength-v2/README.md). Filter behavior, controls and
 limitations are documented in [NLMS noise reduction](audio_passthrough/NLMS.md).
 
 The companion browser app can now send acknowledged controls to the STM32 for

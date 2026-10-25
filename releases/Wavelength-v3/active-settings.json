@@ -1,0 +1,21 @@
+{
+  "name": "Wavelength-v3",
+  "capturedAt": "2026-10-25T14:41:42.076Z",
+  "port": "COM8",
+  "outputDevice": "Headphone (Realtek(R) Audio)",
+  "pcGain": 1,
+  "values": {
+    "volume": 100,
+    "noiseReduction": 100,
+    "speechAmplification": 100,
+    "bass": 12,
+    "mid": -12,
+    "treble": -8,
+    "eq250": 2,
+    "eq500": -3,
+    "eq2000": 1,
+    "eq4000": 10,
+    "reduceLoudSounds": 100,
+    "spatialFocus": 100
+  }
+}
