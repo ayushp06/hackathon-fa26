@@ -10,6 +10,11 @@ The single-microphone baseline is preserved as
 [Wavelength-v1](releases/Wavelength-v1/README.md). Filter behavior, controls and
 limitations are documented in [NLMS noise reduction](audio_passthrough/NLMS.md).
 
+The companion browser app can now send acknowledged controls to the STM32 for
+live volume, NLMS strength, speech-band gain, EQ and noise relearning. See
+[hardware app setup](audio_passthrough/APP_CONTROL.md). Run
+`.\scripts\start-hardware-app.ps1` and open http://localhost:8081.
+
 C11 firmware for the STM32F411RE (Cortex-M4F, 512 KiB flash, 128 KiB RAM).
 Uses ST's CMSIS device startup and Arm's CMSIS-Core and CMSIS-DSP. Dependencies
 are downloaded from pinned release tags on the first CMake configure.

@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   heading: { color: cream, fontSize: 18, lineHeight: 24, fontWeight: '600' },
   badge: { color: muted, fontSize: 10, lineHeight: 14, fontWeight: '700', letterSpacing: 1.1 },
   instruction: { color: muted, fontSize: 13, lineHeight: 18, marginTop: theme.spacing.xs },
-  responseChart: { marginTop: theme.spacing.sm, minHeight: 190, cursor: 'ns-resize' },
+  responseChart: { marginTop: theme.spacing.sm, minHeight: 190 },
   fineControls: { marginTop: theme.spacing.sm },
   fineRow: { flexDirection: 'row', alignItems: 'center', minHeight: 44, borderTopWidth: 1, borderTopColor: grid },
   fineLabel: { color: cream, flex: 1, fontSize: 13 },

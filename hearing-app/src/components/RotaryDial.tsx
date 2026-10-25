@@ -19,10 +19,11 @@ type Props = {
   label: string;
   value: number;
   valueSuffix?: string;
+  disabled?: boolean;
   onValueChange: (value: number) => void;
 };
 
-export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix = '', onValueChange }: Props) {
+export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix = '', disabled = false, onValueChange }: Props) {
   if (![min, max, step, diameter, value].every(Number.isFinite) || max <= min || step <= 0 || diameter < 56) {
     throw new Error('RotaryDial requires finite values, max > min, step > 0, and diameter >= 56');
   }
@@ -33,13 +34,14 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const handleValueChange = (nextValue: number) => {
+    if (disabled) return;
     onValueChange(nextValue);
     const landmark = isDialLandmark(nextValue, min, max);
     haptics.dialStep(nextValue, min, max, landmark);
     if (landmark) sound.tap();
     else sound.tick();
   };
-  const { angle, gesture } = useRotaryGesture({ value: currentValue, min, max, step, diameter, onValueChange: handleValueChange });
+  const { angle, gesture } = useRotaryGesture({ value: currentValue, min, max, step, diameter, disabled, onValueChange: handleValueChange });
   const marks = Array.from({ length: 5 }, (_, index) => min + (max - min) * index / 4);
   const ticks = Array.from({ length: 9 }, (_, index) => min + (max - min) * index / 8);
   const numeralSize = Math.max(9, diameter * 0.07);
@@ -63,11 +65,22 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, disabled && { opacity: 0.4 }]}>
       <GestureDetector gesture={gesture}>
         <View
           accessible
           accessibilityRole="adjustable"
+          accessibilityState={{ disabled }}
+          aria-disabled={disabled}
+          tabIndex={disabled ? -1 : 0}
+          onKeyDown={(event) => {
+            const key = (event as typeof event & { key?: string }).key;
+            if (disabled) return;
+            if (key === 'ArrowUp' || key === 'ArrowRight') { event.preventDefault(); changeBy(1); }
+            if (key === 'ArrowDown' || key === 'ArrowLeft') { event.preventDefault(); changeBy(-1); }
+            if (key === 'Home') { event.preventDefault(); handleValueChange(min); }
+            if (key === 'End') { event.preventDefault(); handleValueChange(max); }
+          }}
           accessibilityLabel={label}
           accessibilityValue={{ min, max, now: currentValue, text: readout }}
           aria-valuemin={min}

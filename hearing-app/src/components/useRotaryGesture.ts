@@ -10,10 +10,11 @@ type Options = {
   max: number;
   step: number;
   diameter: number;
+  disabled?: boolean;
   onValueChange: (value: number) => void;
 };
 
-export function useRotaryGesture({ value, min, max, step, diameter, onValueChange }: Options) {
+export function useRotaryGesture({ value, min, max, step, diameter, disabled = false, onValueChange }: Options) {
   const angle = useSharedValue(valueToAngle(value, min, max));
   const rawAngle = useSharedValue(valueToAngle(value, min, max));
   const lastPointer = useSharedValue<number | null>(null);
@@ -34,6 +35,7 @@ export function useRotaryGesture({ value, min, max, step, diameter, onValueChang
   );
 
   const gesture = usePanGesture({
+    enabled: !disabled,
     minDistance: 1,
     maxPointers: 1,
     onBegin: (event) => {
