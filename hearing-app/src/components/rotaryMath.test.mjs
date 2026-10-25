@@ -25,24 +25,26 @@ test('dial landmarks align with numbered quarter marks across control ranges', (
   assert.equal(isDialLandmark(-6, -12, 12), true);
 });
 
-test('numbered marks hold more firmly while every intermediate step stays selectable', () => {
+test('numbered marks snap inside the capture zone while every intermediate step stays selectable', () => {
   for (let quarter = 0; quarter <= 4; quarter++) {
     const mark = START_ANGLE + quarter * SWEEP_ANGLE / 4;
     assert.equal(magneticDialAngle(mark), mark);
-    assert.ok(magneticDialAngle(mark + 3) < mark + 3);
-    assert.ok(magneticDialAngle(mark - 3) > mark - 3);
+    assert.equal(magneticDialAngle(mark + 4), mark);
+    assert.equal(magneticDialAngle(mark - 4), mark);
+    assert.ok(magneticDialAngle(mark + 5) > mark);
+    assert.ok(magneticDialAngle(mark - 5) < mark);
   }
   let previous = -Infinity;
   for (let angle = START_ANGLE; angle <= START_ANGLE + SWEEP_ANGLE; angle += 0.25) {
     const output = magneticDialAngle(angle);
-    assert.ok(output > previous);
+    assert.ok(output >= previous);
     previous = output;
   }
   assert.equal(angleToValue(magneticDialAngle(valueToAngle(37, 0, 100)), 0, 100, 1, 1), 37);
   for (let quarter = 1; quarter <= 3; quarter++) {
     const mark = START_ANGLE + quarter * SWEEP_ANGLE / 4;
-    assert.equal(angleToValue(magneticDialAngle(mark + 3), 0, 100, 1, 1), quarter * 25);
-    assert.equal(angleToValue(magneticDialAngle(mark - 3), 0, 100, 1, 1), quarter * 25);
+    assert.equal(angleToValue(magneticDialAngle(mark + 4), 0, 100, 1, 1), quarter * 25);
+    assert.equal(angleToValue(magneticDialAngle(mark - 4), 0, 100, 1, 1), quarter * 25);
   }
   for (const [min, max] of [[0, 100], [-12, 12]]) {
     const reached = new Set();
