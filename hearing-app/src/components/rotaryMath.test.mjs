@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { angleToValue, isDialLandmark, shortestAngleDelta, START_ANGLE, stepScale, SWEEP_ANGLE, valueToAngle } from './rotaryMath.ts';
+import { angleToValue, isDialLandmark, magneticDialAngle, shortestAngleDelta, START_ANGLE, stepScale, SWEEP_ANGLE, valueToAngle } from './rotaryMath.ts';
 
 test('270 degree sweep increases clockwise and clamps at both ends', () => {
   assert.equal(valueToAngle(0, 0, 100), START_ANGLE);
@@ -23,4 +23,20 @@ test('dial landmarks align with numbered quarter marks across control ranges', (
   assert.equal(isDialLandmark(26, 0, 100), false);
   assert.equal(isDialLandmark(0, -12, 12), true);
   assert.equal(isDialLandmark(-6, -12, 12), true);
+});
+
+test('numbered marks gently resist movement while intermediate positions stay selectable', () => {
+  for (let quarter = 0; quarter <= 4; quarter++) {
+    const mark = START_ANGLE + quarter * SWEEP_ANGLE / 4;
+    assert.equal(magneticDialAngle(mark), mark);
+    assert.ok(magneticDialAngle(mark + 3) < mark + 3);
+    assert.ok(magneticDialAngle(mark - 3) > mark - 3);
+  }
+  let previous = -Infinity;
+  for (let angle = START_ANGLE; angle <= START_ANGLE + SWEEP_ANGLE; angle += 0.25) {
+    const output = magneticDialAngle(angle);
+    assert.ok(output > previous);
+    previous = output;
+  }
+  assert.equal(angleToValue(magneticDialAngle(valueToAngle(37, 0, 100)), 0, 100, 1, 1), 37);
 });

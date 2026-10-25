@@ -1,10 +1,11 @@
 /* eslint-disable react-hooks/immutability -- Expo Audio configures each native player's own volume property. */
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { preload, setAudioModeAsync, useAudioPlayer, type AudioPlayer } from 'expo-audio';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Platform } from 'react-native';
 import { useAppStore } from '../state/useAppStore';
 import { isSoundReady } from './feedbackTiming';
 import { type FeedbackSound, SoundFeedbackContext } from './useSoundFeedback';
+import { playWebFeedback } from './webFeedback';
 
 const sources = {
   tick: require('../assets/sounds/tick.wav'),
@@ -22,8 +23,8 @@ export function SoundFeedbackProvider({ children }: { children: ReactNode }) {
   const tap = useAudioPlayer(sources.tap);
   const confirm = useAudioPlayer(sources.confirm);
   const [configured, setConfigured] = useState(false);
-  const [screenReader, setScreenReader] = useState(true);
-  const screenReaderRef = useRef(true);
+  const [screenReader, setScreenReader] = useState(Platform.OS !== 'web');
+  const screenReaderRef = useRef(Platform.OS !== 'web');
   const activePlayer = useRef<AudioPlayer | null>(null);
   const activeSound = useRef<FeedbackSound | null>(null);
   const busyUntil = useRef(0);
@@ -36,6 +37,7 @@ export function SoundFeedbackProvider({ children }: { children: ReactNode }) {
   }, [tick, tap, confirm]);
 
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     let mounted = true;
     void AccessibilityInfo.isScreenReaderEnabled().then((value) => {
       if (mounted) setScreenReader(value);
@@ -73,9 +75,15 @@ export function SoundFeedbackProvider({ children }: { children: ReactNode }) {
   }, [enabled]);
 
   const play = useCallback((sound: FeedbackSound) => {
-    if (!enabled || !configured || screenReader) return;
+    if (!enabled || screenReader || (Platform.OS !== 'web' && !configured)) return;
     const now = Date.now();
     if (!isSoundReady(sound, activeSound.current, busyUntil.current, now)) return;
+    if (Platform.OS === 'web') {
+      activeSound.current = sound;
+      busyUntil.current = now + durations[sound];
+      playWebFeedback(sound);
+      return;
+    }
     const player = sound === 'tick' ? tick : sound === 'tap' ? tap : confirm;
     if (!player.isLoaded) return;
     activePlayer.current?.pause();

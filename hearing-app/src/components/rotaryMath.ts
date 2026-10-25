@@ -21,6 +21,16 @@ export function valueToAngle(value: number, min: number, max: number) {
   return START_ANGLE + (clamp(value, min, max) - min) / (max - min) * SWEEP_ANGLE;
 }
 
+export function magneticDialAngle(angle: number) {
+  'worklet';
+  const landmark = START_ANGLE + Math.round((angle - START_ANGLE) / (SWEEP_ANGLE / 4)) * (SWEEP_ANGLE / 4);
+  const offset = angle - landmark;
+  const window = 8;
+  if (Math.abs(offset) >= window) return angle;
+  const distance = offset / window;
+  return angle - offset * 0.65 * (1 - distance * distance) ** 2;
+}
+
 export function isDialLandmark(value: number, min: number, max: number) {
   const quarter = (value - min) * 4 / (max - min);
   return Math.abs(quarter - Math.round(quarter)) < 1e-6;

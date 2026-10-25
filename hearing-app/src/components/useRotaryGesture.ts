@@ -2,7 +2,7 @@
 import { usePanGesture } from 'react-native-gesture-handler';
 import { useAnimatedReaction, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
-import { angleToValue, clamp, pointerAngle, shortestAngleDelta, START_ANGLE, stepScale, SWEEP_ANGLE, valueToAngle } from './rotaryMath';
+import { angleToValue, clamp, magneticDialAngle, pointerAngle, shortestAngleDelta, START_ANGLE, stepScale, SWEEP_ANGLE, valueToAngle } from './rotaryMath';
 
 type Options = {
   value: number;
@@ -15,6 +15,7 @@ type Options = {
 
 export function useRotaryGesture({ value, min, max, step, diameter, onValueChange }: Options) {
   const angle = useSharedValue(valueToAngle(value, min, max));
+  const rawAngle = useSharedValue(valueToAngle(value, min, max));
   const lastPointer = useSharedValue<number | null>(null);
   const lastValue = useSharedValue(clamp(value, min, max));
   const dragging = useSharedValue(false);
@@ -26,6 +27,7 @@ export function useRotaryGesture({ value, min, max, step, diameter, onValueChang
     (nextValue, previousValue) => {
       if (nextValue !== previousValue && !dragging.value) {
         angle.value = withTiming(valueToAngle(nextValue, min, max), { duration: 120 });
+        rawAngle.value = valueToAngle(nextValue, min, max);
         lastValue.value = nextValue;
       }
     },
@@ -37,6 +39,7 @@ export function useRotaryGesture({ value, min, max, step, diameter, onValueChang
     onBegin: (event) => {
       'worklet';
       dragging.value = true;
+      rawAngle.value = valueToAngle(lastValue.value, min, max);
       const distance = Math.hypot(event.x - radius, event.y - radius);
       lastPointer.value = distance < radius * 0.22 ? null : pointerAngle(event.x, event.y, radius);
     },
@@ -52,7 +55,8 @@ export function useRotaryGesture({ value, min, max, step, diameter, onValueChang
         lastPointer.value = currentPointer;
         return;
       }
-      angle.value = clamp(angle.value + shortestAngleDelta(lastPointer.value, currentPointer), START_ANGLE, START_ANGLE + SWEEP_ANGLE);
+      rawAngle.value = clamp(rawAngle.value + shortestAngleDelta(lastPointer.value, currentPointer), START_ANGLE, START_ANGLE + SWEEP_ANGLE);
+      angle.value = magneticDialAngle(rawAngle.value);
       lastPointer.value = currentPointer;
       const nextValue = angleToValue(angle.value, min, max, step, scale);
       if (nextValue !== lastValue.value) {
@@ -64,6 +68,7 @@ export function useRotaryGesture({ value, min, max, step, diameter, onValueChang
       'worklet';
       dragging.value = false;
       lastPointer.value = null;
+      rawAngle.value = valueToAngle(lastValue.value, min, max);
       angle.value = withTiming(valueToAngle(lastValue.value, min, max), { duration: 120 });
     },
   });
