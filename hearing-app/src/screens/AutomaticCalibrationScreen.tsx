@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: theme.spacing.xl,
   },
-  title: { ...theme.typography.title, color: theme.colors.text, textAlign: 'center', marginBottom: theme.spacing.lg },
+  title: { ...theme.typography.title, fontSize: 40, lineHeight: 48, letterSpacing: -1, color: theme.colors.text, textAlign: 'center', marginBottom: theme.spacing.xl },
   button: {
     width: '100%',
     maxWidth: theme.sizing.calibrationDialMaxDiameter,
