@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useState } from 'react';
 import { theme } from '../../constants/theme';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
@@ -9,7 +10,11 @@ export function SettingsScreen() {
   const soundEnabled = useAppStore((state) => state.soundFeedbackEnabled);
   const setHapticsEnabled = useAppStore((state) => state.setHapticsEnabled);
   const setSoundEnabled = useAppStore((state) => state.setSoundFeedbackEnabled);
-  const restartOnboarding = useAppStore((state) => state.restartOnboarding);
+  const savedProfile = useAppStore((state) => state.savedProfile);
+  const restoringProfile = useAppStore((state) => state.restoringProfile);
+  const saveProfile = useAppStore((state) => state.saveProfile);
+  const restoreProfile = useAppStore((state) => state.restoreProfile);
+  const [profileMessage, setProfileMessage] = useState('');
   const haptics = useHaptics();
   const sound = useSoundFeedback();
 
@@ -20,15 +25,36 @@ export function SettingsScreen() {
     else setSoundEnabled(enabled);
   };
 
-  const runSetupAgain = () => {
+  const save = () => {
+    saveProfile();
+    setProfileMessage('Current sound settings saved.');
     haptics.selection();
-    sound.tap();
-    restartOnboarding();
+    sound.confirm();
+  };
+
+  const restore = async () => {
+    setProfileMessage('');
+    const restored = await restoreProfile();
+    setProfileMessage(restored ? 'Saved sound settings restored.' : 'Could not restore the profile. Check the device connection.');
+    if (restored) {
+      haptics.selection();
+      sound.confirm();
+    }
   };
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-      <Text accessibilityRole="header" style={styles.title}>Feedback settings</Text>
+      <Text accessibilityRole="header" style={styles.title}>Settings</Text>
+      <Text style={styles.sectionTitle}>Saved sound</Text>
+      <Text style={styles.description}>Save your current volume and sound adjustments, then restore them whenever you want.</Text>
+      <Pressable accessibilityRole="button" disabled={restoringProfile} onPress={save} style={styles.profileButton}>
+        <Text style={styles.label}>{savedProfile ? 'Update saved sound' : 'Save current sound'}</Text>
+      </Pressable>
+      <Pressable accessibilityRole="button" disabled={!savedProfile || restoringProfile} onPress={() => void restore()} style={[styles.profileButton, (!savedProfile || restoringProfile) && styles.disabled]}>
+        <Text style={styles.label}>{restoringProfile ? 'Restoring…' : 'Restore saved sound'}</Text>
+      </Pressable>
+      {profileMessage ? <Text accessibilityLiveRegion="polite" style={styles.description}>{profileMessage}</Text> : null}
+      <Text style={[styles.sectionTitle, styles.feedbackTitle]}>Feedback</Text>
       <View style={styles.row}>
         <Text style={styles.label}>Haptics</Text>
         <Switch accessibilityLabel="Haptics" value={hapticsEnabled} onValueChange={(value) => toggle('haptics', value)} trackColor={{ false: theme.colors.border, true: theme.colors.text }} thumbColor={theme.colors.background} ios_backgroundColor={theme.colors.border} />
@@ -36,13 +62,6 @@ export function SettingsScreen() {
       <View style={styles.row}>
         <Text style={styles.label}>Sound</Text>
         <Switch accessibilityLabel="Sound" value={soundEnabled} onValueChange={(value) => toggle('sound', value)} trackColor={{ false: theme.colors.border, true: theme.colors.text }} thumbColor={theme.colors.background} ios_backgroundColor={theme.colors.border} />
-      </View>
-      <View style={styles.setupSection}>
-        <Text style={styles.setupTitle}>Hearing setup</Text>
-        <Text style={styles.setupDescription}>Go through the hearing test options and preferences again. Your manual control settings stay saved.</Text>
-        <Pressable accessibilityRole="button" onPress={runSetupAgain} style={({ pressed }) => [styles.setupButton, pressed && styles.pressed]}>
-          <Text style={styles.setupButtonText}>Run Setup Again</Text>
-        </Pressable>
       </View>
     </ScrollView>
   );
@@ -53,10 +72,9 @@ const styles = StyleSheet.create({
   title: { ...theme.typography.title, color: theme.colors.text, marginBottom: theme.spacing.xl },
   row: { minHeight: theme.sizing.settingsRowHeight, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: theme.sizing.borderWidth, borderBottomColor: theme.colors.border },
   label: { ...theme.typography.segment, color: theme.colors.text },
-  setupSection: { marginTop: theme.spacing.xl },
-  setupTitle: { fontSize: 18, lineHeight: 24, fontWeight: '600', color: theme.colors.text },
-  setupDescription: { fontSize: 14, lineHeight: 20, color: theme.colors.secondaryText, marginTop: theme.spacing.sm },
-  setupButton: { minHeight: theme.sizing.segmentHeight, marginTop: theme.spacing.lg, borderWidth: theme.sizing.borderWidth, borderColor: theme.colors.text, alignItems: 'center', justifyContent: 'center' },
-  setupButtonText: { ...theme.typography.segment, color: theme.colors.text },
-  pressed: { opacity: 0.7 },
+  sectionTitle: { ...theme.typography.segment, color: theme.colors.text, marginBottom: theme.spacing.sm },
+  feedbackTitle: { marginTop: theme.spacing.xl },
+  description: { fontSize: 14, lineHeight: 20, color: theme.colors.secondaryText, marginBottom: theme.spacing.md },
+  profileButton: { minHeight: theme.sizing.minimumTouchTarget, justifyContent: 'center', borderBottomWidth: theme.sizing.borderWidth, borderBottomColor: theme.colors.border },
+  disabled: { opacity: 0.4 },
 });

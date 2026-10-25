@@ -1,0 +1,91 @@
+{
+    "name":  "Wavelength-v3",
+    "saved_at":  "2026-10-25T14:42:55.0732679Z",
+    "source_commit":  "631a3a8939bdcfd2da6f14f8140d9605fd612429",
+    "git_tag":  "Wavelength-v3",
+    "source_note":  "Source revision plus release README, active settings and root release index. Snapshot excludes generated builds, dependencies and earlier releases.",
+    "target":  "STM32F411RE",
+    "board":  "NUCLEO-F411RE",
+    "sample_rate":  16000,
+    "baud":  921600,
+    "transport":  "MIC4",
+    "packet_bytes":  186,
+    "format":  "PCM16",
+    "channels":  1,
+    "voice_sd":  "PB14",
+    "reference_sd":  "PC12",
+    "microphone_lr":  "GND",
+    "clock_loopbacks":  [
+                            "PB13-PC10",
+                            "PB12-PA4"
+                        ],
+    "build":  {
+                  "type":  "Release",
+                  "AUDIO_APP_CONTROL":  true,
+                  "AUDIO_PC_STREAM":  true,
+                  "AUDIO_NLMS":  true,
+                  "AUDIO_DUAL_DATA":  true,
+                  "AUDIO_SWAP_MIC_INPUTS":  false,
+                  "AUDIO_PIN_PROBE":  false,
+                  "AUDIO_DAC_TEST_TONE":  false
+              },
+    "playback":  {
+                     "port":  "COM8",
+                     "output_device":  "Headphone (Realtek(R) Audio)",
+                     "gain":  1,
+                     "web_url":  "http://localhost:8081",
+                     "api_url":  "http://127.0.0.1:8765"
+                 },
+    "verification":  {
+                         "firmware_build":  "passed",
+                         "app_typecheck":  "passed",
+                         "app_lint":  "passed",
+                         "app_tests_passed":  25,
+                         "user_confirmed_working":  true,
+                         "reference_clock":  true,
+                         "live_filter":  "spatial",
+                         "observed_packets":  177206,
+                         "missing":  0,
+                         "crc_errors":  0,
+                         "firmware_drops":  0,
+                         "underruns":  0,
+                         "queue_resets":  0,
+                         "max_callback_cycles":  256446
+                     },
+    "known_limitations":  [
+                              "Intermittent I2S framing faults may require Restart audio or physical RESET.",
+                              "Windows device indices can change on AUX reconnect.",
+                              "Earlier runs had PC transport loss and playback stalls; no indefinite stability guarantee.",
+                              "Real-room noise attenuation, directionality, speech preservation and acoustic output levels are unmeasured."
+                          ],
+    "files":  [
+                  {
+                      "file":  "Wavelength-v3.elf",
+                      "sha256":  "71E7135A73CCE3FD01B322C6B1037A07C6806D67E76C493B8998C8F41EAC4FFF"
+                  },
+                  {
+                      "file":  "Wavelength-v3.hex",
+                      "sha256":  "143F11846865CE8E36E48921EAA9AC92D22366DBAC29BB3D95A80423613E38EB"
+                  },
+                  {
+                      "file":  "Wavelength-v3.bin",
+                      "sha256":  "B6D3DFF4527EEDCD57A92605F56E6DE522AB17563645662B7BA0CD2CB0CCAAC5"
+                  },
+                  {
+                      "file":  "pc-mic-player.exe",
+                      "sha256":  "2B05EDB8C36107D1DF40B0A94E114B0ECEC1B68A55590F080562825D5A41BD2F"
+                  },
+                  {
+                      "file":  "source.zip",
+                      "sha256":  "A125E12E14ADF17D4A260B6045D9549EA88DC5B09A461CCBEB8E99AC87DA8714"
+                  },
+                  {
+                      "file":  "README.md",
+                      "sha256":  "4A80CE30C666E0418C4516B4C387BABA86BDBE3A8B3782D956DB4C6FAF0140BB"
+                  },
+                  {
+                      "file":  "active-settings.json",
+                      "sha256":  "22406795F7C674EDC3AB6EF13D3DE4677D1F9EA14F6AF23063F1939B206D326D"
+                  }
+              ]
+}

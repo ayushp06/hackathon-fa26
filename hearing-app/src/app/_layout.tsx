@@ -15,7 +15,7 @@ import { HardwareConnection } from '../components/HardwareConnection';
 
 export default function RootLayout() {
   const { width, height } = useWindowDimensions();
-  const framed = Platform.OS === 'web' && width >= 700 && height >= 640;
+  const framed = Platform.OS === 'web' && width >= 450;
   const app = (
     <GestureHandlerRootView style={styles.root}>
       <SoundFeedbackProvider>
@@ -26,7 +26,7 @@ export default function RootLayout() {
   if (!framed) return app;
   return (
     <View style={styles.previewBackdrop}>
-      <View style={[styles.phoneFrame, { height: Math.min(852, height - 32) }]}>
+      <View style={[styles.phoneFrame, { width: Math.min(414, width - 32), height: Math.min(852, height - 32) }]}>
         <View style={styles.phoneScreen}>
           {app}
         </View>
@@ -43,20 +43,16 @@ function AppContent({ framed }: { framed: boolean }) {
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const hydrated = useAppStore((state) => state.hydrated);
-  const onboardingCompleted = useAppStore((state) => state.onboardingCompleted);
   const setActiveMode = useAppStore((state) => state.setActiveMode);
   const settings = pathname === '/settings';
-  const onboarding = pathname === '/onboarding';
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!onboardingCompleted && !onboarding) { router.replace('/onboarding'); return; }
-    if (onboardingCompleted && onboarding) { router.replace('/'); return; }
     if (pathname === '/' || pathname === '/manual') {
       setActiveMode(pathname === '/' ? 'automatic' : 'manual');
     }
-  }, [hydrated, pathname, onboarding, onboardingCompleted, router, setActiveMode]);
+  }, [hydrated, pathname, setActiveMode]);
 
   const openSettings = () => {
     haptics.selection();
@@ -78,14 +74,14 @@ function AppContent({ framed }: { framed: boolean }) {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
         <View style={[styles.content, framed && styles.previewContent]}>
-          {onboardingCompleted && !onboarding ? <Pressable accessibilityRole="button" accessibilityLabel={settings ? 'Done' : 'Settings'} onPress={settings ? closeSettings : openSettings} style={styles.settingsLink}>
+          <Pressable accessibilityRole="button" accessibilityLabel={settings ? 'Done' : 'Settings'} onPress={settings ? closeSettings : openSettings} style={styles.settingsLink}>
             {settings ? <Text style={styles.settingsText}>Done</Text> : <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={theme.colors.secondaryText} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none">
               <Path d="M12 2.5 14 3l.6 2.1a7.4 7.4 0 0 1 1.5.9l2.1-.5 1.5 1.5-.5 2.1a7.4 7.4 0 0 1 .9 1.5l2.1.6v2l-2.1.6a7.4 7.4 0 0 1-.9 1.5l.5 2.1-1.5 1.5-2.1-.5a7.4 7.4 0 0 1-1.5.9L14 21.5h-2l-.6-2.1a7.4 7.4 0 0 1-1.5-.9l-2.1.5-1.5-1.5.5-2.1a7.4 7.4 0 0 1-.9-1.5L3.8 13v-2l2.1-.6a7.4 7.4 0 0 1 .9-1.5l-.5-2.1 1.5-1.5 2.1.5a7.4 7.4 0 0 1 1.5-.9L12 2.5Z" />
               <Circle cx={13} cy={12} r={3} />
             </Svg>}
-          </Pressable> : null}
+          </Pressable>
           <View style={styles.screen}>
-            <HardwareConnection />
+            {pathname !== '/settings' && pathname !== '/mission' ? <HardwareConnection /> : null}
             <Stack screenOptions={{ headerShown: false, animation: reducedMotion ? 'none' : 'fade', animationDuration: 180, contentStyle: styles.safeArea }} />
           </View>
         </View>

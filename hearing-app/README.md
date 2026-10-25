@@ -2,8 +2,7 @@
 
 Expo and React Native companion app. In the browser on the USB-connected Windows
 PC, controls use a real local bridge to the STM32. Native/mobile builds retain
-explicitly labeled mock controls. The experimental hearing test plays local
-tones only when a wired headset is detected.
+explicitly labeled mock controls.
 
 ## Control the connected STM32
 
@@ -25,9 +24,9 @@ npm ci
 npm start
 ```
 
-From the Expo terminal, press `a` for an Android emulator or `i` for an iOS simulator. You can also run `npm run android` or `npm run ios`. The wired headphone check uses a local native module, so real tone playback requires a development build (`npx expo run:android` or `npx expo run:ios`) and wired earbuds. Expo Go and web offer clearly labeled simulation mode with no audio or inferred hearing profile. Expo SDK 58 requires Node.js 22.13+ or 24.3+; Android native builds require Android Studio and the Android SDK, and iOS native builds require macOS and Xcode.
+From the Expo terminal, press `a` for an Android emulator or `i` for an iOS simulator. You can also run `npm run android` or `npm run ios`. Expo SDK 58 requires Node.js 22.13+ or 24.3+; Android native builds require Android Studio and the Android SDK, and iOS native builds require macOS and Xcode.
 
-For a phone-sized preview on this computer, run `npm run web`, open the localhost URL shown by Expo in Chrome, then open DevTools and toggle the device toolbar (`Ctrl+Shift+M`). Choose an iPhone-sized viewport such as 393 × 852. This runs the same React Native screens in a browser; iOS-only behavior such as native haptics still needs a real iPhone or an iOS simulator on macOS.
+For a phone-sized preview on any computer, run `npm run web` and open the localhost URL shown by Expo. Desktop browsers show the app in an iPhone-style frame automatically. This runs the same React Native screens in a browser; iOS-only behavior such as native haptics still needs a real iPhone or an iOS simulator on macOS.
 
 ## Checks
 
@@ -41,12 +40,10 @@ npm test
 
 - `app.config.ts`: placeholder display name, slug, native application IDs, and cream/black system UI and blank splash configuration
 - `constants/theme.ts`: colors, typography, spacing, and sizing
-- `src/app`: Expo Router routes for onboarding, Automatic Calibration, Manual, and feedback settings
+- `src/app`: Expo Router routes for Home, Manual, Our Mission, and feedback settings
 - `src/feedback`: throttled haptics and preloaded local UI sounds
 - `src/navigation`: shared segmented route switch
-- `src/screens`: onboarding, hearing test, Automatic Calibration, and Manual layouts
-- `src/hearingTest`: imported report handling and the experimental tone plan/profile
-- `modules/headphone-route`: native wired headset detection for the tone test
+- `src/screens`: Home, Manual, Our Mission, and feedback settings layouts
 - `src/components`: reusable SVG rotary dial and circular gesture logic
 - `src/device`: transport interface, real browser USB-bridge transport, native mock implementation, and binding
 - `src/state`: one Zustand app store with AsyncStorage persistence, plus session-only connection state
@@ -56,8 +53,6 @@ never claims a live connection. The browser uses the USB audio bridge and
 acknowledged firmware DSP controls. Hearing calibration and AI are not
 implemented. The current hardware does not define a BLE radio or GATT protocol;
 mobile hardware transport needs those additions and a development build.
-
-The hearing test saves tone frequencies, relative playback levels, scenarios, taps, and timestamps locally. Its preliminary focus suggestion is experimental and non-diagnostic; phone audio is not calibrated in dB HL. The app never changes system volume. It plays a comfort-check tone at the highest test player level before starting and only uses equal or lower player levels afterward. Unplugging wired headphones pauses the test. Background noise is optional. Simulation mode never plays tones or generates a hearing profile.
 
 The Volume dial updates local state immediately and sends a command through
 `DeviceTransport`. In the connected browser it changes the STM32 PCM gain; in
@@ -80,3 +75,5 @@ are illustrative, not measured audio. The store also persists mode and feedback
 preferences; learning progress and connection state remain session-only.
 
 Settings lets the user turn haptics and sounds on or off; haptics default on and sounds default off. Dial steps, mode changes, and mock recalibration use brief feedback when enabled. Bundled sound cues are short and low amplitude, player volume is limited to 18%, and playback follows the device's silent mode. Feedback does not change system volume, request microphone access, or play in the background. Reduced Motion suppresses haptics; active screen readers suppress UI sounds so spoken feedback is not interrupted.
+
+Settings also has one locally saved sound profile. Save or update it after tuning the volume, noise controls and EQ; Restore applies those values again, muting the connected device while changing the controls and restoring the saved volume last. It does not save feedback preferences or claim to measure hearing.

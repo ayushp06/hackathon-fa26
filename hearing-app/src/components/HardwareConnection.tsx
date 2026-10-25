@@ -23,11 +23,13 @@ export function HardwareConnection() {
         const next = await hardwareDeviceService.getStatus();
         if (!stopped) {
           setStatus(next); setError(next.error);
+          useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null });
           if (!next.connected) useDeviceStore.setState({ connectedDevice: null });
         }
-      } catch (failure) {
+      } catch {
         if (!stopped) {
-          setStatus(null); setError(failure instanceof Error ? failure.message : 'USB bridge unavailable');
+          setStatus(null); setError(null);
+          useAppStore.setState({ appliedNoiseReduction: null });
           useDeviceStore.setState({ connectedDevice: null });
         }
       }
@@ -43,7 +45,9 @@ export function HardwareConnection() {
     try {
       if (connected) await device.disconnect();
       else await device.connect('stm32-usb');
-      setStatus(await hardwareDeviceService.getStatus());
+      const next = await hardwareDeviceService.getStatus();
+      setStatus(next);
+      useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null });
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Connection failed'); }
     finally { setBusy(false); }
   };
@@ -53,10 +57,13 @@ export function HardwareConnection() {
       const connectedDevice = await hardwareDeviceService.restart();
       useDeviceStore.setState({ connectedDevice, error: null });
       useAppStore.setState({ transportError: null });
-      setStatus(await hardwareDeviceService.getStatus()); setError(null);
+      const next = await hardwareDeviceService.getStatus();
+      setStatus(next); setError(null);
+      useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null });
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Restart failed'); }
     finally { setBusy(false); }
   };
+  const visibleError = error || device.error || transportError;
   return <View style={styles.panel}>
     <View style={styles.row}>
       <Text style={styles.title}>{connected ? 'STM32 connected · AUX' : 'USB hardware'}</Text>
@@ -74,7 +81,7 @@ export function HardwareConnection() {
         </Pressable>
       </View>
     </> : <Text style={styles.note}>Connect to apply your saved dial settings.</Text>}
-    {error || device.error || transportError ? <Text accessibilityLiveRegion="polite" style={styles.error}>{error || device.error || transportError}</Text> : null}
+    {visibleError ? <Text accessibilityLiveRegion="polite" style={styles.error}>{visibleError.startsWith('USB bridge unavailable.') ? 'Could not connect to USB hardware.' : visibleError}</Text> : null}
   </View>;
 }
 const styles = StyleSheet.create({

@@ -47,3 +47,28 @@ test('offline and rejected commands never report an applied setting', async (t) 
   globalThis.fetch = async () => { throw new TypeError('fetch failed'); };
   await assert.rejects(service.scan(), /USB bridge unavailable/);
 });
+
+test('a deliberate correction waits for the final ordinary setter acknowledgment', async (t) => {
+  const original = globalThis.fetch;
+  const calls = [];
+  let releaseSetter;
+  globalThis.fetch = async (url, options = {}) => {
+    const data = options.body ? JSON.parse(options.body) : null;
+    calls.push({ route: url.slice(url.lastIndexOf('/')), data });
+    if (url.endsWith('/connect')) return Response.json({ id: 'stm32-usb', name: 'STM32' });
+    if (url.endsWith('/control') && data.control === 'noiseReduction') {
+      await new Promise((resolve) => { releaseSetter = resolve; });
+    }
+    return Response.json({ accepted: true, simulated: false, sequence: calls.length });
+  };
+  t.after(() => { globalThis.fetch = original; });
+  const service = new HardwareDeviceService();
+  await service.connect();
+  const correction = service.confirmNoiseReduction(68);
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  assert.deepEqual(calls.slice(-1), [{ route: '/control', data: { control: 'noiseReduction', value: 68 } }]);
+  releaseSetter();
+  assert.equal((await correction).accepted, true);
+  assert.deepEqual(calls.at(-1), { route: '/noise-feedback', data: { value: 68 } });
+  assert.equal(calls.filter(({ route }) => route === '/noise-feedback').length, 1);
+});
