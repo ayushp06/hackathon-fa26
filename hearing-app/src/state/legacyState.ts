@@ -8,7 +8,6 @@ function savedState(raw: string | null): Record<string, unknown> {
     return {};
   }
 }
-
 export function migrateLegacyState(values: (string | null)[]) {
   const calibration = savedState(values[0]);
   const manual = savedState(values[1]);
@@ -21,8 +20,4 @@ export function migrateLegacyState(values: (string | null)[]) {
     soundFeedbackEnabled: typeof feedback.soundEnabled === 'boolean' ? feedback.soundEnabled : false,
     lastResult: calibration.lastResult && typeof calibration.lastResult === 'object' ? calibration.lastResult : null,
   };
-}
-
-export function shouldSkipOnboarding(saved: { onboardingCompleted?: unknown }, hasSavedState: boolean) {
-  return typeof saved.onboardingCompleted === 'boolean' ? saved.onboardingCompleted : hasSavedState;
 }

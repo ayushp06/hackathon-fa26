@@ -76,7 +76,7 @@ export function ManualScreen() {
       <Text style={styles.description}>Adjust each dial to shape your sound. Changes save automatically.</Text>
       {hardwareMode ? <Text style={styles.description}>Connected controls change the live audio. Reduce Loud Sounds compresses peaks. Spatial Focus blends both microphones toward the direction perpendicular to their spacing and pauses noise cancellation while active. Speech Amplification boosts speech frequencies; Treble uses a 4 kHz shelf.</Text> : null}
       <View style={styles.grid}>
-        {primaryControls.map((item) => <View key={item[0]} style={[styles.column, { width: columnWidth }]}>{dial(item, diameter)}</View>)}
+        {primaryControls.map((item) => <View key={item[0]} style={[styles.column, { width: item[0] === 'speechAmplification' ? '100%' : columnWidth }]}>{dial(item, diameter)}</View>)}
       </View>
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: advancedOpen }} onPress={toggleAdvanced} style={styles.advancedButton}>
         <Text style={styles.advancedText}>Advanced</Text>

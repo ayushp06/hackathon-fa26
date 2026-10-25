@@ -1,13 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { migrateLegacyState, shouldSkipOnboarding } from './legacyState.ts';
-
-test('onboarding runs for new installs and resumes until completed, while previous users skip it', () => {
-  assert.equal(shouldSkipOnboarding({}, false), false);
-  assert.equal(shouldSkipOnboarding({ onboardingCompleted: false }, true), false);
-  assert.equal(shouldSkipOnboarding({ onboardingCompleted: true }, true), true);
-  assert.equal(shouldSkipOnboarding({}, true), true);
-});
+import { migrateLegacyState } from './legacyState.ts';
 
 test('previously saved controls and feedback preferences migrate independently', () => {
   const state = migrateLegacyState([
