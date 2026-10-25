@@ -1,0 +1,51 @@
+﻿{
+    "name":  "Wavelength-v2",
+    "released":  "2026-10-25",
+    "target":  "STM32F411RE",
+    "sample_rate":  16000,
+    "baud":  921600,
+    "format":  "PCM16",
+    "channels":  1,
+    "voice_sd":  "PB14",
+    "reference_sd":  "PC12",
+    "microphone_lr":  "GND",
+    "options":  {
+                    "AUDIO_DUAL_DATA":  true,
+                    "AUDIO_SWAP_MIC_INPUTS":  false,
+                    "AUDIO_NLMS":  true,
+                    "AUDIO_PC_STREAM":  true
+                },
+    "filter":  {
+                   "primary_delay_samples":  32,
+                   "taps":  128,
+                   "mu":  0.08,
+                   "block_frames":  64
+               },
+    "validation":  "Build and host tests passed; live dual-input NLMS and AUX playback observed. Intermittent I2S3 framing errors require board reset. Noise attenuation and speech preservation not measured in real room.",
+    "files":  [
+                  {
+                      "file":  "Wavelength-v2.elf",
+                      "sha256":  "2F30261C478F98C6996E1CC729FC5AE043EBBACAF5DF295DE7825D00DC15BDBC"
+                  },
+                  {
+                      "file":  "Wavelength-v2.hex",
+                      "sha256":  "9EAC281E0C02186FF5E44A9C3929DECCFE23DD88BE9DDC2898CFB7AE970D88B0"
+                  },
+                  {
+                      "file":  "Wavelength-v2.bin",
+                      "sha256":  "BEC4EE738951E8D5B6C1C39DD518A02D9096F4002696FFC40B4E2972D8C7D041"
+                  },
+                  {
+                      "file":  "pc-mic-player.exe",
+                      "sha256":  "97308D7F0B59E4EBD0E1BB0AD520923278D6B55DC3B9AFDD09A38F2003E31A17"
+                  },
+                  {
+                      "file":  "source.zip",
+                      "sha256":  "26FB8179D9CFC1D6A4778B221250653732FE4934497A1DF26F3B72B7C1F876AE"
+                  },
+                  {
+                      "file":  "README.md",
+                      "sha256":  "71B428830E97A6530CB0A828191653143B43253E0C45C4C1DC6B62CB2EDE8D20"
+                  }
+              ]
+}

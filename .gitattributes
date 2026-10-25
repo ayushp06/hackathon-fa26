@@ -1,0 +1,2 @@
+# Release checksums describe exact bytes, including firmware HEX line endings.
+/releases/** -text

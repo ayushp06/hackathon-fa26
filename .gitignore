@@ -4,3 +4,11 @@
 hearing-app/node_modules/
 hearing-app/.expo/
 hearing-app/dist/
+
+# STM32 firmware and local build artifacts
+/build/
+/CMakeUserPresets.json
+/.cache/
+/audio_passthrough/Debug/
+/audio_passthrough/Release/
+/audio_passthrough/.settings/

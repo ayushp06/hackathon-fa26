@@ -1,0 +1,30 @@
+{
+    "name":  "Wavelength-v1",
+    "baud":  921600,
+    "files":  [
+                  {
+                      "sha256":  "1A83D3BA783B34FAEF7AF3F5FC6AC2B7077492F0814581149137B22CA1BE5605",
+                      "file":  "pc-mic-player.exe"
+                  },
+                  {
+                      "sha256":  "4895038454FF357C0043E10A2F790A997FBD98E264F5E55C83383D95CACE5A2C",
+                      "file":  "source.zip"
+                  },
+                  {
+                      "sha256":  "C76B13F145BC31707F996C314548A00CBAE80EF10BC531C833E4A3A4301438C1",
+                      "file":  "Wavelength-v1.bin"
+                  },
+                  {
+                      "sha256":  "D4DB6C05B35ABC2F62FFDC766E1F594946131C3160E004C3C57542C4DD972667",
+                      "file":  "Wavelength-v1.elf"
+                  },
+                  {
+                      "sha256":  "439A04C0BEB6D27C75FE25B02951F84DECF06DFA2059230EA4B9AB30BF71C994",
+                      "file":  "Wavelength-v1.hex"
+                  }
+              ],
+    "description":  "Verified single-microphone USB serial playback to PC AUX/headphone output",
+    "format":  "PCM16",
+    "channels":  1,
+    "sample_rate":  16000
+}
