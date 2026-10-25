@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { deviceService } from '../device/deviceService';
 import type { CalibrationResult, CalibrationStatus, DeviceMode } from '../device/types';
 import { type HearingTestDocument, restoreHearingTestDocument } from '../hearingTest/document';
+import { type ToneTestResult, restoreToneTestResult } from '../hearingTest/toneTest';
 import { migrateLegacyState, shouldSkipOnboarding } from './legacyState';
 import { normalizeManualValue, type ManualControl } from './manualValues';
 
@@ -22,6 +23,7 @@ type AppState = Record<ManualControl, number> & {
   onboardingCompleted: boolean;
   hearingTestFile: HearingTestDocument | null;
   hearingTestResponses: boolean[] | null;
+  hearingTestResult: ToneTestResult | null;
   hearingPreferences: { vocalTones: boolean; backgroundNoise: boolean; softerTones: boolean } | null;
   setVolume: (value: number) => void;
   setValue: (control: ManualControl, value: number) => void;
@@ -31,11 +33,11 @@ type AppState = Record<ManualControl, number> & {
   recalibrate: () => Promise<boolean>;
   saveHearingTestFile: (file: HearingTestDocument) => void;
   clearHearingTestFile: () => void;
-  saveHearingTestResponses: (responses: boolean[]) => void;
+  saveHearingTestResult: (result: ToneTestResult) => void;
   completeOnboarding: (preferences: NonNullable<AppState['hearingPreferences']>) => void;
 };
 
-type SavedAppState = Pick<AppState, 'volume' | 'baseVolume' | 'noiseReduction' | 'spatialFocus' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'onboardingCompleted' | 'hearingTestFile' | 'hearingTestResponses' | 'hearingPreferences'>;
+type SavedAppState = Pick<AppState, 'volume' | 'baseVolume' | 'noiseReduction' | 'spatialFocus' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'onboardingCompleted' | 'hearingTestFile' | 'hearingTestResponses' | 'hearingTestResult' | 'hearingPreferences'>;
 
 const storage = createJSONStorage<SavedAppState>(() => ({
   getItem: async (name) => {
@@ -84,6 +86,7 @@ export const useAppStore = create<AppState>()(
       onboardingCompleted: false,
       hearingTestFile: null,
       hearingTestResponses: null,
+      hearingTestResult: null,
       hearingPreferences: null,
       setVolume: (value) => {
         const volume = normalizeManualValue(value);
@@ -105,9 +108,9 @@ export const useAppStore = create<AppState>()(
       setActiveMode: (activeMode) => set({ activeMode }),
       setHapticsEnabled: (hapticsEnabled) => set({ hapticsEnabled }),
       setSoundFeedbackEnabled: (soundFeedbackEnabled) => set({ soundFeedbackEnabled }),
-      saveHearingTestFile: (hearingTestFile) => set({ hearingTestFile, hearingTestResponses: null }),
+      saveHearingTestFile: (hearingTestFile) => set({ hearingTestFile, hearingTestResponses: null, hearingTestResult: null }),
       clearHearingTestFile: () => set({ hearingTestFile: null }),
-      saveHearingTestResponses: (hearingTestResponses) => set({ hearingTestResponses, hearingTestFile: null }),
+      saveHearingTestResult: (hearingTestResult) => set({ hearingTestResult, hearingTestResponses: null, hearingTestFile: null }),
       completeOnboarding: (hearingPreferences) => set({ hearingPreferences, onboardingCompleted: true }),
       recalibrate: async () => {
         if (get().calibrationStatus === 'loading') return false;
@@ -143,11 +146,12 @@ export const useAppStore = create<AppState>()(
           onboardingCompleted: shouldSkipOnboarding(saved, persisted !== undefined),
           hearingTestFile: restoreHearingTestDocument(saved.hearingTestFile),
           hearingTestResponses: Array.isArray(saved.hearingTestResponses) && saved.hearingTestResponses.every((value) => typeof value === 'boolean') ? saved.hearingTestResponses : null,
+          hearingTestResult: restoreToneTestResult(saved.hearingTestResult),
           hearingPreferences: saved.hearingPreferences && typeof saved.hearingPreferences.vocalTones === 'boolean' && typeof saved.hearingPreferences.backgroundNoise === 'boolean' && typeof saved.hearingPreferences.softerTones === 'boolean' ? saved.hearingPreferences : null,
         };
       },
-      partialize: ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingPreferences }) =>
-        ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingPreferences }),
+      partialize: ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }) =>
+        ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }),
       onRehydrateStorage: () => (state, error) => {
         if (state) {
           void Promise.all([

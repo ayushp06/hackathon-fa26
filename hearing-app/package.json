@@ -38,12 +38,12 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src constants app.config.ts",
-    "test": "node --experimental-strip-types --test constants/theme.test.mjs src/device/mockDeviceService.test.mjs src/components/rotaryMath.test.mjs src/feedback/feedbackTiming.test.mjs src/feedback/soundAssets.test.mjs src/state/mockCalibration.test.mjs src/state/manualValues.test.mjs src/state/legacyState.test.mjs src/hearingTest/document.test.mjs"
+    "test": "node --experimental-strip-types --test constants/theme.test.mjs src/device/mockDeviceService.test.mjs src/components/rotaryMath.test.mjs src/feedback/feedbackTiming.test.mjs src/feedback/soundAssets.test.mjs src/state/mockCalibration.test.mjs src/state/manualValues.test.mjs src/state/legacyState.test.mjs src/hearingTest/document.test.mjs src/hearingTest/toneTest.test.mjs"
   },
   "private": true
 }

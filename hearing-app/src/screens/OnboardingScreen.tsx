@@ -1,17 +1,14 @@
-/* eslint-disable react-hooks/immutability -- Expo Audio configures each native player's own volume property. */
-import { useEffect, useRef, useState } from 'react';
-import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { useState } from 'react';
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { theme } from '../../constants/theme';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { pickHearingTestDocument, previewHearingTestDocument, removeHearingTestDocument } from '../hearingTest/importDocument';
 import { useAppStore } from '../state/useAppStore';
+import { HearingTestScreen } from './HearingTestScreen';
 
 type Step = 'question' | 'import' | 'test' | 'preferences';
 type Preferences = { vocalTones: boolean; backgroundNoise: boolean; softerTones: boolean };
-
-const trials = [0, 1, 2, 0, 1, 2] as const;
 
 function fileSize(bytes: number | null) {
   if (bytes === null) return 'Size unavailable';
@@ -23,47 +20,13 @@ export function OnboardingScreen() {
   const sound = useSoundFeedback();
   const saveFile = useAppStore((state) => state.saveHearingTestFile);
   const clearFile = useAppStore((state) => state.clearHearingTestFile);
-  const saveResponses = useAppStore((state) => state.saveHearingTestResponses);
   const completeOnboarding = useAppStore((state) => state.completeOnboarding);
   const savedFile = useAppStore((state) => state.hearingTestFile);
   const [step, setStep] = useState<Step>('question');
   const [path, setPath] = useState<'import' | 'test'>('test');
-  const [trial, setTrial] = useState(-1);
   const [error, setError] = useState('');
   const [picking, setPicking] = useState(false);
   const [preferences, setPreferences] = useState<Partial<Preferences>>({});
-  const responses = useRef<boolean[]>([]);
-  const low = useAudioPlayer(require('../assets/sounds/test-500.wav'));
-  const mid = useAudioPlayer(require('../assets/sounds/test-1000.wav'));
-  const high = useAudioPlayer(require('../assets/sounds/test-2000.wav'));
-  const lowStatus = useAudioPlayerStatus(low);
-  const midStatus = useAudioPlayerStatus(mid);
-  const highStatus = useAudioPlayerStatus(high);
-  const players = [low, mid, high];
-  const tonesReady = lowStatus.isLoaded && midStatus.isLoaded && highStatus.isLoaded;
-
-  useEffect(() => {
-    if (step !== 'test') return;
-    return () => { void setAudioModeAsync({ playsInSilentMode: false }).catch(() => {}); };
-  }, [step]);
-
-  useEffect(() => {
-    if (step !== 'test' || trial < 0) return;
-    const player = players[trials[trial]];
-    player.volume = trial < 3 ? 0.35 : 0.7;
-    void player.seekTo(0).then(() => player.play()).catch(() => { setError('Could not play the tone. Try again.'); setTrial(-1); });
-    const timer = setTimeout(() => {
-      player.pause();
-      if (trial === trials.length - 1) {
-        saveResponses([...responses.current]);
-        setStep('preferences');
-      } else setTrial(trial + 1);
-    }, 2200);
-    return () => { clearTimeout(timer); player.pause(); };
-    // Players are stable Expo objects; only a new trial should replay a tone.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, trial, saveResponses]);
-
   const choose = (next: Step) => {
     haptics.selection();
     sound.tap();
@@ -77,11 +40,8 @@ export function OnboardingScreen() {
     sound.tap();
     setError('');
     if (step === 'preferences') {
-      setTrial(-1);
-      responses.current = [];
       setStep(path);
     } else {
-      setTrial(-1);
       setStep('question');
     }
   };
@@ -152,18 +112,6 @@ export function OnboardingScreen() {
     }
   };
 
-  const startTest = async () => {
-    setError('');
-    try {
-      await setAudioModeAsync({ playsInSilentMode: true, shouldPlayInBackground: false });
-      responses.current = Array(trials.length).fill(false);
-      setTrial(0);
-      haptics.selection();
-    } catch {
-      setError('Could not start audio. Please try again.');
-    }
-  };
-
   const finish = () => {
     if (preferences.vocalTones === undefined || preferences.backgroundNoise === undefined || preferences.softerTones === undefined) return;
     completeOnboarding(preferences as Preferences);
@@ -211,18 +159,7 @@ export function OnboardingScreen() {
       </> : null}
 
       {step === 'test' ? <>
-        <Text accessibilityRole="header" style={styles.title}>Hearing test</Text>
-        <Text style={styles.body}>Find a quiet place and set a comfortable device volume. Tap each time you hear a tone. There are six tones.</Text>
-        {trial < 0 ? <Action label={tonesReady ? 'Start hearing test' : 'Loading tones…'} onPress={() => void startTest()} disabled={!tonesReady} /> :
-          <Pressable accessibilityRole="button" accessibilityLabel="I hear the tone" onPress={() => {
-            if (responses.current[trial]) return;
-            responses.current[trial] = true;
-            haptics.selection();
-          }} style={styles.tapArea}>
-            <Text style={styles.tapText}>Tap when you hear a tone</Text>
-            <Text style={styles.tapCount}>Tone {trial + 1} of {trials.length}</Text>
-          </Pressable>}
-        <Text style={styles.note}>This listening check is not a medical hearing test or calibrated audiogram.</Text>
+        <HearingTestScreen onContinue={() => choose('preferences')} onExit={back} />
       </> : null}
 
       {step === 'preferences' ? <>
@@ -281,9 +218,6 @@ const styles = StyleSheet.create({
   fileMeta: { fontSize: 14, lineHeight: 20, color: theme.colors.secondaryText, marginBottom: theme.spacing.xs },
   statusLabel: { ...theme.typography.segment, color: theme.colors.text, marginTop: theme.spacing.md, marginBottom: theme.spacing.xs },
   note: { fontSize: 14, lineHeight: 20, color: theme.colors.secondaryText, marginTop: theme.spacing.md, marginBottom: theme.spacing.lg },
-  tapArea: { minHeight: 220, borderWidth: 1, borderColor: theme.colors.text, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.lg },
-  tapText: { ...theme.typography.segment, color: theme.colors.text, fontSize: 18, textAlign: 'center' },
-  tapCount: { ...theme.typography.segment, color: theme.colors.secondaryText, marginTop: theme.spacing.md },
   preference: { marginBottom: theme.spacing.lg },
   preferenceLabel: { fontSize: 18, lineHeight: 24, color: theme.colors.text, marginBottom: theme.spacing.sm },
   choices: { flexDirection: 'row', gap: theme.spacing.sm },

@@ -1,0 +1,9 @@
+{
+  "platforms": ["android", "apple"],
+  "apple": {
+    "modules": ["HeadphoneRouteModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.headphoneroute.HeadphoneRouteModule"]
+  }
+}
