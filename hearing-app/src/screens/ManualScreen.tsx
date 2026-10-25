@@ -95,13 +95,13 @@ export function ManualScreen() {
         {primaryControls.map((item) => <View key={item[0]} style={[styles.column, { width: item[0] === 'speechAmplification' ? '100%' : columnWidth }]}>{dial(item, diameter)}</View>)}
       </View>
       {hardwareMode ? <View style={styles.noiseActions}>
-        <Text style={styles.description}>Background noise reduction · selected {values.noiseReduction}% · device target {connected && values.appliedNoiseReduction !== null ? `${values.appliedNoiseReduction}%` : 'unavailable'}</Text>
+        <Text style={[styles.description, styles.noiseStatus]}>Background noise reduction · selected {values.noiseReduction}% · device target {connected && values.appliedNoiseReduction !== null ? `${values.appliedNoiseReduction}%` : 'unavailable'}</Text>
         <View style={styles.noiseButtons}>
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.confirmNoiseReduction(useAppStore.getState().noiseReduction), 'Correction accepted. Automatic adaptation resumed.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Remember this adjustment</Text></Pressable>
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.setNoiseAdaptation(true), 'Automatic adaptation resumed.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Resume automatic adaptation</Text></Pressable>
           <Pressable accessibilityRole="button" disabled={!connected || noiseBusy} onPress={() => void runNoiseAction(() => hardwareDeviceService.setNoiseAdaptation(false), 'Automatic adaptation paused.')} style={[styles.advancedButton, styles.noiseButton]}><Text style={styles.advancedText}>Pause automatic adaptation</Text></Pressable>
         </View>
-        {noiseAction ? <Text accessibilityLiveRegion="polite" style={styles.description}>{noiseAction}</Text> : null}
+        {noiseAction ? <Text accessibilityLiveRegion="polite" style={[styles.description, styles.noiseStatus]}>{noiseAction}</Text> : null}
       </View> : null}
       <Pressable accessibilityRole="button" accessibilityState={{ expanded: advancedOpen }} onPress={toggleAdvanced} style={styles.advancedButton}>
         <Text style={styles.advancedText}>Advanced</Text>
@@ -133,7 +133,8 @@ const styles = StyleSheet.create({
   advanced: { paddingTop: theme.spacing.lg },
   advancedRow: { flexDirection: 'row', gap: theme.spacing.sm },
   advancedColumn: { flex: 1, alignItems: 'center' },
-  noiseActions: { marginTop: theme.spacing.lg },
-  noiseButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
-  noiseButton: { marginTop: theme.spacing.sm },
+  noiseActions: { marginTop: theme.spacing.lg, alignItems: 'center' },
+  noiseStatus: { textAlign: 'center' },
+  noiseButtons: { width: '100%', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: theme.spacing.sm },
+  noiseButton: { marginTop: theme.spacing.sm, alignSelf: 'center' },
 });
