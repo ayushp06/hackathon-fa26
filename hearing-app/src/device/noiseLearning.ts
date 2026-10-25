@@ -5,7 +5,21 @@ export type NoiseLearningState = {
   pendingValue: number | null;
   target: number | null;
   error: string | null;
+  learnedAt: number | null;
 };
+
+export function noiseLearningMessage(state: NoiseLearningState, connected: boolean, now = Date.now()) {
+  if (!connected) return 'Connect USB to learn your preferences.';
+  if (state.phase === 'adjusting') return 'Adjusting';
+  if (state.phase === 'saving') return 'Learning preference…';
+  if (state.phase === 'learned') return state.learnedAt !== null && now - state.learnedAt < 4000
+    ? 'Preference learned' : 'Automatic adaptation enabled.';
+  if (state.phase === 'automatic') return 'Automatic adaptation enabled.';
+  if (state.phase === 'resetting') return 'Resetting learning…';
+  if (state.phase === 'error') return state.error || 'Could not learn this preference.';
+  if (state.phase === 'paused') return 'Adjustment cancelled. Adjust again to teach your preference.';
+  return 'Ready to learn · automatic mode unconfirmed.';
+}
 
 type Transport = {
   setNoiseReduction(value: number): Promise<DeviceAcknowledgment>;
@@ -23,7 +37,7 @@ type Adjustment = {
 };
 
 export class NoiseLearning {
-  state: NoiseLearningState = { phase: 'idle', pendingValue: null, target: null, error: null };
+  state: NoiseLearningState = { phase: 'idle', pendingValue: null, target: null, error: null, learnedAt: null };
   private connected = false;
   private epoch = 0;
   private active: Adjustment | null = null;
@@ -50,7 +64,8 @@ export class NoiseLearning {
     }
     if (!this.connected && connected) this.update({ phase: 'idle', pendingValue: null, error: null });
     this.connected = connected;
-    this.update({ target: connected ? target : null });
+    this.update({ target: connected ? target : null,
+      ...(this.state.phase === 'learned' ? { pendingValue: null } : {}) });
   }
 
   begin(value: number) {
@@ -111,10 +126,21 @@ export class NoiseLearning {
           const ack = await this.device.confirmNoiseReduction(value);
           if (!ack.accepted) throw new Error('The device did not acknowledge the preference.');
           if (!this.valid(adjustment)) return;
-          const status = await this.device.getStatus();
-          if (!status.connected) throw new Error('Device disconnected after learning the preference.');
-          if (this.valid(adjustment) && this.latest === adjustment) {
-            this.update({ phase: 'learned', pendingValue: null, target: status.noiseReduction, error: null });
+          if (this.latest === adjustment) {
+            // ID14's successful acknowledgment establishes learning. A separate
+            // status read must not delay or erase that accepted event.
+            this.update({ phase: 'learned', pendingValue: value, learnedAt: Date.now(), error: null });
+          }
+          try {
+            const status = await this.device.getStatus();
+            if (!status.connected) throw new Error('Device disconnected after learning the preference.');
+            if (this.valid(adjustment) && this.latest === adjustment) {
+              this.update({ target: status.noiseReduction, pendingValue: null });
+            }
+          } catch (failure) {
+            if (this.valid(adjustment) && this.latest === adjustment) {
+              this.update({ error: `Preference accepted; device target refresh failed: ${failure instanceof Error ? failure.message : 'Status unavailable.'}` });
+            }
           }
           return;
         }

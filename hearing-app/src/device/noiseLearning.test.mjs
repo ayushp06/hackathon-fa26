@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { NoiseLearning } from './noiseLearning.ts';
+import { NoiseLearning, noiseLearningMessage } from './noiseLearning.ts';
 
 const ack = { accepted: true, sequence: 1, simulated: false };
 const deferred = () => { let resolve; const promise = new Promise((done) => { resolve = done; }); return { promise, resolve }; };
@@ -140,4 +140,59 @@ test('an older rejected correction cannot replace the status of a newer edit', a
   assert.equal(learning.state.error, null);
   assert.equal(learning.state.target, 29);
   assert.deepEqual(calls, [[1, 81], [14, 81], [1, 29], [14, 29]]);
+});
+
+
+test('learning confirmation follows ID14 ack immediately, before target refresh', async () => {
+  const correction = deferred();
+  const refresh = deferred();
+  const { learning, device, calls } = setup();
+  device.confirmNoiseReduction = async (value) => { calls.push([14, value]); return correction.promise; };
+  device.getStatus = () => refresh.promise;
+  learning.change(80);
+  assert.equal(noiseLearningMessage(learning.state, true), 'Adjusting');
+  learning.finish(80);
+  await turn();
+  assert.equal(noiseLearningMessage(learning.state, true), 'Learning preference\u2026');
+  assert.equal(learning.state.learnedAt, null);
+  correction.resolve(ack);
+  await turn();
+  assert.equal(learning.state.phase, 'learned');
+  const learnedAt = learning.state.learnedAt;
+  assert.equal(typeof learnedAt, 'number');
+  assert.equal(noiseLearningMessage(learning.state, true, learnedAt + 3999), 'Preference learned');
+  assert.equal(learning.state.target, 50); // never substitute selected80 for reported target
+  assert.equal(learning.state.pendingValue, 80); // no dial snap to the previous target while refreshing
+  const before = calls.length;
+  for (let i = 0; i < 100; ++i) learning.observe(true, i % 2 ? 30 : 80);
+  assert.equal(learning.state.learnedAt, learnedAt);
+  assert.equal(learning.state.phase, 'learned');
+  assert.equal(noiseLearningMessage(learning.state, true, learnedAt + 4000), 'Automatic adaptation enabled.');
+  assert.equal(calls.length, before); // automatic updates never train or set
+  refresh.resolve({ connected: true, noiseReduction: 79 });
+  await learning.settled();
+  assert.equal(learning.state.target, 79);
+  assert.deepEqual(calls, [[1, 80], [14, 80]]);
+});
+
+test('target refresh failure preserves accepted correction and surfaces separate warning', async () => {
+  const { learning, device, calls } = setup();
+  device.getStatus = async () => { throw new Error('status timeout'); };
+  learning.change(76); learning.finish(76);
+  await learning.settled();
+  assert.equal(learning.state.phase, 'learned');
+  assert.equal(noiseLearningMessage(learning.state, true, learning.state.learnedAt), 'Preference learned');
+  assert.match(learning.state.error, /Preference accepted; device target refresh failed: status timeout/);
+  learning.observe(true, 74);
+  assert.equal(learning.state.target, 74);
+  assert.deepEqual(calls, [[1, 76], [14, 76]]);
+});
+
+test('rejected correction shows actual error and never creates a success indicator', async () => {
+  const { learning, device } = setup();
+  device.confirmNoiseReduction = async () => ({ ...ack, accepted: false });
+  learning.change(72); learning.finish(72); await learning.settled();
+  assert.equal(learning.state.phase, 'error');
+  assert.equal(learning.state.learnedAt, null);
+  assert.match(noiseLearningMessage(learning.state, true), /did not acknowledge the preference/);
 });

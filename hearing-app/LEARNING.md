@@ -5,6 +5,18 @@ adjust Background Noise Reduction and release it. The app shows **Learning your
 preference…**, followed by **Preference learned** only after acknowledgment.
 There is no separate Save/Remember action. Values are arbitrary integers 0–100.
 
+The status card sits directly below the Noise Reduction dial. It shows Adjusting,
+Learning preference… and, only after successful ID14 acknowledgment, ✓ Preference
+learned for four seconds before returning to the automatic-mode message. Telemetry
+does not reset this confirmation period. A target-refresh failure appears as a
+separate warning without undoing the accepted correction; the displayed Device
+target still comes from telemetry, never from the selected value. A new adjustment,
+reset, disconnect or correction failure takes priority over the old confirmation.
+
+The old indicator was below all five dials and success waited for a second HTTP
+status read. Those were code-level visibility/delay risks, not a confirmed diagnosis
+of any particular hardware run. Seeing this card requires the updated browser bundle.
+
 For a new judge, open Settings → Reset Learning → Confirm Reset Learning. Keep
 Spatial Focus at zero and provide a usable reference microphone signal. After
 reset, the firmware returns to its 50% baseline when valid acoustic features are
@@ -73,6 +85,17 @@ invalid input can reject ID 14. Keep the scene steady while adjusting and saving
 Its present RMS features distinguish measured levels, not semantic scene names;
 similar features may produce blended/replaced preferences. Learned examples live
 in RAM. No physical-demo or persistence claim follows from the host tests below.
+
+For a jumping-target investigation, keep one scene steady for at least ten seconds
+after the two-second correction hold expires. Record Device target, status timestamps,
+commandSequence/status and the Network control/feedback requests. A changing target
+with no new command sequence is consistent with autonomous inference; it is not proof
+of training. ID14 is the only correction handler; inference never calls it. Model
+correction/example counters, enabled state and normalized context remain debugger-only.
+Compare context drift to the existing three-window stability threshold (.03 per
+feature), 250 ms freshness and radius .15 before considering firmware changes. DSP
+wet strength already slews .002 per sample; this does not smooth the reported integer
+target. Get hardware-owner evidence before altering any of these settings.
 
 ## Verification (2026-10-25)
 

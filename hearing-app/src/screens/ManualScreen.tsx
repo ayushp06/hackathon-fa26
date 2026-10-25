@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -13,6 +13,7 @@ import { useAppStore } from '../state/useAppStore';
 import { EditableWaveform } from './EditableWaveform';
 import { hardwareMode } from '../device/deviceService';
 import { useDeviceStore } from '../state/useDeviceStore';
+import { noiseLearningMessage } from '../device/noiseLearning';
 
 type DialControl = ManualControl | 'volume';
 
@@ -34,15 +35,16 @@ export function ManualScreen() {
   const connected = useDeviceStore((state) => !!state.connectedDevice);
   const noiseBusy = values.noiseBusy;
   const learning = values.noiseLearning;
-  const learningMessage = !connected ? 'Connect USB to learn your preferences.'
-    : learning.phase === 'adjusting' ? 'Adjusting manually… release to learn.'
-    : learning.phase === 'saving' ? 'Learning your preference…'
-    : learning.phase === 'learned' ? 'Preference learned · automatic adaptation enabled.'
-    : learning.phase === 'automatic' ? 'Automatic adaptation enabled.'
-    : learning.phase === 'resetting' ? 'Resetting learning…'
-    : learning.phase === 'error' ? learning.error
-    : learning.phase === 'paused' ? 'Adjustment cancelled. Adjust again to teach your preference.'
-    : 'Ready to learn · automatic mode unconfirmed.';
+  const [, refreshConfirmation] = useState(0);
+  const learningMessage = noiseLearningMessage(learning, connected);
+  const confirmed = connected && learningMessage === 'Preference learned';
+  useEffect(() => {
+    if (learning.learnedAt === null) return;
+    const remaining = learning.learnedAt + 4000 - Date.now();
+    if (remaining <= 0) return;
+    const timer = setTimeout(() => refreshConfirmation((value) => value + 1), remaining);
+    return () => clearTimeout(timer);
+  }, [learning.learnedAt]);
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const [viewport, setViewport] = useState({ width: windowWidth, height: Infinity });
@@ -97,10 +99,15 @@ export function ManualScreen() {
       <Text style={styles.description}>Adjust each dial to shape your sound. Changes save automatically.</Text>
       {hardwareMode ? <Text style={styles.description}>Connected controls change the live audio. Reduce Loud Sounds compresses peaks. Spatial Focus blends both microphones toward the direction perpendicular to their spacing and pauses noise cancellation while active. Speech Amplification boosts speech frequencies; Treble uses a 4 kHz shelf.</Text> : null}
       <View style={styles.grid}>
-        {primaryControls.map((item) => <View key={item[0]} style={[styles.column, { width: item[0] === 'speechAmplification' ? '100%' : columnWidth }]}>{dial(item, diameter)}</View>)}
+        {primaryControls.map((item) => <View key={item[0]} style={[styles.column, { width: item[0] === 'speechAmplification' ? '100%' : columnWidth }]}>{dial(item, diameter)}
+          {hardwareMode && item[0] === 'noiseReduction' ? <View style={styles.learningFeedback}>
+            <Text accessibilityLiveRegion="polite" style={[styles.learningText, confirmed && styles.learningConfirmed]}>{confirmed ? '✓ ' : ''}{learningMessage}</Text>
+            {learning.phase === 'learned' && learning.error ? <Text style={styles.learningText}>{learning.error}</Text> : null}
+            <Text style={styles.learningText}>Device target {connected && values.appliedNoiseReduction !== null ? `${values.appliedNoiseReduction}%` : 'unavailable'}</Text>
+          </View> : null}
+        </View>)}
       </View>
       {hardwareMode ? <View style={styles.noiseActions}>
-        <Text accessibilityLiveRegion="polite" style={[styles.description, styles.noiseStatus]}>{learningMessage}</Text>
         <Text style={[styles.description, styles.noiseStatus]}>{learning.pendingValue !== null ? `Your adjustment ${learning.pendingValue}% · ` : ''}Device target {connected && values.appliedNoiseReduction !== null ? `${values.appliedNoiseReduction}%` : 'unavailable'}</Text>
         <Text style={[styles.description, styles.noiseStatus]}>Adjust once, then release. Wavelength learns your preference. Automatic mode reflects the last acknowledged app action.</Text>
       </View> : null}
@@ -128,6 +135,9 @@ const styles = StyleSheet.create({
   description: { fontSize: 14, lineHeight: 20, color: theme.colors.secondaryText, marginTop: theme.spacing.sm },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: theme.spacing.lg, columnGap: theme.spacing.md, marginTop: theme.spacing.xl },
   column: { alignItems: 'center' },
+  learningFeedback: { alignSelf: 'stretch', marginTop: theme.spacing.sm, padding: theme.spacing.sm, borderWidth: 1, borderColor: theme.colors.text, borderRadius: theme.sizing.segmentRadius },
+  learningText: { fontSize: 14, lineHeight: 20, color: theme.colors.text, textAlign: 'center' },
+  learningConfirmed: { fontWeight: '700' },
   advancedButton: { minHeight: theme.sizing.minimumTouchTarget, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm, paddingHorizontal: theme.spacing.md, borderWidth: 1, borderColor: theme.colors.text, borderRadius: theme.sizing.segmentRadius, marginTop: theme.spacing.xl },
   advancedToggle: { alignSelf: 'center' },
   advancedText: { ...theme.typography.segment, color: theme.colors.text },
