@@ -5,6 +5,7 @@ import { deviceService } from '../device/deviceService';
 import type { CalibrationResult, CalibrationStatus, DeviceMode } from '../device/types';
 import { migrateLegacyState } from './legacyState';
 import { isEqControl, migratePercentEqGain, normalizeEqGain, normalizeManualValue, restoreSharedVolume, type ManualControl } from './manualValues';
+import { applySoundProfile, soundProfileFrom, validSoundProfile, type SoundProfile } from './soundProfile';
 
 export const VOLUME_MIN = 0;
 export const VOLUME_MAX = 100;
@@ -18,6 +19,10 @@ type AppState = Record<ManualControl, number> & {
   lastResult: CalibrationResult | null;
   transportError: string | null;
   hydrated: boolean;
+  savedProfile: SoundProfile | null;
+  restoringProfile: boolean;
+  saveProfile: () => void;
+  restoreProfile: () => Promise<boolean>;
   setVolume: (value: number) => void;
   setValue: (control: ManualControl, value: number) => void;
   setActiveMode: (mode: DeviceMode) => void;
@@ -26,7 +31,7 @@ type AppState = Record<ManualControl, number> & {
   recalibrate: () => Promise<boolean>;
 };
 
-type SavedAppState = Pick<AppState, ManualControl | 'volume' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult'>;
+type SavedAppState = Pick<AppState, ManualControl | 'volume' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'savedProfile'>;
 
 const storage = createJSONStorage<Partial<SavedAppState>>(() => ({
   getItem: async (name) => {
@@ -80,6 +85,24 @@ export const useAppStore = create<AppState>()(
       lastResult: null,
       transportError: null,
       hydrated: false,
+      savedProfile: null,
+      restoringProfile: false,
+      saveProfile: () => set({ savedProfile: soundProfileFrom(get()) }),
+      restoreProfile: async () => {
+        const profile = get().savedProfile;
+        if (!profile || get().restoringProfile) return false;
+        set({ restoringProfile: true, transportError: null });
+        try {
+          await applySoundProfile(profile, deviceService);
+          set({ ...profile });
+          return true;
+        } catch (error) {
+          set({ volume: 0, transportError: errorMessage(error) });
+          return false;
+        } finally {
+          set({ restoringProfile: false });
+        }
+      },
       setVolume: (value) => {
         const volume = normalizeManualValue(value);
         if (volume === null) return;
@@ -149,10 +172,11 @@ export const useAppStore = create<AppState>()(
           hapticsEnabled: typeof saved.hapticsEnabled === 'boolean' ? saved.hapticsEnabled : current.hapticsEnabled,
           soundFeedbackEnabled: typeof saved.soundFeedbackEnabled === 'boolean' ? saved.soundFeedbackEnabled : current.soundFeedbackEnabled,
           lastResult: validResult(saved.lastResult) ? saved.lastResult : null,
+          savedProfile: validSoundProfile(saved.savedProfile) ? soundProfileFrom(saved.savedProfile) : null,
         };
       },
-      partialize: ({ volume, noiseReduction, reduceLoudSounds, spatialFocus, speechAmplification, bass, mid, treble, eq250, eq500, eq2000, eq4000, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult }) =>
-        ({ volume, noiseReduction, reduceLoudSounds, spatialFocus, speechAmplification, bass, mid, treble, eq250, eq500, eq2000, eq4000, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult }),
+      partialize: ({ volume, noiseReduction, reduceLoudSounds, spatialFocus, speechAmplification, bass, mid, treble, eq250, eq500, eq2000, eq4000, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, savedProfile }) =>
+        ({ volume, noiseReduction, reduceLoudSounds, spatialFocus, speechAmplification, bass, mid, treble, eq250, eq500, eq2000, eq4000, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, savedProfile }),
       onRehydrateStorage: () => (state, error) => {
         if (state) {
           void Promise.all([

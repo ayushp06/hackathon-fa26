@@ -41,7 +41,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src constants app.config.ts",
-    "test": "node --experimental-strip-types --test constants/theme.test.mjs src/device/mockDeviceService.test.mjs src/device/hardwareDeviceService.test.mjs src/components/rotaryMath.test.mjs src/feedback/feedbackTiming.test.mjs src/feedback/soundAssets.test.mjs src/state/mockCalibration.test.mjs src/state/manualValues.test.mjs src/state/legacyState.test.mjs src/screens/manualWaveform.test.mjs"
+    "test": "node --experimental-strip-types --test constants/theme.test.mjs src/device/mockDeviceService.test.mjs src/device/hardwareDeviceService.test.mjs src/components/rotaryMath.test.mjs src/feedback/feedbackTiming.test.mjs src/feedback/soundAssets.test.mjs src/state/mockCalibration.test.mjs src/state/manualValues.test.mjs src/state/legacyState.test.mjs src/state/soundProfile.test.mjs src/screens/manualWaveform.test.mjs"
   },
   "private": true
 }

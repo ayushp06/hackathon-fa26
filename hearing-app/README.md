@@ -75,3 +75,5 @@ are illustrative, not measured audio. The store also persists mode and feedback
 preferences; learning progress and connection state remain session-only.
 
 Settings lets the user turn haptics and sounds on or off; haptics default on and sounds default off. Dial steps, mode changes, and mock recalibration use brief feedback when enabled. Bundled sound cues are short and low amplitude, player volume is limited to 18%, and playback follows the device's silent mode. Feedback does not change system volume, request microphone access, or play in the background. Reduced Motion suppresses haptics; active screen readers suppress UI sounds so spoken feedback is not interrupted.
+
+Settings also has one locally saved sound profile. Save or update it after tuning the volume, noise controls and EQ; Restore applies those values again, muting the connected device while changing the controls and restoring the saved volume last. It does not save feedback preferences or claim to measure hearing.
