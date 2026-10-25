@@ -26,7 +26,7 @@ export function manualDialDiameter(windowWidth: number, availableHeight = Infini
   const contentWidth = Math.min(windowWidth, theme.sizing.contentMaxWidth) - theme.spacing.lg * 2;
   const otherHeight = theme.spacing.xl * 4 + theme.typography.title.lineHeight
     + theme.spacing.md * 2 + theme.typography.segment.lineHeight * 3;
-  return Math.max(56, Math.min(theme.sizing.manualDialMaxDiameter, (contentWidth - theme.spacing.md) / 2, (availableHeight - otherHeight) / 2));
+  return Math.max(100, Math.min(theme.sizing.manualDialMaxDiameter, (contentWidth - theme.spacing.md) / 2, (availableHeight - otherHeight) / 2));
 }
 
 export function advancedDialDiameter(windowWidth: number) {
@@ -37,5 +37,5 @@ export function advancedDialDiameter(windowWidth: number) {
 export function calibrationDialDiameter(windowWidth: number, availableHeight = Infinity) {
   const otherHeight = theme.spacing.xl * 3 + theme.spacing.md * 2
     + theme.typography.segment.lineHeight + theme.sizing.segmentHeight + theme.spacing.lg;
-  return Math.max(56, Math.min(theme.sizing.calibrationDialMaxDiameter, windowWidth - theme.spacing.lg * 4, availableHeight - otherHeight));
+  return Math.max(100, Math.min(theme.sizing.calibrationDialMaxDiameter, windowWidth - theme.spacing.lg * 4, availableHeight - otherHeight));
 }
