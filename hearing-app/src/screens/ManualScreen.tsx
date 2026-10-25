@@ -103,7 +103,7 @@ export function ManualScreen() {
         </View>
         {noiseAction ? <Text accessibilityLiveRegion="polite" style={[styles.description, styles.noiseStatus]}>{noiseAction}</Text> : null}
       </View> : null}
-      <Pressable accessibilityRole="button" accessibilityState={{ expanded: advancedOpen }} onPress={toggleAdvanced} style={styles.advancedButton}>
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded: advancedOpen }} onPress={toggleAdvanced} style={[styles.advancedButton, styles.advancedToggle]}>
         <Text style={styles.advancedText}>Advanced</Text>
         <Svg width={16} height={16} viewBox="0 0 16 16" pointerEvents="none"><Path d={advancedOpen ? 'M 2 11 L 8 5 L 14 11' : 'M 2 5 L 8 11 L 14 5'} fill="none" stroke={theme.colors.text} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></Svg>
       </Pressable>
@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: theme.spacing.lg, columnGap: theme.spacing.md, marginTop: theme.spacing.xl },
   column: { alignItems: 'center' },
   advancedButton: { minHeight: theme.sizing.minimumTouchTarget, alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm, paddingHorizontal: theme.spacing.md, borderWidth: 1, borderColor: theme.colors.text, borderRadius: theme.sizing.segmentRadius, marginTop: theme.spacing.xl },
+  advancedToggle: { alignSelf: 'center' },
   advancedText: { ...theme.typography.segment, color: theme.colors.text },
   advancedClip: { overflow: 'hidden' },
   advanced: { paddingTop: theme.spacing.lg },
