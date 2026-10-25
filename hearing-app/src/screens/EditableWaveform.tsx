@@ -1,59 +1,52 @@
 /* eslint-disable react-hooks/immutability -- Shared values drive the preview during dial and graph gestures. */
 import { useEffect, useState } from 'react';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import Svg, { Circle, G, Line, Path, Text as SvgText } from 'react-native-svg';
 import { theme } from '../../constants/theme';
-import type { EqControl } from '../state/manualValues';
+import { eqBands, type EqControl } from '../state/manualValues';
 import { frequencyResponsePath, manualWaveformPath, responseBandAtX, responseGainAtY, responseX, responseY } from './manualWaveform';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const ink = theme.colors.text;
 const cream = theme.colors.background;
 const muted = '#BFB9AE';
 const grid = '#4A4946';
 
 type Props = {
-  bass: number;
-  mid: number;
-  treble: number;
+  gains: number[];
   noiseReduction: number;
   spatialFocus: number;
   speechAmplification: number;
   onEqChange: (band: EqControl, value: number) => void;
 };
 
-export function EditableWaveform({ bass, mid, treble, noiseReduction, spatialFocus, speechAmplification, onEqChange }: Props) {
+export function EditableWaveform({ gains, noiseReduction, spatialFocus, speechAmplification, onEqChange }: Props) {
   const [width, setWidth] = useState(300);
-  const animatedBass = useSharedValue(bass);
-  const animatedMid = useSharedValue(mid);
-  const animatedTreble = useSharedValue(treble);
+  const animatedBass = useSharedValue(gains[0]);
+  const animatedMid = useSharedValue(gains[3]);
+  const animatedTreble = useSharedValue(gains[6]);
   const animatedNoise = useSharedValue(noiseReduction);
   const animatedFocus = useSharedValue(spatialFocus);
   const animatedSpeech = useSharedValue(speechAmplification);
   const activeBand = useSharedValue<EqControl>('bass');
   const lastGain = useSharedValue(0);
 
-  useEffect(() => { animatedBass.value = withTiming(bass, { duration: 150 }); }, [animatedBass, bass]);
-  useEffect(() => { animatedMid.value = withTiming(mid, { duration: 150 }); }, [animatedMid, mid]);
-  useEffect(() => { animatedTreble.value = withTiming(treble, { duration: 150 }); }, [animatedTreble, treble]);
+  useEffect(() => { animatedBass.value = withTiming(gains[0], { duration: 150 }); }, [animatedBass, gains]);
+  useEffect(() => { animatedMid.value = withTiming(gains[3], { duration: 150 }); }, [animatedMid, gains]);
+  useEffect(() => { animatedTreble.value = withTiming(gains[6], { duration: 150 }); }, [animatedTreble, gains]);
   useEffect(() => { animatedNoise.value = withTiming(noiseReduction, { duration: 150 }); }, [animatedNoise, noiseReduction]);
   useEffect(() => { animatedFocus.value = withTiming(spatialFocus, { duration: 150 }); }, [animatedFocus, spatialFocus]);
   useEffect(() => { animatedSpeech.value = withTiming(speechAmplification, { duration: 150 }); }, [animatedSpeech, speechAmplification]);
 
-  const responseProps = useAnimatedProps(() => ({ d: frequencyResponsePath(width, animatedBass.value, animatedMid.value, animatedTreble.value) }));
-  const waveformProps = useAnimatedProps(() => ({ d: manualWaveformPath(animatedBass.value, animatedMid.value, animatedTreble.value, animatedNoise.value, animatedFocus.value, animatedSpeech.value) }));
-  const bassNodeProps = useAnimatedProps(() => ({ cy: responseY(animatedBass.value) }));
-  const midNodeProps = useAnimatedProps(() => ({ cy: responseY(animatedMid.value) }));
-  const trebleNodeProps = useAnimatedProps(() => ({ cy: responseY(animatedTreble.value) }));
+  const waveformProps = useAnimatedProps(() => ({ d: manualWaveformPath(animatedBass.value, animatedMid.value, animatedTreble.value, animatedNoise.value, animatedFocus.value, animatedSpeech.value, gains[1], gains[2], gains[4], gains[5]) }));
 
   const changeBand = (band: EqControl, value: number) => {
     if (band === 'bass') animatedBass.value = value;
     else if (band === 'mid') animatedMid.value = value;
-    else animatedTreble.value = value;
+    else if (band === 'treble') animatedTreble.value = value;
     onEqChange(band, value);
   };
 
@@ -63,7 +56,7 @@ export function EditableWaveform({ bass, mid, treble, noiseReduction, spatialFoc
     onBegin: (event) => {
       'worklet';
       activeBand.value = responseBandAtX(event.x, width);
-      lastGain.value = activeBand.value === 'bass' ? bass : activeBand.value === 'mid' ? mid : treble;
+      lastGain.value = gains[eqBands.findIndex((band) => band.control === activeBand.value)];
     },
     onUpdate: (event) => {
       'worklet';
@@ -73,12 +66,7 @@ export function EditableWaveform({ bass, mid, treble, noiseReduction, spatialFoc
       scheduleOnRN(changeBand, activeBand.value, gain);
     },
   });
-
-  const nodes = [
-    { control: 'bass', label: 'BASS', frequency: 125, animatedProps: bassNodeProps },
-    { control: 'mid', label: 'MID', frequency: 1000, animatedProps: midNodeProps },
-    { control: 'treble', label: 'TREBLE', frequency: 8000, animatedProps: trebleNodeProps },
-  ] as const;
+  const responsePath = frequencyResponsePath(width, gains);
 
   return (
     <View style={styles.panel}>
@@ -86,24 +74,34 @@ export function EditableWaveform({ bass, mid, treble, noiseReduction, spatialFoc
         <Text style={styles.heading}>Frequency response</Text>
         <Text style={styles.badge}>{width < 290 ? 'EQ' : 'EQ PREVIEW'}</Text>
       </View>
-      <Text style={styles.instruction}>Drag a point up or down to adjust its dial.</Text>
+      <Text style={styles.instruction}>Drag any frequency point to fine tune its gain.</Text>
       <GestureDetector gesture={gesture}>
-        <View accessible accessibilityRole="image" accessibilityLabel="Illustrative frequency response editor. Drag Bass, Mid or Treble up or down. The dials above are accessible alternatives." onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={styles.responseChart}>
+        <View accessible accessibilityRole="image" accessibilityLabel="Illustrative seven band frequency response editor. Drag a point up or down. Buttons below provide accessible fine adjustments." onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={styles.responseChart}>
           <Svg width={width} height={190} pointerEvents="none">
             {[-12, 0, 12].map((gain) => <Line key={gain} x1={38} x2={width - 16} y1={responseY(gain)} y2={responseY(gain)} stroke={grid} strokeWidth={gain === 0 ? 1.3 : 0.8} strokeDasharray={gain === 0 ? undefined : '3 4'} />)}
-            {[125, 1000, 8000].map((frequency) => <Line key={frequency} x1={responseX(frequency, width)} x2={responseX(frequency, width)} y1={30} y2={150} stroke={grid} strokeWidth={0.8} strokeDasharray="3 4" />)}
+            {eqBands.map(({ frequency }) => <Line key={frequency} x1={responseX(frequency, width)} x2={responseX(frequency, width)} y1={30} y2={150} stroke={grid} strokeWidth={0.8} strokeDasharray="3 4" />)}
             {[-12, 0, 12].map((gain) => <SvgText key={gain} x={4} y={responseY(gain) + 4} fill={muted} fontSize={10}>{gain > 0 ? `+${gain}` : gain} dB</SvgText>)}
-            {(width < 340 ? [125, 1000, 8000] : [20, 125, 1000, 8000, 20000]).map((frequency) => <SvgText key={frequency} x={responseX(frequency, width)} y={176} fill={muted} fontSize={10} textAnchor={frequency === 20000 ? 'end' : 'middle'}>{frequency === 20 ? '20 Hz' : frequency === 20000 ? '20k Hz' : frequency >= 1000 ? `${frequency / 1000}k` : frequency}</SvgText>)}
-            <AnimatedPath animatedProps={responseProps} fill="none" stroke={cream} strokeOpacity={0.14} strokeWidth={7} />
-            <AnimatedPath animatedProps={responseProps} fill="none" stroke={cream} strokeWidth={2.2} />
-            {nodes.map(({ control, label, frequency, animatedProps }) => <G key={control}>
-              <SvgText x={responseX(frequency, width)} y={18} fill={muted} fontSize={10} fontWeight="700" textAnchor="middle">{label}</SvgText>
-              <AnimatedCircle cx={responseX(frequency, width)} animatedProps={animatedProps} r={11} fill={ink} stroke={cream} strokeWidth={1.5} />
-              <AnimatedCircle cx={responseX(frequency, width)} animatedProps={animatedProps} r={4} fill={cream} />
+            {eqBands.map(({ frequency }) => <SvgText key={frequency} x={responseX(frequency, width)} y={176} fill={muted} fontSize={9} textAnchor="middle">{frequency >= 1000 ? `${frequency / 1000}k` : frequency}</SvgText>)}
+            <Path d={responsePath} fill="none" stroke={cream} strokeOpacity={0.14} strokeWidth={7} />
+            <Path d={responsePath} fill="none" stroke={cream} strokeWidth={2.2} />
+            {eqBands.map(({ control, frequency }, index) => <G key={control}>
+              <Circle cx={responseX(frequency, width)} cy={responseY(gains[index])} r={9} fill={ink} stroke={cream} strokeWidth={1.5} />
+              <Circle cx={responseX(frequency, width)} cy={responseY(gains[index])} r={3} fill={cream} />
             </G>)}
           </Svg>
         </View>
       </GestureDetector>
+      <View style={styles.fineControls}>
+        {eqBands.filter(({ control }) => control.startsWith('eq')).map(({ control, frequency }) => {
+          const value = gains[eqBands.findIndex((band) => band.control === control)];
+          return <View key={control} style={styles.fineRow}>
+            <Text style={styles.fineLabel}>{frequency >= 1000 ? `${frequency / 1000}k` : frequency} Hz</Text>
+            <Text style={styles.fineValue}>{value > 0 ? '+' : ''}{value} dB</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Decrease ${frequency} hertz gain`} disabled={value <= -12} onPress={() => onEqChange(control, value - 1)} style={styles.fineButton}><Text style={styles.fineButtonText}>−</Text></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Increase ${frequency} hertz gain`} disabled={value >= 12} onPress={() => onEqChange(control, value + 1)} style={styles.fineButton}><Text style={styles.fineButtonText}>+</Text></Pressable>
+          </View>;
+        })}
+      </View>
       <View style={styles.signalCard}>
         <View style={styles.signalHeader}>
           <Text style={styles.signalTitle}>Synthetic waveform</Text>
@@ -130,6 +128,12 @@ const styles = StyleSheet.create({
   badge: { color: muted, fontSize: 10, lineHeight: 14, fontWeight: '700', letterSpacing: 1.1 },
   instruction: { color: muted, fontSize: 13, lineHeight: 18, marginTop: theme.spacing.xs },
   responseChart: { marginTop: theme.spacing.sm, minHeight: 190, cursor: 'ns-resize' },
+  fineControls: { marginTop: theme.spacing.sm },
+  fineRow: { flexDirection: 'row', alignItems: 'center', minHeight: 44, borderTopWidth: 1, borderTopColor: grid },
+  fineLabel: { color: cream, flex: 1, fontSize: 13 },
+  fineValue: { color: muted, width: 58, textAlign: 'right', marginRight: theme.spacing.sm, fontSize: 12 },
+  fineButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  fineButtonText: { color: cream, fontSize: 22 },
   signalCard: { backgroundColor: cream, borderRadius: 8, paddingHorizontal: theme.spacing.md, paddingTop: theme.spacing.sm, marginTop: theme.spacing.sm },
   signalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.sm },
   signalTitle: { color: ink, fontSize: 13, lineHeight: 18, fontWeight: '600' },

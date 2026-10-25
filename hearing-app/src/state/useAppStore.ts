@@ -82,6 +82,10 @@ export const useAppStore = create<AppState>()(
       bass: 0,
       mid: 0,
       treble: 0,
+      eq250: 0,
+      eq500: 0,
+      eq2000: 0,
+      eq4000: 0,
       activeMode: 'automatic',
       hapticsEnabled: true,
       soundFeedbackEnabled: true,
@@ -110,7 +114,8 @@ export const useAppStore = create<AppState>()(
           : control === 'speechAmplification' ? deviceService.setSpeechAmplification(normalized)
           : control === 'bass' ? deviceService.setBass(normalized)
           : control === 'mid' ? deviceService.setMid(normalized)
-          : deviceService.setTreble(normalized);
+          : control === 'treble' ? deviceService.setTreble(normalized)
+          : deviceService.setFineEq(Number(control.slice(2)) as 250 | 500 | 2000 | 4000, normalized);
         void command.catch((error) => set({ transportError: errorMessage(error) }));
       },
       setActiveMode: (activeMode) => set({ activeMode }),
@@ -158,6 +163,10 @@ export const useAppStore = create<AppState>()(
           bass: typeof saved.bass === 'number' ? normalizeEqGain(saved.bass) ?? current.bass : current.bass,
           mid: typeof saved.mid === 'number' ? normalizeEqGain(saved.mid) ?? current.mid : current.mid,
           treble: typeof saved.treble === 'number' ? normalizeEqGain(saved.treble) ?? current.treble : current.treble,
+          eq250: typeof saved.eq250 === 'number' ? normalizeEqGain(saved.eq250) ?? 0 : 0,
+          eq500: typeof saved.eq500 === 'number' ? normalizeEqGain(saved.eq500) ?? 0 : 0,
+          eq2000: typeof saved.eq2000 === 'number' ? normalizeEqGain(saved.eq2000) ?? 0 : 0,
+          eq4000: typeof saved.eq4000 === 'number' ? normalizeEqGain(saved.eq4000) ?? 0 : 0,
           activeMode: saved.activeMode === 'manual' ? 'manual' : 'automatic',
           hapticsEnabled: typeof saved.hapticsEnabled === 'boolean' ? saved.hapticsEnabled : current.hapticsEnabled,
           soundFeedbackEnabled: typeof saved.soundFeedbackEnabled === 'boolean' ? saved.soundFeedbackEnabled : current.soundFeedbackEnabled,
@@ -170,8 +179,8 @@ export const useAppStore = create<AppState>()(
           preliminaryAudioProfile: hearingPreferences ? toPreliminaryAudioProfile(hearingPreferences) : null,
         };
       },
-      partialize: ({ volume, noiseReduction, spatialFocus, speechAmplification, bass, mid, treble, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }) =>
-        ({ volume, noiseReduction, spatialFocus, speechAmplification, bass, mid, treble, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }),
+      partialize: ({ volume, noiseReduction, spatialFocus, speechAmplification, bass, mid, treble, eq250, eq500, eq2000, eq4000, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }) =>
+        ({ volume, noiseReduction, spatialFocus, speechAmplification, bass, mid, treble, eq250, eq500, eq2000, eq4000, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }),
       onRehydrateStorage: () => (state, error) => {
         if (state) {
           void Promise.all([
@@ -182,6 +191,10 @@ export const useAppStore = create<AppState>()(
             deviceService.setBass(state.bass),
             deviceService.setMid(state.mid),
             deviceService.setTreble(state.treble),
+            deviceService.setFineEq(250, state.eq250),
+            deviceService.setFineEq(500, state.eq500),
+            deviceService.setFineEq(2000, state.eq2000),
+            deviceService.setFineEq(4000, state.eq4000),
           ]).catch((commandError) => useAppStore.setState({ transportError: errorMessage(commandError) }));
         }
         useAppStore.setState({ hydrated: true, transportError: error ? errorMessage(error) : null });

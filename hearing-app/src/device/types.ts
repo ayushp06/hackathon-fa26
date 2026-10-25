@@ -18,6 +18,10 @@ export type DeviceStatus = {
   bass: number;
   mid: number;
   treble: number;
+  eq250: number;
+  eq500: number;
+  eq2000: number;
+  eq4000: number;
   calibrationStatus: CalibrationStatus;
 };
 
@@ -31,6 +35,7 @@ export interface DeviceTransport {
   setBass(value: number): Promise<DeviceAcknowledgment>;
   setMid(value: number): Promise<DeviceAcknowledgment>;
   setTreble(value: number): Promise<DeviceAcknowledgment>;
+  setFineEq(frequency: 250 | 500 | 2000 | 4000, value: number): Promise<DeviceAcknowledgment>;
   startCalibration(volume: number): Promise<CalibrationResult>;
   getStatus(): Promise<DeviceStatus>;
 }

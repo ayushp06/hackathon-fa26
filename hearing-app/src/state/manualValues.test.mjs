@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { migratePercentEqGain, normalizeEqGain, normalizeManualValue, restoreSharedVolume } from './manualValues.ts';
+import { eqBands, isEqControl, migratePercentEqGain, normalizeEqGain, normalizeManualValue, restoreSharedVolume } from './manualValues.ts';
 
 test('manual percentages round and stay within 0–100', () => {
   assert.equal(normalizeManualValue(-5), 0);
@@ -10,6 +10,9 @@ test('manual percentages round and stay within 0–100', () => {
 });
 
 test('EQ gains use signed dB values and migrate saved percent positions', () => {
+  assert.deepEqual(eqBands.map(({ frequency }) => frequency), [125, 250, 500, 1000, 2000, 4000, 8000]);
+  assert.equal(isEqControl('eq250'), true);
+  assert.equal(isEqControl('noiseReduction'), false);
   assert.equal(normalizeEqGain(-20), -12);
   assert.equal(normalizeEqGain(3.6), 4);
   assert.equal(normalizeEqGain(20), 12);

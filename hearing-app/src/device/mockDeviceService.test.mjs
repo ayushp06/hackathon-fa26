@@ -21,18 +21,24 @@ test('mock transport acknowledges independent controls and reports simulated sta
   await transport.setBass(-8);
   await transport.setMid(0);
   await transport.setTreble(12);
+  await transport.setFineEq(250, 4);
+  await transport.setFineEq(500, -3);
+  await transport.setFineEq(2000, 6);
+  await transport.setFineEq(4000, -2);
   assert.equal(volume.sequence, 1);
   assert.equal(volume.simulated, true);
   assert.equal(volume.accepted, true);
   assert.deepEqual(await transport.getStatus(), {
     simulated: true, connected: false, volume: 72,
     noiseReduction: 64, spatialFocus: 28, speechAmplification: 81,
-    bass: -8, mid: 0, treble: 12, calibrationStatus: 'idle',
+    bass: -8, mid: 0, treble: 12, eq250: 4, eq500: -3, eq2000: 6, eq4000: -2, calibrationStatus: 'idle',
   });
   await assert.rejects(transport.setNoiseReduction(101), /0 to 100/);
   await assert.rejects(transport.setSpeechAmplification(-1), /0 to 100/);
   await assert.rejects(transport.setBass(13), /-12 to \+12 dB/);
   await assert.rejects(transport.setMid(-13), /-12 to \+12 dB/);
+  await assert.rejects(transport.setFineEq(250, 13), /-12 to \+12 dB/);
+  await assert.rejects(transport.setFineEq(123, 1), /Unsupported EQ frequency/);
   assert.equal((await transport.getStatus()).noiseReduction, 64);
   assert.equal((await transport.getStatus()).bass, -8);
 });

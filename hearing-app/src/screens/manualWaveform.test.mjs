@@ -41,19 +41,22 @@ test('frequency response uses log-spaced Hz positions and gain in dB', () => {
   assert.equal(responseGainAtY(-50), 12);
   assert.equal(responseGainAtY(300), -12);
   assert.equal(responseBandAtX(responseX(125, width), width), 'bass');
+  assert.equal(responseBandAtX(responseX(500, width), width), 'eq500');
   assert.equal(responseBandAtX(responseX(1000, width), width), 'mid');
   assert.equal(responseBandAtX(responseX(8000, width), width), 'treble');
-  assert.ok(Math.abs(responseDbAt(1000, 0, 6, 0) - 6) < 0.01);
-  assert.ok(Math.abs(responseDbAt(20, 0, 6, 0)) < 0.01);
-  assert.ok(frequencyResponsePath(width, 0, 0, 0).includes(`${responseY(0).toFixed(1)}`));
+  assert.equal(responseDbAt(1000, [0, 0, 0, 6, 0, 0, 0]), 6);
+  assert.equal(responseDbAt(20, [0, 0, 0, 6, 0, 0, 0]), 0);
+  assert.ok(frequencyResponsePath(width, [0, 0, 0, 0, 0, 0, 0]).includes(`${responseY(0).toFixed(1)}`));
 });
 
-test('response line passes exactly through all three EQ handles', () => {
+test('response line passes through all seven EQ handles and fine points stay independent', () => {
   const width = 520;
-  const gains = [-12, -12, 4];
-  const path = frequencyResponsePath(width, ...gains);
-  for (const [index, frequency] of [125, 1000, 8000].entries()) {
-    assert.ok(Math.abs(responseDbAt(frequency, ...gains) - gains[index]) < 1e-9);
+  const gains = [-12, 4, -3, 6, 8, -2, 4];
+  const path = frequencyResponsePath(width, gains);
+  for (const [index, frequency] of [125, 250, 500, 1000, 2000, 4000, 8000].entries()) {
+    assert.ok(Math.abs(responseDbAt(frequency, gains) - gains[index]) < 1e-9);
     assert.ok(path.includes(`L ${responseX(frequency, width).toFixed(1)} ${responseY(gains[index]).toFixed(1)}`));
   }
+  assert.ok(responseDbAt(750, gains) >= -3 && responseDbAt(750, gains) <= 6);
+  assert.notEqual(manualWaveformPath(0, 0, 0, 50, 50, 50, 6), manualWaveformPath(0, 0, 0));
 });

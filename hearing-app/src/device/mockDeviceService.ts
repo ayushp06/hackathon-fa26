@@ -15,6 +15,10 @@ export class MockDeviceTransport implements DeviceService {
     bass: 0,
     mid: 0,
     treble: 0,
+    eq250: 0,
+    eq500: 0,
+    eq2000: 0,
+    eq4000: 0,
     calibrationStatus: 'idle',
   };
 
@@ -82,6 +86,13 @@ export class MockDeviceTransport implements DeviceService {
   async setTreble(value: number) {
     this.assertEqGain(value);
     this.status.treble = value;
+    return this.acknowledge();
+  }
+
+  async setFineEq(frequency: 250 | 500 | 2000 | 4000, value: number) {
+    if (![250, 500, 2000, 4000].includes(frequency)) throw new RangeError('Unsupported EQ frequency');
+    this.assertEqGain(value);
+    this.status[`eq${frequency}`] = value;
     return this.acknowledge();
   }
 

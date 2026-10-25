@@ -8,7 +8,7 @@ import { RotaryDial } from '../components/RotaryDial';
 import { isDialLandmark } from '../components/rotaryMath';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
-import type { EqControl, ManualControl } from '../state/manualValues';
+import { eqBands, type EqControl, type ManualControl } from '../state/manualValues';
 import { useAppStore } from '../state/useAppStore';
 import { EditableWaveform } from './EditableWaveform';
 
@@ -84,7 +84,7 @@ export function ManualScreen() {
           <View style={styles.advancedRow}>
             {advancedControls.map((item) => <View key={item[0]} style={styles.advancedColumn}>{dial(item, advancedDiameter)}</View>)}
           </View>
-          <EditableWaveform bass={values.bass} mid={values.mid} treble={values.treble} noiseReduction={values.noiseReduction} spatialFocus={values.spatialFocus} speechAmplification={values.speechAmplification} onEqChange={changeEqFromGraph} />
+          <EditableWaveform gains={eqBands.map(({ control }) => values[control])} noiseReduction={values.noiseReduction} spatialFocus={values.spatialFocus} speechAmplification={values.speechAmplification} onEqChange={changeEqFromGraph} />
         </View>
       </Animated.View>
     </ScrollView>

@@ -1,8 +1,17 @@
-export type ManualControl = 'noiseReduction' | 'spatialFocus' | 'speechAmplification' | 'bass' | 'mid' | 'treble';
-export type EqControl = 'bass' | 'mid' | 'treble';
+export const eqBands = [
+  { control: 'bass', frequency: 125 },
+  { control: 'eq250', frequency: 250 },
+  { control: 'eq500', frequency: 500 },
+  { control: 'mid', frequency: 1000 },
+  { control: 'eq2000', frequency: 2000 },
+  { control: 'eq4000', frequency: 4000 },
+  { control: 'treble', frequency: 8000 },
+] as const;
+export type EqControl = (typeof eqBands)[number]['control'];
+export type ManualControl = 'noiseReduction' | 'spatialFocus' | 'speechAmplification' | EqControl;
 
 export function isEqControl(control: ManualControl): control is EqControl {
-  return control === 'bass' || control === 'mid' || control === 'treble';
+  return eqBands.some((band) => band.control === control);
 }
 
 export function normalizeManualValue(value: number) {
