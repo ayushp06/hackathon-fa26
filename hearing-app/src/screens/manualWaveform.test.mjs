@@ -1,20 +1,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { manualWaveformPath } from './manualWaveform.ts';
+import { frequencyResponsePath, manualWaveformPath, responseBandAtX, responseDbAt, responseGainAtY, responseX, responseY } from './manualWaveform.ts';
 
 const samples = (path) => [...path.matchAll(/[ML] [\d.]+ ([\d.]+)/g)].map(([, y]) => 50 - Number(y));
 const bandEnergy = (values, cycles) => Math.abs(values.reduce((sum, value, index) =>
-  sum + value * Math.sin(index / 120 * Math.PI * 2 * cycles), 0));
+  sum + value * Math.sin(index / 240 * Math.PI * 2 * cycles), 0));
 
 test('synthetic waveform changes the matching frequency band for each EQ gain', () => {
   const baseline = samples(manualWaveformPath(0, 0, 0));
-  assert.equal(baseline.length, 121);
-  for (const [index, cycles] of [2, 7, 17].entries()) {
+  assert.equal(baseline.length, 241);
+  for (const [index, cycles] of [2, 10, 40].entries()) {
     const gains = [0, 0, 0];
     gains[index] = 12;
     const boosted = samples(manualWaveformPath(...gains));
     const change = boosted.map((value, position) => value - baseline[position]);
-    assert.ok(bandEnergy(change, cycles) > 3 * Math.max(...[2, 7, 17].filter((band) => band !== cycles).map((band) => bandEnergy(change, band))));
+    assert.ok(bandEnergy(change, cycles) > 3 * Math.max(...[2, 10, 40].filter((band) => band !== cycles).map((band) => bandEnergy(change, band))));
     assert.ok(boosted.every((value) => value >= -50 && value <= 50));
   }
 });
@@ -22,12 +22,28 @@ test('synthetic waveform changes the matching frequency band for each EQ gain', 
 test('noise reduction, spatial focus, and speech amplification change distinct synthetic bands', () => {
   const baseline = samples(manualWaveformPath(0, 0, 0, 50, 50, 50));
   for (const [settings, cycles] of [
-    [[0, 0, 0, 100, 50, 50], 29],
-    [[0, 0, 0, 50, 100, 50], 11],
-    [[0, 0, 0, 50, 50, 100], 7],
+    [[0, 0, 0, 100, 50, 50], 60],
+    [[0, 0, 0, 50, 100, 50], 25],
+    [[0, 0, 0, 50, 50, 100], 10],
   ]) {
     const changed = samples(manualWaveformPath(...settings));
     const difference = changed.map((value, index) => value - baseline[index]);
-    assert.ok(bandEnergy(difference, cycles) > 3 * Math.max(...[7, 11, 29].filter((band) => band !== cycles).map((band) => bandEnergy(difference, band))));
+    assert.ok(bandEnergy(difference, cycles) > 3 * Math.max(...[10, 25, 60].filter((band) => band !== cycles).map((band) => bandEnergy(difference, band))));
   }
+});
+
+test('frequency response uses log-spaced Hz positions and gain in dB', () => {
+  const width = 360;
+  assert.ok(Math.abs(responseX(20, width) - 38) < 0.01);
+  assert.ok(Math.abs(responseX(20000, width) - 344) < 0.01);
+  assert.ok(Math.abs(responseX(200, width) - responseX(20, width) - (responseX(2000, width) - responseX(200, width))) < 0.01);
+  assert.equal(responseGainAtY(responseY(8)), 8);
+  assert.equal(responseGainAtY(-50), 12);
+  assert.equal(responseGainAtY(300), -12);
+  assert.equal(responseBandAtX(responseX(125, width), width), 'bass');
+  assert.equal(responseBandAtX(responseX(1000, width), width), 'mid');
+  assert.equal(responseBandAtX(responseX(8000, width), width), 'treble');
+  assert.ok(Math.abs(responseDbAt(1000, 0, 6, 0) - 6) < 0.01);
+  assert.ok(Math.abs(responseDbAt(20, 0, 6, 0)) < 0.01);
+  assert.ok(frequencyResponsePath(width, 0, 0, 0).includes(`${responseY(0).toFixed(1)}`));
 });
