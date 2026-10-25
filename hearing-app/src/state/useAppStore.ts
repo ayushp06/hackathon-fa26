@@ -37,6 +37,7 @@ type AppState = Record<ManualControl, number> & {
   clearHearingTestFile: () => void;
   saveHearingTestResult: (result: ToneTestResult) => void;
   completeOnboarding: (preferences: HearingPreferences) => void;
+  restartOnboarding: () => void;
 };
 
 type SavedAppState = Pick<AppState, ManualControl | 'volume' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'onboardingCompleted' | 'hearingTestFile' | 'hearingTestResponses' | 'hearingTestResult' | 'hearingPreferences'>;
@@ -119,6 +120,7 @@ export const useAppStore = create<AppState>()(
       clearHearingTestFile: () => set({ hearingTestFile: null }),
       saveHearingTestResult: (hearingTestResult) => set({ hearingTestResult, hearingTestResponses: null, hearingTestFile: null }),
       completeOnboarding: (hearingPreferences) => set({ hearingPreferences, preliminaryAudioProfile: toPreliminaryAudioProfile(hearingPreferences), onboardingCompleted: true }),
+      restartOnboarding: () => set({ onboardingCompleted: false }),
       recalibrate: async () => {
         if (get().calibrationStatus === 'loading') return false;
         set({ calibrationStatus: 'loading', transportError: null });
