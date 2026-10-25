@@ -25,10 +25,10 @@ export function magneticDialAngle(angle: number) {
   'worklet';
   const landmark = START_ANGLE + Math.round((angle - START_ANGLE) / (SWEEP_ANGLE / 4)) * (SWEEP_ANGLE / 4);
   const offset = angle - landmark;
-  const window = 8;
+  const window = 11;
   if (Math.abs(offset) >= window) return angle;
   const distance = offset / window;
-  return angle - offset * 0.65 * (1 - distance * distance) ** 2;
+  return angle - offset * 0.82 * (1 - distance * distance) ** 2;
 }
 
 export function isDialLandmark(value: number, min: number, max: number) {

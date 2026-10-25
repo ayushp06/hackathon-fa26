@@ -25,7 +25,7 @@ test('dial landmarks align with numbered quarter marks across control ranges', (
   assert.equal(isDialLandmark(-6, -12, 12), true);
 });
 
-test('numbered marks gently resist movement while intermediate positions stay selectable', () => {
+test('numbered marks hold more firmly while every intermediate step stays selectable', () => {
   for (let quarter = 0; quarter <= 4; quarter++) {
     const mark = START_ANGLE + quarter * SWEEP_ANGLE / 4;
     assert.equal(magneticDialAngle(mark), mark);
@@ -39,4 +39,16 @@ test('numbered marks gently resist movement while intermediate positions stay se
     previous = output;
   }
   assert.equal(angleToValue(magneticDialAngle(valueToAngle(37, 0, 100)), 0, 100, 1, 1), 37);
+  for (let quarter = 1; quarter <= 3; quarter++) {
+    const mark = START_ANGLE + quarter * SWEEP_ANGLE / 4;
+    assert.equal(angleToValue(magneticDialAngle(mark + 3), 0, 100, 1, 1), quarter * 25);
+    assert.equal(angleToValue(magneticDialAngle(mark - 3), 0, 100, 1, 1), quarter * 25);
+  }
+  for (const [min, max] of [[0, 100], [-12, 12]]) {
+    const reached = new Set();
+    for (let raw = START_ANGLE; raw <= START_ANGLE + SWEEP_ANGLE; raw += 0.1) {
+      reached.add(angleToValue(magneticDialAngle(raw), min, max, 1, 1));
+    }
+    for (let value = min; value <= max; value++) assert.ok(reached.has(value), `${value} remains selectable`);
+  }
 });
