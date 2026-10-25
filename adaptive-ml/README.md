@@ -21,6 +21,8 @@ or app dependencies. From this directory on Linux/macOS or Ubuntu WSL:
 ```sh
 make test
 make evaluate
+# Host integration with the actual NLMS/control sources, plus host-only benchmark:
+make test-dsp benchmark
 ```
 
 Equivalent direct command (also usable with MinGW GCC on Windows):
@@ -92,3 +94,9 @@ includes a root README and `audio_passthrough/` firmware with dual-microphone NL
 and serial PC playback. This module is not linked into that firmware. NLMS learns
 filter coefficients from audio; it does not learn user processing preferences.
 See `docs/interface-proposal.md` for confirmed upstream interfaces and remaining gaps.
+
+The opt-in firmware integration developed from main `b29a601` is documented in
+[`docs/embedded-integration.md`](docs/embedded-integration.md). It reuses live RMS and
+continuous NLMS strength, runs inference/learning in foreground, and adds separate
+explicit debug feedback without changing app code or the standalone learner algorithm.
+Target compilation/timing and physical demonstration still require hardware-owner checks.

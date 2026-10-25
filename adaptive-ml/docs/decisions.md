@@ -42,3 +42,12 @@
    mocked. Neither provides a continuous preference-control contract. Retain abstract
    dimensions and the existing algorithm; defer firmware linking, normalization,
    correction transport and target timing to a separate coordinated integration task.
+
+9. Embedded slice from main `b29a601`: reuse its existing continuous smoothed NLMS
+   strength rather than adding another wet/dry implementation. Map two real input
+   RMS statistics plus one documented neutral input; pin unsupported output 1 to
+   baseline. Mean 25 block measurements, require three stable windows, infer in
+   foreground and publish through Controls at block boundaries. Explicit reserved
+   debug commands train output 0; ordinary setters pause autonomy without training.
+   Session-only memory and opt-in build avoid flash wear and preserve default builds.
+   Synthetic real-DSP tests validate mechanics; no target/hardware claims follow.

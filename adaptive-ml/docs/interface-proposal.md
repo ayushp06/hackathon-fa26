@@ -2,6 +2,13 @@
 
 ## Status
 
+Current integration work starts from main `b29a601`, which adds real browser-to-USB
+transport and continuous firmware controls. The historical audit below is pinned to
+`803033a` and is no longer the current architecture. See
+[embedded integration](embedded-integration.md) for implemented RMS mapping, strength
+output, foreground scheduling and explicit debug correction IDs. The app's ordinary
+setter protocol remains non-training; no app-side correction UI has been added.
+
 CONFIRMED (reviewed `origin/main` at `803033a`; these upstream files are not yet
 in this feature branch): app transport remains mocked in
 `../../hearing-app/src/device/deviceService.ts`. `src/device/types.ts` and

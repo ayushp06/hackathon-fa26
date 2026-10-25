@@ -4,6 +4,9 @@
 #include "noise_filter.h"
 #include "reference_capture.h"
 #include "audio_controls.h"
+#ifdef AUDIO_ADAPTIVE_ML
+#include "adaptive_audio.h"
+#endif
 #ifdef AUDIO_PC_STREAM
 #define PACKET_SAMPLES 64U
 #ifdef AUDIO_APP_CONTROL
@@ -187,6 +190,10 @@ void PC_Audio_Poll(void)
                         /* Explicit app recovery remains available while a
                          * capture fault is latched and DSP callbacks stopped. */
                         if (frame[2]==11U && frame[3]==0U) NVIC_SystemReset();
+#ifdef AUDIO_ADAPTIVE_ML
+                        if (!Adaptive_Command(frame[2],(int8_t)frame[3],sequence,HAL_GetTick(),
+                            !g_audio_stats.fault && !g_control_stats.spatial && g_noise_stats.reference_present))
+#endif
                         Controls_Command(frame[2],(int8_t)frame[3],sequence);
                     }
                     received=0;
@@ -194,8 +201,12 @@ void PC_Audio_Poll(void)
                 continue;
             }
 #endif
-            if (command == 'b') Noise_SetEnabled(0);
-            if (command == 'n') Noise_SetEnabled(1);
+            if (command == 'b' || command == 'n') {
+#ifdef AUDIO_ADAPTIVE_ML
+                Adaptive_ManualOverride();
+#endif
+                Noise_SetEnabled(command=='n');
+            }
             if (command == 'r') Noise_RequestReset();
         }
     }

@@ -12,4 +12,6 @@ void Adaptive_Init(void);
 void Adaptive_ObserveBlock(uint32_t primary, uint32_t reference, int usable, uint32_t now);
 void Adaptive_Poll(uint32_t now, int usable);
 void Adaptive_ManualOverride(void);
+/* Reserved framed debug IDs: 14 correction, 15 autonomy, 16 clear memory. */
+int Adaptive_Command(uint8_t id, int8_t value, uint32_t sequence, uint32_t now, int usable);
 #endif

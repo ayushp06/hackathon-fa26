@@ -144,6 +144,16 @@ void Controls_SetAdaptiveStrength(uint32_t percent)
     __DMB(); __set_PRIMASK(mask);
 #endif
 }
+void Controls_AdaptiveAck(uint32_t sequence, uint8_t status)
+{
+#ifndef CONTROL_HOST_TEST
+    uint32_t mask=__get_PRIMASK(); __disable_irq();
+#endif
+    requested.sequence=sequence; requested.status=status; ++requested.generation;
+#ifndef CONTROL_HOST_TEST
+    __DMB(); __set_PRIMASK(mask);
+#endif
+}
 #endif
 
 void Controls_Process24(int32_t *samples,uint32_t count)

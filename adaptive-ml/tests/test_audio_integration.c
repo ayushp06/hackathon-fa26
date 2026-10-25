@@ -34,6 +34,34 @@ int main(void)
     for (unsigned i=0;i<24;++i) Adaptive_ObserveBlock(328,656,1,600+i*4);
     Adaptive_Poll(696,1); assert(g_adaptive_stats.predictions==predictions);
     Adaptive_Poll(900,0); /* fault/spatial gate */
+    assert(Adaptive_Command(14,75,101,900,0));
+    Controls_BeginBlock(); assert(g_control_stats.status==1 && strength==37);
+    window(1000,328,656); window(1100,328,656); window(1200,328,656);
+    assert(Adaptive_Command(14,75,102,1200,1));
+    assert(strength==37); /* still pending until a boundary */
+    Controls_BeginBlock(); assert(strength==75 && g_control_stats.status==0);
+    assert(g_adaptive_stats.corrections==1 && g_adaptive_stats.examples==1);
+    assert(Adaptive_Command(14,75,102,1250,1)); /* retry is not another correction */
+    assert(g_adaptive_stats.corrections==1);
+    assert(Adaptive_Command(14,20,102,1250,1)); /* same sequence, different payload */
+    Controls_BeginBlock(); assert(g_control_stats.status==1 && strength==75);
+    window(1300,328,656); Controls_BeginBlock(); assert(strength==75); /* hold */
+    for (uint32_t t=1400;t<=3400;t+=100) window(t,328,656);
+    Controls_BeginBlock(); assert(strength==75);
+    assert(Adaptive_Command(15,1,120,3400,1));
+    assert(Adaptive_Command(14,75,102,3400,1));
+    assert(g_adaptive_stats.corrections==1); /* old correction replay cannot train */
+    /* Unknown context falls back; later return recalls the explicit preference. */
+    for (uint32_t t=3500;t<=3800;t+=100) window(t,32768,32768);
+    Controls_BeginBlock(); assert(strength==50);
+    for (uint32_t t=3900;t<=4200;t+=100) window(t,328,656);
+    Controls_BeginBlock(); assert(strength==75);
+    assert(Adaptive_Command(15,0,103,4200,1));
+    window(4300,32768,32768); Controls_BeginBlock(); assert(strength==75);
+    assert(Adaptive_Command(16,0,104,4300,1)); assert(g_adaptive_stats.examples==0);
+    assert(!Adaptive_Command(13,0,105,4300,1)); /* existing IDs remain owned by Controls */
+    assert(Adaptive_Command(14,20,106,5000,1));
+    Controls_BeginBlock(); assert(g_control_stats.status==1); /* stale */
     puts("audio integration passed: 25-block aggregation, foreground inference, boundary handoff, bounds, manual precedence");
     return 0;
 }

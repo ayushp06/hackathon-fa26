@@ -2,6 +2,7 @@
 #include "ml_features.h"
 #include <math.h>
 #include <string.h>
+_Static_assert(PL_FEATURES==3 && PL_OUTPUTS==2, "Review embedded mappings when model shape changes");
 
 static int fresh(const adaptive_runtime *r, uint32_t now)
 {
