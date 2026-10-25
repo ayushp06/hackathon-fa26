@@ -1,5 +1,5 @@
 import { Stack, usePathname, useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -28,25 +28,20 @@ function AppContent() {
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const hydrated = useAppStore((state) => state.hydrated);
-  const activeMode = useAppStore((state) => state.activeMode);
+  const onboardingCompleted = useAppStore((state) => state.onboardingCompleted);
   const setActiveMode = useAppStore((state) => state.setActiveMode);
-  const initialRouteHandled = useRef(false);
   const settings = pathname === '/settings';
+  const onboarding = pathname === '/onboarding';
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!initialRouteHandled.current) {
-      initialRouteHandled.current = true;
-      if (pathname === '/' && activeMode === 'manual') {
-        router.replace('/manual');
-        return;
-      }
-    }
+    if (!onboardingCompleted && !onboarding) { router.replace('/onboarding'); return; }
+    if (onboardingCompleted && onboarding) { router.replace('/'); return; }
     if (pathname === '/' || pathname === '/manual') {
       setActiveMode(pathname === '/' ? 'automatic' : 'manual');
     }
-  }, [hydrated, pathname, activeMode, router, setActiveMode]);
+  }, [hydrated, pathname, onboarding, onboardingCompleted, router, setActiveMode]);
 
   const openSettings = () => {
     haptics.selection();
@@ -68,10 +63,10 @@ function AppContent() {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
         <View style={styles.content}>
-          <Pressable accessibilityRole="button" onPress={settings ? closeSettings : openSettings} style={styles.settingsLink}>
+          {onboardingCompleted && !onboarding ? <Pressable accessibilityRole="button" onPress={settings ? closeSettings : openSettings} style={styles.settingsLink}>
             <Text style={styles.settingsText}>{settings ? 'Done' : 'Settings'}</Text>
-          </Pressable>
-          {!settings ? <SegmentedSwitch /> : null}
+          </Pressable> : null}
+          {onboardingCompleted && !settings && !onboarding ? <SegmentedSwitch /> : null}
           <View style={styles.screen}>
             <Stack screenOptions={{ headerShown: false, animation: reducedMotion ? 'none' : 'fade', animationDuration: 180, contentStyle: styles.safeArea }} />
           </View>

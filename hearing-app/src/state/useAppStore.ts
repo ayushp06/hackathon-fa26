@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { deviceService } from '../device/deviceService';
 import type { CalibrationResult, CalibrationStatus, DeviceMode } from '../device/types';
-import { migrateLegacyState } from './legacyState';
+import { migrateLegacyState, shouldSkipOnboarding } from './legacyState';
 import { normalizeManualValue, type ManualControl } from './manualValues';
 
 export const VOLUME_MIN = 0;
@@ -18,15 +18,22 @@ type AppState = Record<ManualControl, number> & {
   lastResult: CalibrationResult | null;
   transportError: string | null;
   hydrated: boolean;
+  onboardingCompleted: boolean;
+  hearingTestFile: { name: string; uri: string } | null;
+  hearingTestResponses: boolean[] | null;
+  hearingPreferences: { vocalTones: boolean; backgroundNoise: boolean; softerTones: boolean } | null;
   setVolume: (value: number) => void;
   setValue: (control: ManualControl, value: number) => void;
   setActiveMode: (mode: DeviceMode) => void;
   setHapticsEnabled: (enabled: boolean) => void;
   setSoundFeedbackEnabled: (enabled: boolean) => void;
   recalibrate: () => Promise<boolean>;
+  saveHearingTestFile: (file: { name: string; uri: string }) => void;
+  saveHearingTestResponses: (responses: boolean[]) => void;
+  completeOnboarding: (preferences: NonNullable<AppState['hearingPreferences']>) => void;
 };
 
-type SavedAppState = Pick<AppState, 'volume' | 'baseVolume' | 'noiseReduction' | 'spatialFocus' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult'>;
+type SavedAppState = Pick<AppState, 'volume' | 'baseVolume' | 'noiseReduction' | 'spatialFocus' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'onboardingCompleted' | 'hearingTestFile' | 'hearingTestResponses' | 'hearingPreferences'>;
 
 const storage = createJSONStorage<SavedAppState>(() => ({
   getItem: async (name) => {
@@ -37,7 +44,9 @@ const storage = createJSONStorage<SavedAppState>(() => ({
       AsyncStorage.getItem('hearing-app-manual'),
       AsyncStorage.getItem('hearing-app-feedback'),
     ]);
-    return JSON.stringify({ state: migrateLegacyState(previous), version: 1 });
+    return previous.some((value) => value !== null)
+      ? JSON.stringify({ state: { ...migrateLegacyState(previous), onboardingCompleted: true }, version: 1 })
+      : null;
   },
   setItem: (name, value) => AsyncStorage.setItem(name, value),
   removeItem: (name) => AsyncStorage.removeItem(name),
@@ -70,6 +79,10 @@ export const useAppStore = create<AppState>()(
       lastResult: null,
       transportError: null,
       hydrated: false,
+      onboardingCompleted: false,
+      hearingTestFile: null,
+      hearingTestResponses: null,
+      hearingPreferences: null,
       setVolume: (value) => {
         const volume = normalizeManualValue(value);
         if (volume === null) return;
@@ -90,6 +103,9 @@ export const useAppStore = create<AppState>()(
       setActiveMode: (activeMode) => set({ activeMode }),
       setHapticsEnabled: (hapticsEnabled) => set({ hapticsEnabled }),
       setSoundFeedbackEnabled: (soundFeedbackEnabled) => set({ soundFeedbackEnabled }),
+      saveHearingTestFile: (hearingTestFile) => set({ hearingTestFile, hearingTestResponses: null }),
+      saveHearingTestResponses: (hearingTestResponses) => set({ hearingTestResponses, hearingTestFile: null }),
+      completeOnboarding: (hearingPreferences) => set({ hearingPreferences, onboardingCompleted: true }),
       recalibrate: async () => {
         if (get().calibrationStatus === 'loading') return false;
         set({ calibrationStatus: 'loading', transportError: null });
@@ -121,10 +137,14 @@ export const useAppStore = create<AppState>()(
           hapticsEnabled: typeof saved.hapticsEnabled === 'boolean' ? saved.hapticsEnabled : current.hapticsEnabled,
           soundFeedbackEnabled: typeof saved.soundFeedbackEnabled === 'boolean' ? saved.soundFeedbackEnabled : current.soundFeedbackEnabled,
           lastResult: validResult(saved.lastResult) ? saved.lastResult : null,
+          onboardingCompleted: shouldSkipOnboarding(saved, persisted !== undefined),
+          hearingTestFile: saved.hearingTestFile && typeof saved.hearingTestFile.name === 'string' && typeof saved.hearingTestFile.uri === 'string' ? saved.hearingTestFile : null,
+          hearingTestResponses: Array.isArray(saved.hearingTestResponses) && saved.hearingTestResponses.every((value) => typeof value === 'boolean') ? saved.hearingTestResponses : null,
+          hearingPreferences: saved.hearingPreferences && typeof saved.hearingPreferences.vocalTones === 'boolean' && typeof saved.hearingPreferences.backgroundNoise === 'boolean' && typeof saved.hearingPreferences.softerTones === 'boolean' ? saved.hearingPreferences : null,
         };
       },
-      partialize: ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult }) =>
-        ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult }),
+      partialize: ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingPreferences }) =>
+        ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingPreferences }),
       onRehydrateStorage: () => (state, error) => {
         if (state) {
           void Promise.all([

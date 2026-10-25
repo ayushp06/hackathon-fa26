@@ -23,3 +23,7 @@ export function migrateLegacyState(values: (string | null)[]) {
     lastResult: calibration.lastResult && typeof calibration.lastResult === 'object' ? calibration.lastResult : null,
   };
 }
+
+export function shouldSkipOnboarding(saved: { onboardingCompleted?: unknown }, hasSavedState: boolean) {
+  return typeof saved.onboardingCompleted === 'boolean' ? saved.onboardingCompleted : hasSavedState;
+}
