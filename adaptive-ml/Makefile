@@ -4,10 +4,11 @@ CPPFLAGS = -Iinclude
 LDLIBS = -lm
 
 .PHONY: test evaluate
-test: build/test_preference build/test_scenarios build/test_partial
+test: build/test_preference build/test_scenarios build/test_partial build/test_features
 	./build/test_preference
 	./build/test_scenarios
 	./build/test_partial
+	./build/test_features
 
 evaluate: build/evaluate
 	./build/evaluate
@@ -26,3 +27,6 @@ build/evaluate: src/preference.c include/preference.h simulation/evaluate.c | bu
 
 build/test_partial: src/preference.c include/preference.h tests/test_partial.c | build
 	$(CC) $(CPPFLAGS) $(CFLAGS) src/preference.c tests/test_partial.c $(LDLIBS) -o $@
+
+build/test_features: embedded/ml_features.c embedded/ml_features.h tests/test_features.c | build
+	$(CC) $(CPPFLAGS) -Iembedded $(CFLAGS) embedded/ml_features.c tests/test_features.c $(LDLIBS) -o $@
