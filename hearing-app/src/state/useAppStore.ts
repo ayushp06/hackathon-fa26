@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { deviceService } from '../device/deviceService';
 import type { CalibrationResult, CalibrationStatus, DeviceMode } from '../device/types';
+import { type HearingTestDocument, restoreHearingTestDocument } from '../hearingTest/document';
 import { migrateLegacyState, shouldSkipOnboarding } from './legacyState';
 import { normalizeManualValue, type ManualControl } from './manualValues';
 
@@ -19,7 +20,7 @@ type AppState = Record<ManualControl, number> & {
   transportError: string | null;
   hydrated: boolean;
   onboardingCompleted: boolean;
-  hearingTestFile: { name: string; uri: string } | null;
+  hearingTestFile: HearingTestDocument | null;
   hearingTestResponses: boolean[] | null;
   hearingPreferences: { vocalTones: boolean; backgroundNoise: boolean; softerTones: boolean } | null;
   setVolume: (value: number) => void;
@@ -28,7 +29,8 @@ type AppState = Record<ManualControl, number> & {
   setHapticsEnabled: (enabled: boolean) => void;
   setSoundFeedbackEnabled: (enabled: boolean) => void;
   recalibrate: () => Promise<boolean>;
-  saveHearingTestFile: (file: { name: string; uri: string }) => void;
+  saveHearingTestFile: (file: HearingTestDocument) => void;
+  clearHearingTestFile: () => void;
   saveHearingTestResponses: (responses: boolean[]) => void;
   completeOnboarding: (preferences: NonNullable<AppState['hearingPreferences']>) => void;
 };
@@ -104,6 +106,7 @@ export const useAppStore = create<AppState>()(
       setHapticsEnabled: (hapticsEnabled) => set({ hapticsEnabled }),
       setSoundFeedbackEnabled: (soundFeedbackEnabled) => set({ soundFeedbackEnabled }),
       saveHearingTestFile: (hearingTestFile) => set({ hearingTestFile, hearingTestResponses: null }),
+      clearHearingTestFile: () => set({ hearingTestFile: null }),
       saveHearingTestResponses: (hearingTestResponses) => set({ hearingTestResponses, hearingTestFile: null }),
       completeOnboarding: (hearingPreferences) => set({ hearingPreferences, onboardingCompleted: true }),
       recalibrate: async () => {
@@ -138,7 +141,7 @@ export const useAppStore = create<AppState>()(
           soundFeedbackEnabled: typeof saved.soundFeedbackEnabled === 'boolean' ? saved.soundFeedbackEnabled : current.soundFeedbackEnabled,
           lastResult: validResult(saved.lastResult) ? saved.lastResult : null,
           onboardingCompleted: shouldSkipOnboarding(saved, persisted !== undefined),
-          hearingTestFile: saved.hearingTestFile && typeof saved.hearingTestFile.name === 'string' && typeof saved.hearingTestFile.uri === 'string' ? saved.hearingTestFile : null,
+          hearingTestFile: restoreHearingTestDocument(saved.hearingTestFile),
           hearingTestResponses: Array.isArray(saved.hearingTestResponses) && saved.hearingTestResponses.every((value) => typeof value === 'boolean') ? saved.hearingTestResponses : null,
           hearingPreferences: saved.hearingPreferences && typeof saved.hearingPreferences.vocalTones === 'boolean' && typeof saved.hearingPreferences.backgroundNoise === 'boolean' && typeof saved.hearingPreferences.softerTones === 'boolean' ? saved.hearingPreferences : null,
         };

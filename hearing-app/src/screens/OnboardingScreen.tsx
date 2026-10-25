@@ -1,24 +1,28 @@
 /* eslint-disable react-hooks/immutability -- Expo Audio configures each native player's own volume property. */
 import { useEffect, useRef, useState } from 'react';
-import { getDocumentAsync } from 'expo-document-picker';
-import { File, Paths } from 'expo-file-system';
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { theme } from '../../constants/theme';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
+import { pickHearingTestDocument, previewHearingTestDocument, removeHearingTestDocument } from '../hearingTest/importDocument';
 import { useAppStore } from '../state/useAppStore';
 
 type Step = 'question' | 'import' | 'test' | 'preferences';
 type Preferences = { vocalTones: boolean; backgroundNoise: boolean; softerTones: boolean };
 
 const trials = [0, 1, 2, 0, 1, 2] as const;
-const acceptedExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'heic', 'webp'];
 
+function fileSize(bytes: number | null) {
+  if (bytes === null) return 'Size unavailable';
+  if (bytes < 1024) return `${bytes} B`;
+  return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
 export function OnboardingScreen() {
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const saveFile = useAppStore((state) => state.saveHearingTestFile);
+  const clearFile = useAppStore((state) => state.clearHearingTestFile);
   const saveResponses = useAppStore((state) => state.saveHearingTestResponses);
   const completeOnboarding = useAppStore((state) => state.completeOnboarding);
   const savedFile = useAppStore((state) => state.hearingTestFile);
@@ -87,30 +91,64 @@ export function OnboardingScreen() {
     sound.tap();
     setPicking(true);
     setError('');
+    let selected: Awaited<ReturnType<typeof pickHearingTestDocument>> = null;
     try {
-      const result = await getDocumentAsync({ type: ['application/pdf', 'image/*'], copyToCacheDirectory: true, base64: Platform.OS === 'web' });
-      if (result.canceled) return;
-      const asset = result.assets[0];
-      const extension = asset.name.split('.').pop()?.toLowerCase();
-      const sizeLimit = Platform.OS === 'web' ? 2 : 20;
-      if (!extension || !acceptedExtensions.includes(extension) || (asset.size && asset.size > sizeLimit * 1024 * 1024)) {
-        setError(`Choose a PDF or image smaller than ${sizeLimit} MB.`);
-        return;
-      }
-      if (Platform.OS === 'web') {
-        if (!asset.base64) throw new Error('Missing file data');
-        saveFile({ name: asset.name, uri: asset.base64 });
-      } else {
-        const file = new File(Paths.document, `hearing-test-${Date.now()}.${extension}`);
-        new File(asset.uri).copy(file);
-        saveFile({ name: asset.name, uri: file.uri });
-      }
+      selected = await pickHearingTestDocument();
+      if (!selected) return;
+      if (savedFile) await removeHearingTestDocument(savedFile);
+      saveFile(selected);
       haptics.success();
       sound.confirm();
-    } catch {
-      setError('Could not import that file. Please try again.');
+    } catch (error) {
+      if (selected) await removeHearingTestDocument(selected).catch(() => {});
+      setError(error instanceof Error ? error.message : 'Could not import that file. Please try again.');
     } finally {
       setPicking(false);
+    }
+  };
+
+  const removeFile = async () => {
+    if (!savedFile) return;
+    haptics.selection();
+    sound.tap();
+    setPicking(true);
+    setError('');
+    try {
+      await removeHearingTestDocument(savedFile);
+      clearFile();
+    } catch {
+      setError('Could not remove the file. Please try again.');
+    } finally {
+      setPicking(false);
+    }
+  };
+
+  const takeTestInstead = async () => {
+    if (savedFile) {
+      setPicking(true);
+      setError('');
+      try {
+        await removeHearingTestDocument(savedFile);
+        clearFile();
+      } catch {
+        setError('Could not remove the imported file. Please try again.');
+        setPicking(false);
+        return;
+      }
+      setPicking(false);
+    }
+    choose('test');
+  };
+
+  const previewFile = async () => {
+    if (!savedFile) return;
+    haptics.selection();
+    sound.tap();
+    setError('');
+    try {
+      await previewHearingTestDocument(savedFile);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Could not preview the file.');
     }
   };
 
@@ -136,7 +174,7 @@ export function OnboardingScreen() {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.top}>
-        {step !== 'question' ? <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} style={styles.back}><Text style={styles.backText}>‹ Back</Text></Pressable> : <View />}
+        {step !== 'question' ? <Pressable accessibilityRole="button" accessibilityLabel="Back" accessibilityState={{ disabled: picking }} disabled={picking} onPress={back} style={styles.back}><Text style={styles.backText}>‹ Back</Text></Pressable> : <View />}
         <Text style={styles.progress}>Step {step === 'question' ? 1 : step === 'preferences' ? 3 : 2} of 3</Text>
       </View>
       <View style={styles.progressTrack} accessibilityLabel={`Step ${step === 'question' ? 1 : step === 'preferences' ? 3 : 2} of 3`}>
@@ -147,16 +185,29 @@ export function OnboardingScreen() {
         <Text accessibilityRole="header" style={styles.title}>Do you have hearing test results?</Text>
         <Text style={styles.body}>You can import a PDF or image, or do a short listening check now.</Text>
         <Action label="Yes, import results" onPress={() => choose('import')} />
-        <Action label="No, do a hearing test" onPress={() => choose('test')} secondary />
+        <Action label="No, do a hearing test" onPress={() => void takeTestInstead()} secondary />
       </> : null}
 
       {step === 'import' ? <>
         <Text accessibilityRole="header" style={styles.title}>Import hearing test results</Text>
-        <Text style={styles.body}>Choose a PDF or image of your hearing test. The file stays on this device.</Text>
-        <Action label={picking ? 'Opening files…' : savedFile ? 'Choose another file' : 'Import PDF or image'} onPress={() => void importFile()} disabled={picking} />
-        {savedFile ? <Text style={styles.fileName}>Selected: {savedFile.name}</Text> : null}
-        <Text style={styles.note}>Results are saved for reference. Automatic adjustment from a clinical report is not available yet.</Text>
-        <Action label="Continue" onPress={() => choose('preferences')} disabled={!savedFile} secondary />
+        <Text style={styles.body}>Choose a PDF, JPG, PNG, or HEIC file. It stays in this app’s storage.</Text>
+        {error ? <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text> : null}
+        {savedFile ? <View style={styles.fileCard}>
+          {(savedFile.mimeType === 'image/jpeg' || savedFile.mimeType === 'image/png' || (savedFile.mimeType === 'image/heic' && Platform.OS !== 'web'))
+            ? <Image source={{ uri: savedFile.uri }} accessibilityLabel={`Preview of ${savedFile.name}`} resizeMode="contain" style={styles.imagePreview} />
+            : <View style={styles.filePlaceholder}><Text style={styles.placeholderText}>{savedFile.mimeType === 'application/pdf' ? 'PDF document' : 'Image file'}</Text></View>}
+          <Text style={styles.fileName}>{savedFile.name}</Text>
+          <Text style={styles.fileMeta}>{savedFile.mimeType} · {fileSize(savedFile.sizeBytes)}</Text>
+          {savedFile.importedAt ? <Text style={styles.fileMeta}>Imported {new Date(savedFile.importedAt).toLocaleDateString()}</Text> : null}
+          <Text style={styles.statusLabel}>Pending Analysis</Text>
+          <Text style={styles.fileMeta}>No hearing thresholds have been extracted or interpreted.</Text>
+          {Platform.OS !== 'web' ? <Action label="Preview file" onPress={() => void previewFile()} secondary /> : null}
+          <Action label="Replace file" onPress={() => void importFile()} disabled={picking} secondary />
+          <Action label="Remove file" onPress={() => void removeFile()} disabled={picking} secondary />
+        </View> : <Action label={picking ? 'Opening files…' : 'Import PDF, JPG, PNG, or HEIC'} onPress={() => void importFile()} disabled={picking} />}
+        <Text style={styles.note}>You can continue without automatic analysis.</Text>
+        <Action label="Continue" onPress={() => choose('preferences')} disabled={!savedFile || picking} />
+        <Action label="Take Hearing Test Instead" onPress={() => void takeTestInstead()} disabled={picking} secondary />
       </> : null}
 
       {step === 'test' ? <>
@@ -183,7 +234,7 @@ export function OnboardingScreen() {
         <Action label="Go to Home" onPress={finish} disabled={Object.keys(preferences).length !== 3} />
       </> : null}
 
-      {error ? <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text> : null}
+      {error && step !== 'import' ? <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text> : null}
     </ScrollView>
   );
 }
@@ -222,7 +273,13 @@ const styles = StyleSheet.create({
   dimmed: { opacity: 0.55 },
   actionText: { ...theme.typography.segment, color: theme.colors.background },
   secondaryText: { color: theme.colors.text },
-  fileName: { ...theme.typography.segment, color: theme.colors.text, marginBottom: theme.spacing.md },
+  fileCard: { borderWidth: 1, borderColor: theme.colors.border, padding: theme.spacing.md, marginBottom: theme.spacing.md },
+  imagePreview: { width: '100%', height: 180, marginBottom: theme.spacing.md },
+  filePlaceholder: { height: 120, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center', marginBottom: theme.spacing.md },
+  placeholderText: { ...theme.typography.segment, color: theme.colors.secondaryText },
+  fileName: { ...theme.typography.segment, color: theme.colors.text, marginBottom: theme.spacing.xs },
+  fileMeta: { fontSize: 14, lineHeight: 20, color: theme.colors.secondaryText, marginBottom: theme.spacing.xs },
+  statusLabel: { ...theme.typography.segment, color: theme.colors.text, marginTop: theme.spacing.md, marginBottom: theme.spacing.xs },
   note: { fontSize: 14, lineHeight: 20, color: theme.colors.secondaryText, marginTop: theme.spacing.md, marginBottom: theme.spacing.lg },
   tapArea: { minHeight: 220, borderWidth: 1, borderColor: theme.colors.text, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.lg },
   tapText: { ...theme.typography.segment, color: theme.colors.text, fontSize: 18, textAlign: 'center' },
