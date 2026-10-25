@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions } from 'react-native';
 import { calibrationDialDiameter, theme } from '../../constants/theme';
 import { RotaryDial } from '../components/RotaryDial';
 import { useHaptics } from '../feedback/useHaptics';
@@ -8,23 +9,17 @@ import { useAppStore, VOLUME_MAX, VOLUME_MIN } from '../state/useAppStore';
 
 export function AutomaticCalibrationScreen() {
   const { width } = useWindowDimensions();
+  const router = useRouter();
   const volume = useAppStore((state) => state.volume);
-  const status = useAppStore((state) => state.calibrationStatus);
   const setVolume = useAppStore((state) => state.setVolume);
-  const recalibrate = useAppStore((state) => state.recalibrate);
   const haptics = useHaptics();
   const sound = useSoundFeedback();
   const [viewportHeight, setViewportHeight] = useState(Infinity);
   const diameter = calibrationDialDiameter(width, viewportHeight);
-  const loading = status === 'loading';
-
-  const handleRecalibrate = async () => {
+  const openManual = () => {
     haptics.selection();
     sound.tap();
-    if (await recalibrate()) {
-      haptics.success();
-      sound.confirm();
-    }
+    router.push('/manual');
   };
 
   return (
@@ -41,17 +36,11 @@ export function AutomaticCalibrationScreen() {
       />
       <Pressable
         accessibilityRole="button"
-        accessibilityState={{ disabled: loading, busy: loading }}
-        disabled={loading}
-        onPress={() => void handleRecalibrate()}
+        onPress={openManual}
         style={({ pressed }) => [styles.button, pressed && styles.pressed]}
       >
-        <Text style={styles.buttonText}>{loading ? 'Recalibrating…' : 'Recalibrate'}</Text>
+        <Text style={styles.buttonText}>Recalibrate</Text>
       </Pressable>
-      <View style={styles.status} accessibilityLiveRegion="polite">
-        {status === 'complete' ? <Text style={styles.statusText}>Mock calibration complete</Text> : null}
-        {status === 'error' ? <Text style={styles.statusText}>Calibration failed. Try again.</Text> : null}
-      </View>
     </ScrollView>
   );
 }
@@ -75,6 +64,4 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.7 },
   buttonText: { ...theme.typography.segment, color: theme.colors.text },
-  status: { minHeight: theme.spacing.lg, justifyContent: 'center', marginTop: theme.spacing.md },
-  statusText: { ...theme.typography.segment, color: theme.colors.secondaryText },
 });

@@ -14,6 +14,10 @@ export type DeviceStatus = {
   baseVolume: number;
   noiseReduction: number;
   spatialFocus: number;
+  speechAmplification: number;
+  bass: number;
+  mid: number;
+  treble: number;
   calibrationStatus: CalibrationStatus;
 };
 
@@ -23,6 +27,10 @@ export interface DeviceTransport {
   setVolume(value: number, mode: DeviceMode): Promise<DeviceAcknowledgment>;
   setNoiseReduction(value: number): Promise<DeviceAcknowledgment>;
   setSpatialFocus(value: number): Promise<DeviceAcknowledgment>;
+  setSpeechAmplification(value: number): Promise<DeviceAcknowledgment>;
+  setBass(value: number): Promise<DeviceAcknowledgment>;
+  setMid(value: number): Promise<DeviceAcknowledgment>;
+  setTreble(value: number): Promise<DeviceAcknowledgment>;
   startCalibration(volume: number): Promise<CalibrationResult>;
   getStatus(): Promise<DeviceStatus>;
 }

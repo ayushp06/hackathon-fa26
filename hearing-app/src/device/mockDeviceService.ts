@@ -12,6 +12,10 @@ export class MockDeviceTransport implements DeviceService {
     baseVolume: 50,
     noiseReduction: 50,
     spatialFocus: 50,
+    speechAmplification: 50,
+    bass: 50,
+    mid: 50,
+    treble: 50,
     calibrationStatus: 'idle',
   };
 
@@ -52,6 +56,30 @@ export class MockDeviceTransport implements DeviceService {
   async setSpatialFocus(value: number) {
     this.assertPercent(value);
     this.status.spatialFocus = value;
+    return this.acknowledge();
+  }
+
+  async setSpeechAmplification(value: number) {
+    this.assertPercent(value);
+    this.status.speechAmplification = value;
+    return this.acknowledge();
+  }
+
+  async setBass(value: number) {
+    this.assertPercent(value);
+    this.status.bass = value;
+    return this.acknowledge();
+  }
+
+  async setMid(value: number) {
+    this.assertPercent(value);
+    this.status.mid = value;
+    return this.acknowledge();
+  }
+
+  async setTreble(value: number) {
+    this.assertPercent(value);
+    this.status.treble = value;
     return this.acknowledge();
   }
 

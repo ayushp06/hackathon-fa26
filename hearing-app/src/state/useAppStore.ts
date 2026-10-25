@@ -39,7 +39,7 @@ type AppState = Record<ManualControl, number> & {
   completeOnboarding: (preferences: HearingPreferences) => void;
 };
 
-type SavedAppState = Pick<AppState, 'volume' | 'baseVolume' | 'noiseReduction' | 'spatialFocus' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'onboardingCompleted' | 'hearingTestFile' | 'hearingTestResponses' | 'hearingTestResult' | 'hearingPreferences'>;
+type SavedAppState = Pick<AppState, ManualControl | 'volume' | 'activeMode' | 'hapticsEnabled' | 'soundFeedbackEnabled' | 'lastResult' | 'onboardingCompleted' | 'hearingTestFile' | 'hearingTestResponses' | 'hearingTestResult' | 'hearingPreferences'>;
 
 const storage = createJSONStorage<SavedAppState>(() => ({
   getItem: async (name) => {
@@ -78,6 +78,10 @@ export const useAppStore = create<AppState>()(
       baseVolume: 50,
       noiseReduction: 50,
       spatialFocus: 50,
+      speechAmplification: 50,
+      bass: 50,
+      mid: 50,
+      treble: 50,
       activeMode: 'automatic',
       hapticsEnabled: true,
       soundFeedbackEnabled: false,
@@ -101,11 +105,13 @@ export const useAppStore = create<AppState>()(
         const normalized = normalizeManualValue(value);
         if (normalized === null) return;
         set({ [control]: normalized, transportError: null });
-        const command = control === 'baseVolume'
-          ? deviceService.setVolume(normalized, 'manual')
-          : control === 'noiseReduction'
-            ? deviceService.setNoiseReduction(normalized)
-            : deviceService.setSpatialFocus(normalized);
+        const command = control === 'baseVolume' ? deviceService.setVolume(normalized, 'manual')
+          : control === 'noiseReduction' ? deviceService.setNoiseReduction(normalized)
+          : control === 'spatialFocus' ? deviceService.setSpatialFocus(normalized)
+          : control === 'speechAmplification' ? deviceService.setSpeechAmplification(normalized)
+          : control === 'bass' ? deviceService.setBass(normalized)
+          : control === 'mid' ? deviceService.setMid(normalized)
+          : deviceService.setTreble(normalized);
         void command.catch((error) => set({ transportError: errorMessage(error) }));
       },
       setActiveMode: (activeMode) => set({ activeMode }),
@@ -143,6 +149,10 @@ export const useAppStore = create<AppState>()(
           baseVolume: percent(saved.baseVolume, current.baseVolume),
           noiseReduction: percent(saved.noiseReduction, current.noiseReduction),
           spatialFocus: percent(saved.spatialFocus, current.spatialFocus),
+          speechAmplification: percent(saved.speechAmplification, current.speechAmplification),
+          bass: percent(saved.bass, current.bass),
+          mid: percent(saved.mid, current.mid),
+          treble: percent(saved.treble, current.treble),
           activeMode: saved.activeMode === 'manual' ? 'manual' : 'automatic',
           hapticsEnabled: typeof saved.hapticsEnabled === 'boolean' ? saved.hapticsEnabled : current.hapticsEnabled,
           soundFeedbackEnabled: typeof saved.soundFeedbackEnabled === 'boolean' ? saved.soundFeedbackEnabled : current.soundFeedbackEnabled,
@@ -155,8 +165,8 @@ export const useAppStore = create<AppState>()(
           preliminaryAudioProfile: hearingPreferences ? toPreliminaryAudioProfile(hearingPreferences) : null,
         };
       },
-      partialize: ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }) =>
-        ({ volume, baseVolume, noiseReduction, spatialFocus, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }),
+      partialize: ({ volume, baseVolume, noiseReduction, spatialFocus, speechAmplification, bass, mid, treble, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }) =>
+        ({ volume, baseVolume, noiseReduction, spatialFocus, speechAmplification, bass, mid, treble, activeMode, hapticsEnabled, soundFeedbackEnabled, lastResult, onboardingCompleted, hearingTestFile, hearingTestResponses, hearingTestResult, hearingPreferences }),
       onRehydrateStorage: () => (state, error) => {
         if (state) {
           void Promise.all([
@@ -164,6 +174,10 @@ export const useAppStore = create<AppState>()(
             deviceService.setVolume(state.baseVolume, 'manual'),
             deviceService.setNoiseReduction(state.noiseReduction),
             deviceService.setSpatialFocus(state.spatialFocus),
+            deviceService.setSpeechAmplification(state.speechAmplification),
+            deviceService.setBass(state.bass),
+            deviceService.setMid(state.mid),
+            deviceService.setTreble(state.treble),
           ]).catch((commandError) => useAppStore.setState({ transportError: errorMessage(commandError) }));
         }
         useAppStore.setState({ hydrated: true, transportError: error ? errorMessage(error) : null });

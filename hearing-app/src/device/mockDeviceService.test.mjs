@@ -18,15 +18,23 @@ test('mock transport acknowledges independent controls and reports simulated sta
   const manual = await transport.setVolume(31, 'manual');
   await transport.setNoiseReduction(64);
   await transport.setSpatialFocus(28);
+  await transport.setSpeechAmplification(81);
+  await transport.setBass(25);
+  await transport.setMid(46);
+  await transport.setTreble(73);
   assert.deepEqual([automatic.sequence, manual.sequence], [1, 2]);
   assert.equal(automatic.simulated, true);
   assert.equal(automatic.accepted, true);
   assert.deepEqual(await transport.getStatus(), {
     simulated: true, connected: false, volume: 72, baseVolume: 31,
-    noiseReduction: 64, spatialFocus: 28, calibrationStatus: 'idle',
+    noiseReduction: 64, spatialFocus: 28, speechAmplification: 81,
+    bass: 25, mid: 46, treble: 73, calibrationStatus: 'idle',
   });
   await assert.rejects(transport.setNoiseReduction(101), /0 to 100/);
+  await assert.rejects(transport.setSpeechAmplification(-1), /0 to 100/);
+  await assert.rejects(transport.setBass(100.5), /0 to 100/);
   assert.equal((await transport.getStatus()).noiseReduction, 64);
+  assert.equal((await transport.getStatus()).bass, 25);
 });
 
 test('mock transport calibration reports progress and a saved-result shape', async () => {

@@ -1,4 +1,4 @@
-export type ManualControl = 'baseVolume' | 'noiseReduction' | 'spatialFocus';
+export type ManualControl = 'baseVolume' | 'noiseReduction' | 'spatialFocus' | 'speechAmplification' | 'bass' | 'mid' | 'treble';
 
 export function normalizeManualValue(value: number) {
   if (!Number.isFinite(value)) return null;
