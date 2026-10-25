@@ -120,7 +120,7 @@ export function OnboardingScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
       <View style={styles.top}>
         {step !== 'question' ? <Pressable accessibilityRole="button" accessibilityLabel="Back" accessibilityState={{ disabled: picking }} disabled={picking} onPress={back} style={styles.back}><Text style={styles.backText}>‹ Back</Text></Pressable> : <View />}
         <Text style={styles.progress}>Step {step === 'question' ? 1 : step === 'preferences' ? 3 : 2} of 3</Text>
