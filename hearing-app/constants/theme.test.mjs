@@ -14,7 +14,7 @@ test('manual dials fit two columns on common phone widths', () => {
 
 test('dials shrink on short viewports but keep numbered faces readable', () => {
   assert.equal(manualDialDiameter(375, 500), 108);
-  assert.equal(calibrationDialDiameter(375, 400), 150);
+  assert.equal(calibrationDialDiameter(375, 400), 100);
   assert.equal(manualDialDiameter(320, 300), 100);
 });
 

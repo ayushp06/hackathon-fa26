@@ -36,6 +36,7 @@ export function advancedDialDiameter(windowWidth: number) {
 
 export function calibrationDialDiameter(windowWidth: number, availableHeight = Infinity) {
   const otherHeight = theme.spacing.xl * 3 + theme.spacing.md * 2
-    + theme.typography.segment.lineHeight + theme.sizing.segmentHeight + theme.spacing.lg;
+    + theme.typography.segment.lineHeight + theme.sizing.segmentHeight + theme.spacing.lg
+    + theme.typography.title.lineHeight + theme.spacing.lg;
   return Math.max(100, Math.min(theme.sizing.calibrationDialMaxDiameter, windowWidth - theme.spacing.lg * 4, availableHeight - otherHeight));
 }

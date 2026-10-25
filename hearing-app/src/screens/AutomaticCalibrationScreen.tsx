@@ -24,6 +24,7 @@ export function AutomaticCalibrationScreen() {
 
   return (
     <ScrollView bounces={false} showsVerticalScrollIndicator={false} onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)} contentContainerStyle={styles.content}>
+      <Text accessibilityRole="header" style={styles.title}>Wavelength</Text>
       <RotaryDial
         min={VOLUME_MIN}
         max={VOLUME_MAX}
@@ -52,6 +53,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: theme.spacing.xl,
   },
+  title: { ...theme.typography.title, color: theme.colors.text, textAlign: 'center', marginBottom: theme.spacing.lg },
   button: {
     width: '100%',
     maxWidth: theme.sizing.calibrationDialMaxDiameter,
