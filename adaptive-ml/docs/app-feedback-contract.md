@@ -1,7 +1,7 @@
 # App-to-ML feedback contract
 
 Firmware under test is pinned to `ba961a4`, not this branch's newest docs/tool commits.
-App/server inspected and merged from `origin/main` at `5f4b4f4`.
+App/server inspected and merged from `origin/main` at `7f13e6e`.
 The app now implements explicit feedback and mode routes; firmware remains unchanged.
 See [two-context runbook](two-context-demo.md) for validation limits and results.
 
@@ -58,26 +58,38 @@ Model counters/context/mode still require debugger inspection.
 ## Current app responsibilities and remaining gaps
 
 `ManualScreen.dial` -> `useAppStore.setValue` -> `setNoiseReduction` sends ordinary
-ID 1 only. `Remember this adjustment` invokes `confirmNoiseReduction`, which awaits
-another final ordinary setter, checks desired value is unchanged, then submits ONE
-feedback request. `set`/`flush` coalesce ordinary writes over 60 ms. No service retry
-creates additional corrections; bridge retries reuse the sequence. An HTTP timeout
-is ambiguous: inspect counters/ack before another user confirmation.
+ID 1 only. The user finishes adjusting; `set`/`flush` coalesce ordinary writes over
+60 ms and wait for firmware acknowledgment. `Remember this adjustment` invokes
+`confirmNoiseReduction`, which waits for pending writes and requires the final
+requested value to equal the acknowledged value. It submits ONE feedback request
+without another ordinary setter. Successful confirmation consumes that candidate;
+repeating it without a fresh adjustment is rejected. Noise adjustments and concurrent
+confirmations are blocked during the operation. Firmware records output 0 for the
+current valid context, enables autonomy and holds the correction for two seconds.
 
-`HardwareConnection` polls `getStatus` and directly sets only `appliedNoiseReduction`;
-this emits no setter. Selected dial values remain desired values. The Manual screen
-shows selected versus device target separately. Resume/Pause/Clear buttons call the
-three dedicated service methods; these are hardware-specific methods, not additions
-to the generic mock DeviceService API.
+No service retry creates additional corrections; bridge retries reuse the sequence.
+An HTTP timeout is ambiguous: inspect counters/ack before another user confirmation.
+`HardwareConnection` polls `getStatus` and directly updates `appliedNoiseReduction`
+and the displayed `noiseReduction` through `setState`, without invoking setters.
+The UI has separate selected/device-target fields, but polling can refresh both.
+Telemetry is never training. Hydration restores local state only; connect/restart
+no longer replay saved controls, and profile restoration is local-only.
 
-`useAppStore.onRehydrateStorage`, `HardwareDeviceService.connect`/`restart`, and
-`restoreProfile` can send ID 1 without training and pause autonomy. Complete these
-BEFORE learning. No automatic correction is sent during hydration or telemetry.
-The UI does not expose authoritative ML mode: success text is a past acknowledgment,
-not current mode. Dials remain editable while confirmation is pending; a change
-after the desired-value check can enqueue ID 1 after ID 14 and pause autonomy.
-Keep controls idle during confirmation and recall. Coordinate a future UI locking
-fix with the app owner rather than changing teammate code in this task.
+Resume/Pause call `setNoiseAdaptation`. Settings **Reset Learning** (with confirmation)
+calls `resetLearning`: the server serializes ID16 then ID15 as one queued operation,
+clearing preferences and enabling autonomy; baseline50 applies after valid features.
+The lower-level `clearNoisePreferences` route still clears and disables. These are
+hardware-specific methods, not additions to the generic mock DeviceService API.
+`runNoiseOperation`/`noiseBusy` lock UI adjustments during confirmation/reset; the
+service also guards noise setters. An ordinary dial change outside these actions
+still pauses autonomy without training. Current mode requires debugger inspection;
+UI success text records a past acknowledgment only.
+
+Automatic correction on completed slider release is app-team work in progress,
+not implemented by this PR. It must reuse the acknowledged final-value check and
+single ID14 path, never train on intermediate drag, hydration, reconnect or telemetry,
+and must not submit both release feedback and a duplicate Remember action. Revalidate
+the workflow with the app owner when that change lands; no app files are edited here.
 
 Remaining dependencies: explicit ML capability/mode/context/counter telemetry,
 context/time and playback-latency alignment, calibrated baseline import, physical

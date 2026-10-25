@@ -53,3 +53,10 @@
    Synthetic real-DSP tests validate mechanics; no target/hardware claims follow.
 
 10. Task13: merge main `5f4b4f4` without production policy changes. Real-DSP two-context host test recalls80/30 from one correction each over ten round trips; identical RMS cannot distinguish contradictory preferences. Preserve radius, baseline and hold. Current app explicit confirmation and queued14/15/16 are implemented; remaining gaps and hardware-only checks are in two-context-demo.md. Hardware remains pinned ba961a4.
+
+11. Task14: preserve app main `7f13e6e` exactly. Confirmation waits for the already
+    requested final setter acknowledgment and emits one ID14 without a redundant
+    ID1. Extend real HTTP/queue tests for pending ack, concurrent/duplicate rejection,
+    offline/reconnect non-training and failed setters. Update runbooks for local-only
+    hydration/profile restore and Settings Reset Learning. No production policy or
+    firmware change; default ML OFF, target build and physical validation pending.

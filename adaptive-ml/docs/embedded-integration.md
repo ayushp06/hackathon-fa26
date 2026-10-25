@@ -41,7 +41,7 @@ train. Manual strength or legacy bypass pauses autonomous control. Explicit feed
 must refer to a fresh stable context and holds the correction before subsequent inference.
 No flash writes; learning is session-only. `AUDIO_ADAPTIVE_ML` is OFF by default and
 requires APP_CONTROL, NLMS and PC_STREAM. Enabling it initializes baseline strength
-50 and autonomous inference; app strength hydration pauses it without training.
+50 and autonomous inference; an ordinary strength setter pauses it without training.
 Use CMake for this experiment; existing CubeIDE configuration remains unchanged.
 The foreground duration including normalization/inference is counted by DWT in
 `g_adaptive_stats.inference_max_cycles`; it includes IRQ preemption. Audio callback
@@ -49,9 +49,10 @@ timing/deadline guards remain intact. No target measurements exist yet.
 
 ## Remaining coordination
 
-App needs a distinct committed correction event, context/time and baseline semantics;
-existing setter calls do not convey these. A debug command can use the existing
+The app now sends a distinct confirmed correction through ID14 using the existing
 ten-byte CRC/sequence parser and serial owner's command file without changing PCM.
+Context/time alignment and calibrated baseline semantics remain pending;
+ordinary setter calls do not convey feedback. See app-feedback-contract.md.
 Hardware timing, I2S3 stability and speech preservation require bench checks; host tests
 cannot establish them. No microphone/DAC driver changes are planned.
 
@@ -96,8 +97,9 @@ cmake --build build/audio-adaptive
 Use a separate build directory; no existing image or preserved release is overwritten.
 CubeIDE defaults do not enable this experiment. Coordinate flashing with the hardware
 owner, then use the existing `scripts/play-mic.ps1` serial-owning MIC4 player at low
-PC playback gain. The browser is optional. If the app is used, its normal strength
-hydration pauses autonomy; connect/restore first, then leave its controls idle.
+PC playback gain. The browser is optional. As of app main 7f13e6e, hydration,
+connect and profile restoration do not replay strength setters or train; ordinary
+dial adjustments still pause autonomy. See two-context-demo.md for current app steps.
 
 1. Confirm stable capture, reference clock/signal, spatial=0, no faults/clips, and
    `maxCycles < 384000` at 96 MHz. Reset after wiring changes if necessary.

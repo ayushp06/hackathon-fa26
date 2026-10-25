@@ -1,6 +1,7 @@
 # Pinned-image end-to-end validation
 
-Hardware owner is building/flashing **ba961a4**. New docs/tools on this branch do not
+Hardware validation candidate is **ba961a4**; successful ML-enabled ARM compilation,
+flashing and physical correction/recall are not confirmed. New docs/tools do not
 change its firmware. Record the actual source SHA, AUDIO_ADAPTIVE_ML=ON, build flags,
 ELF hash, clock, microphone wiring and player version with results. Newer main's v3
 release is not proof of an ML-enabled image. No physical results have been obtained

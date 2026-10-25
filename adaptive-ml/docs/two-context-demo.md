@@ -1,9 +1,11 @@
 # Two one-shot preferences: validation and live runbook
 
-Main `5f4b4f4` merged normally into the integration branch. No production model,
+Main `7f13e6e` merged normally into the integration branch. No production model,
 DSP, driver, app or bridge edits were made for this test. Hardware validation stays
 pinned to `ba961a4`; newer branch commits are not a newly approved flash candidate.
-PR #2 remains draft. Host success is not physical STM32 validation or hearing benefit.
+This is a host-tested experimental feature, default AUDIO_ADAPTIVE_ML=OFF.
+ARM compilation and physical autonomous correction/recall remain pending.
+Host success is not physical STM32 validation or hearing benefit.
 
 ## Evidence and policy
 
@@ -54,10 +56,11 @@ constant third input. Saturation/floor/quantization can erase distinctions.
    and .075 for B. Status RMS is individual-block data, not the training window.
    Avoid clipping and too-quiet reference; the synthetic 40 dB difference is evidence
    for the host test, not a safe mandatory room playback level.
-3. In Manual, choose **Clear learned preferences**, then **Resume automatic
-   adaptation**. Hold A steady >=300 ms (prefer >=1 s after a scene change); confirm
+3. In Settings, choose **Reset Learning**, then **Confirm Reset Learning** (queued
+   clear then enable). Return to Manual. Hold A steady >=300 ms (prefer >=1 s after a scene change); confirm
    applied baseline near50. Select noise reduction80, release dial and keep it idle,
-   then press **Remember this adjustment** ONCE. Wait for accepted message and
+   then press **Remember this adjustment** ONCE. Confirmation waits for the pending
+   ordinary setter acknowledgment; it sends only ID14, not an extra setter. Wait for accepted message and
    matching status=0 acknowledgment. Debug counters: corrections1/examples1/enabled1.
    The two-second hold is global even if you immediately move to B.
 4. Establish B, wait >=2.4 s and verify baseline near50 before teaching. Select30,
@@ -65,8 +68,8 @@ constant third input. Saturation/floor/quantization can erase distinctions.
    enabled1, and capture its commandSequence. Wait >=2.4 s.
 5. Return A, wait >=2.4 s; device target should approach80 within +/-10. Return B,
    wait >=2.4 s; target should approach30. Repeat ten round trips without touching
-   dials, Remember, Resume, profiles, reconnect, or replay commands. Selected dial
-   may stay30 while device target80: that is expected. Record timestamps, context,
+   dials, Remember, Resume, profiles, reconnect, or replay commands. Telemetry can
+   refresh both the displayed dial and device target without sending a setter. Record timestamps, context,
    target, counters and commandSequence. The sequence must stay unchanged while
    target follows context; debugger must show enabled1/corrections2/examples2.
    Audio target change alone is not proof of autonomous inference.
@@ -88,7 +91,8 @@ Observe build/hardware-status.json timestampMs, streaming/error, values.noiseRed
 commandSequence/commandStatus, referenceClock, primaryRms/referenceRms, maxCycles,
 packets/missing/crc/firmwareDrops/underruns/overflow. Model mode/context/counts and
 foreground DWT maxima require debugger; do not fabricate them from JSON. A later
-ID1/manual dial, hydration or profile restoration silently pauses autonomy. Check
+ID1/manual dial pauses autonomy. Current hydration, profile restoration and reconnect
+do not send ID1 or train. Check
 enabled and command-file/API activity; the UI's old success text does not prove mode.
 
 If feature capture is invalid, stop the claim: no new inference/correction should
@@ -105,12 +109,14 @@ memory and requires a fresh two-correction demonstration. Never flash automatica
 Source path: ManualScreen.dial/useAppStore.setValue -> HardwareDeviceService.set/flush
 -> POST /api/control -> server command ID1 -> MicSpeakerBridge.PollAppCommand ->
 10-byte A5 5A frame/CRC -> PC_Audio_Poll -> Controls_Command/manual override.
-Explicit confirmation uses confirmNoiseReduction -> final setter ack ->
+Explicit confirmation uses confirmNoiseReduction -> waits for pending writes and
+checks final desired/acknowledged value -> ONE feedback request, no redundant setter ->
 /api/noise-feedback -> same queue ID14 -> Adaptive_Command ->
 adaptive_runtime_correct -> pl_correct_masked(output0). IDs15/16 use
 setNoiseAdaptation/clearNoisePreferences and /noise-adaptation /noise-preferences.
 Controls_AdaptiveAck -> Controls_BeginBlock -> MIC4 -> ReportStatus -> JSON ->
-/api/status -> HardwareConnection sets appliedNoiseReduction without setters.
+/api/status -> HardwareConnection updates appliedNoiseReduction/displayed dial
+through setState without setters.
 Inference: actual input RMS -> Adaptive_ObserveBlock mailbox -> foreground Poll ->
 runtime prediction -> Controls_SetAdaptiveStrength -> BeginBlock -> Noise_SetStrength.
 
@@ -118,6 +124,7 @@ C# frame serialization/retry and firmware parser/ack linkage were inspected, not
 physically exercised. No ARM toolchain or connected target validation was available;
 no measured target CPU/RAM/flash conclusions follow. App dependencies are absent,
 so lint/typecheck/Expo build are pending; direct dependency-free app tests can run.
-App dials are not locked during confirmation: do not edit while busy. No authoritative
-ML capability/mode telemetry exists. Coordinate these app/protocol improvements with
-owners; no teammate files were edited to hide limitations.
+App dials are locked during confirmation/reset. No authoritative ML capability/mode
+telemetry exists. Automatic-on-slider-release correction remains app-team work; do not
+combine it with duplicate Remember events when integrated. Revalidate against that
+revision with its owner. No teammate files were edited for this compatibility fix.
