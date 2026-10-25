@@ -14,19 +14,18 @@ test('mock device can be scanned, connected, and disconnected', async () => {
 
 test('mock transport acknowledges independent controls and reports simulated status', async () => {
   const transport = new MockDeviceTransport();
-  const automatic = await transport.setVolume(72, 'automatic');
-  const manual = await transport.setVolume(31, 'manual');
+  const volume = await transport.setVolume(72);
   await transport.setNoiseReduction(64);
   await transport.setSpatialFocus(28);
   await transport.setSpeechAmplification(81);
   await transport.setBass(-8);
   await transport.setMid(0);
   await transport.setTreble(12);
-  assert.deepEqual([automatic.sequence, manual.sequence], [1, 2]);
-  assert.equal(automatic.simulated, true);
-  assert.equal(automatic.accepted, true);
+  assert.equal(volume.sequence, 1);
+  assert.equal(volume.simulated, true);
+  assert.equal(volume.accepted, true);
   assert.deepEqual(await transport.getStatus(), {
-    simulated: true, connected: false, volume: 72, baseVolume: 31,
+    simulated: true, connected: false, volume: 72,
     noiseReduction: 64, spatialFocus: 28, speechAmplification: 81,
     bass: -8, mid: 0, treble: 12, calibrationStatus: 'idle',
   });

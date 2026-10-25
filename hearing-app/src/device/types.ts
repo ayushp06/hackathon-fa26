@@ -11,7 +11,6 @@ export type DeviceStatus = {
   simulated: boolean;
   connected: boolean;
   volume: number;
-  baseVolume: number;
   noiseReduction: number;
   spatialFocus: number;
   speechAmplification: number;
@@ -25,7 +24,7 @@ export type DeviceStatus = {
 export interface DeviceTransport {
   connect(id?: string): Promise<HearingDevice>;
   disconnect(): Promise<void>;
-  setVolume(value: number, mode: DeviceMode): Promise<DeviceAcknowledgment>;
+  setVolume(value: number): Promise<DeviceAcknowledgment>;
   setNoiseReduction(value: number): Promise<DeviceAcknowledgment>;
   setSpatialFocus(value: number): Promise<DeviceAcknowledgment>;
   setSpeechAmplification(value: number): Promise<DeviceAcknowledgment>;

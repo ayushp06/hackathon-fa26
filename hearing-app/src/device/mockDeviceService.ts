@@ -1,5 +1,5 @@
 import { mockCalibrate } from '../state/mockCalibration.ts';
-import type { DeviceAcknowledgment, DeviceMode, DeviceService, DeviceStatus, HearingDevice } from './types';
+import type { DeviceAcknowledgment, DeviceService, DeviceStatus, HearingDevice } from './types';
 
 const mockDevice: HearingDevice = { id: 'mock-device', name: 'Mock device' };
 
@@ -9,7 +9,6 @@ export class MockDeviceTransport implements DeviceService {
     simulated: true,
     connected: false,
     volume: 50,
-    baseVolume: 50,
     noiseReduction: 50,
     spatialFocus: 50,
     speechAmplification: 50,
@@ -44,10 +43,9 @@ export class MockDeviceTransport implements DeviceService {
   }
 
   // The mock accepts commands without a connection so the app works without hardware.
-  async setVolume(value: number, mode: DeviceMode) {
+  async setVolume(value: number) {
     this.assertPercent(value);
-    if (mode !== 'automatic' && mode !== 'manual') throw new Error('Unknown device mode');
-    this.status[mode === 'automatic' ? 'volume' : 'baseVolume'] = value;
+    this.status.volume = value;
     return this.acknowledge();
   }
 

@@ -1,14 +1,14 @@
 import { GestureDetector } from 'react-native-gesture-handler';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedProps } from 'react-native-reanimated';
-import Svg, { Circle, Line, Path } from 'react-native-svg';
+import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import { theme } from '../../constants/theme';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
-import { angleToValue, clamp, START_ANGLE, stepScale, SWEEP_ANGLE, valueToAngle } from './rotaryMath';
+import { angleToValue, clamp, stepScale, valueToAngle } from './rotaryMath';
 import { useRotaryGesture } from './useRotaryGesture';
 
-const AnimatedLine = Animated.createAnimatedComponent(Line);
+const AnimatedPath = Animated.createAnimatedComponent(Path);
 
 type Props = {
   min: number;
@@ -36,18 +36,19 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
     sound.tick();
   };
   const { angle, gesture } = useRotaryGesture({ value: currentValue, min, max, step, diameter, onValueChange: handleValueChange });
-  const trackRadius = radius - theme.sizing.dialTrackInset;
-  const start = valueToAngle(min, min, max) * Math.PI / 180;
-  const end = (START_ANGLE + SWEEP_ANGLE) * Math.PI / 180;
-  const track = `M ${radius + Math.cos(start) * trackRadius} ${radius + Math.sin(start) * trackRadius} A ${trackRadius} ${trackRadius} 0 1 1 ${radius + Math.cos(end) * trackRadius} ${radius + Math.sin(end) * trackRadius}`;
+  const marks = Array.from({ length: 5 }, (_, index) => min + (max - min) * index / 4);
+  const ticks = Array.from({ length: 9 }, (_, index) => min + (max - min) * index / 8);
+  const readout = `${valueSuffix.trim() === 'dB' && currentValue > 0 ? '+' : ''}${currentValue}${valueSuffix}`;
   const indicator = useAnimatedProps(() => {
     const radians = angle.value * Math.PI / 180;
-    return {
-      x1: radius + Math.cos(radians) * (trackRadius - 10),
-      y1: radius + Math.sin(radians) * (trackRadius - 10),
-      x2: radius + Math.cos(radians) * (trackRadius + 2),
-      y2: radius + Math.sin(radians) * (trackRadius + 2),
-    };
+    const alongX = Math.cos(radians);
+    const alongY = Math.sin(radians);
+    const halfWidth = Math.max(4, radius * 0.055);
+    const acrossX = -alongY * halfWidth;
+    const acrossY = alongX * halfWidth;
+    const baseX = radius + alongX * radius * 0.43;
+    const baseY = radius + alongY * radius * 0.43;
+    return { d: `M ${radius + alongX * radius * 0.58} ${radius + alongY * radius * 0.58} L ${baseX + acrossX} ${baseY + acrossY} L ${baseX - acrossX} ${baseY - acrossY} Z` };
   });
 
   const changeBy = (direction: number) => {
@@ -63,7 +64,11 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
           accessible
           accessibilityRole="adjustable"
           accessibilityLabel={label}
-          accessibilityValue={{ min, max, now: currentValue, text: `${currentValue}${valueSuffix}` }}
+          accessibilityValue={{ min, max, now: currentValue, text: readout }}
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuenow={currentValue}
+          aria-valuetext={readout}
           accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
           onAccessibilityAction={(event) => {
             if (event.nativeEvent.actionName === 'increment') changeBy(1);
@@ -73,23 +78,33 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
         >
           <Svg width={diameter} height={diameter} pointerEvents="none">
             <Circle cx={radius} cy={radius} r={radius - 1} fill={theme.colors.background} stroke={theme.colors.text} strokeWidth={2} />
-            <Circle cx={radius} cy={radius} r={radius - theme.sizing.dialRim} fill={theme.colors.text} />
-            <Path d={track} fill="none" stroke={theme.colors.background} strokeOpacity={0.45} strokeWidth={1} />
-            <AnimatedLine animatedProps={indicator} stroke={theme.colors.background} strokeWidth={theme.sizing.dialIndicatorWidth} strokeLinecap="round" />
+            <Circle cx={radius} cy={radius} r={radius - 5} fill={theme.colors.text} />
+            {ticks.map((tick, index) => {
+              const radians = valueToAngle(tick, min, max) * Math.PI / 180;
+              const inner = radius * (index % 2 === 0 ? 0.84 : 0.87);
+              const outer = radius * 0.93;
+              return <Line key={index} x1={radius + Math.cos(radians) * inner} y1={radius + Math.sin(radians) * inner} x2={radius + Math.cos(radians) * outer} y2={radius + Math.sin(radians) * outer} stroke={theme.colors.background} strokeOpacity={index % 2 === 0 ? 0.9 : 0.5} strokeWidth={index % 2 === 0 ? 1.5 : 1} />;
+            })}
+            {marks.map((mark) => {
+              const radians = valueToAngle(mark, min, max) * Math.PI / 180;
+              return <SvgText key={mark} x={radius + Math.cos(radians) * radius * 0.69} y={radius + Math.sin(radians) * radius * 0.69} fill={theme.colors.background} fontSize={Math.max(9, diameter * 0.07)} fontWeight="600" textAnchor="middle" alignmentBaseline="central">{mark}</SvgText>;
+            })}
+            <Circle cx={radius} cy={radius} r={radius * 0.38} fill={theme.colors.text} stroke={theme.colors.background} strokeOpacity={0.3} strokeWidth={1} />
+            <AnimatedPath animatedProps={indicator} fill={theme.colors.background} />
           </Svg>
-          <View pointerEvents="none" style={styles.valueOverlay}>
-            <Text style={[styles.value, { fontSize: diameter * theme.sizing.dialValueFontRatio }]}>{currentValue}{valueSuffix}</Text>
-          </View>
         </View>
       </GestureDetector>
-      <Text style={[styles.label, { width: diameter }]}>{label}</Text>
+      <View style={[styles.caption, { width: diameter }]}>
+        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.readout}>{readout}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', gap: theme.spacing.md },
-  valueOverlay: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
-  value: { color: theme.colors.background, fontWeight: '500', fontVariant: ['tabular-nums'] },
+  container: { alignItems: 'center', gap: theme.spacing.sm },
+  caption: { alignItems: 'center', gap: theme.spacing.xs },
   label: { ...theme.typography.segment, color: theme.colors.text, textAlign: 'center' },
+  readout: { fontSize: 13, lineHeight: 18, fontWeight: '500', fontVariant: ['tabular-nums'], color: theme.colors.secondaryText },
 });

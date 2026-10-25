@@ -23,7 +23,7 @@ export function AutomaticCalibrationScreen() {
   };
 
   return (
-    <ScrollView bounces={false} onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)} contentContainerStyle={styles.content}>
+    <ScrollView bounces={false} showsVerticalScrollIndicator={false} onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)} contentContainerStyle={styles.content}>
       <RotaryDial
         min={VOLUME_MIN}
         max={VOLUME_MAX}
@@ -39,7 +39,7 @@ export function AutomaticCalibrationScreen() {
         onPress={openManual}
         style={({ pressed }) => [styles.button, pressed && styles.pressed]}
       >
-        <Text style={styles.buttonText}>Recalibrate</Text>
+        <Text style={styles.buttonText}>Manual Recalibration</Text>
       </Pressable>
     </ScrollView>
   );

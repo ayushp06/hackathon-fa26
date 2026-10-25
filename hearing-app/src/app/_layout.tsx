@@ -9,7 +9,6 @@ import { theme } from '../../constants/theme';
 import { SoundFeedbackProvider } from '../feedback/SoundFeedbackProvider';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
-import { SegmentedSwitch } from '../navigation/SegmentedSwitch';
 import { useAppStore } from '../state/useAppStore';
 
 export default function RootLayout() {
@@ -66,7 +65,6 @@ function AppContent() {
           {onboardingCompleted && !onboarding ? <Pressable accessibilityRole="button" onPress={settings ? closeSettings : openSettings} style={styles.settingsLink}>
             <Text style={styles.settingsText}>{settings ? 'Done' : 'Settings'}</Text>
           </Pressable> : null}
-          {onboardingCompleted && !settings && !onboarding ? <SegmentedSwitch /> : null}
           <View style={styles.screen}>
             <Stack screenOptions={{ headerShown: false, animation: reducedMotion ? 'none' : 'fade', animationDuration: 180, contentStyle: styles.safeArea }} />
           </View>

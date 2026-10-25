@@ -1,4 +1,4 @@
-import { normalizeManualValue } from './manualValues.ts';
+import { normalizeManualValue, restoreSharedVolume } from './manualValues.ts';
 
 function savedState(raw: string | null): Record<string, unknown> {
   try {
@@ -14,8 +14,7 @@ export function migrateLegacyState(values: (string | null)[]) {
   const manual = savedState(values[1]);
   const feedback = savedState(values[2]);
   return {
-    volume: typeof calibration.volume === 'number' ? normalizeManualValue(calibration.volume) ?? 50 : 50,
-    baseVolume: typeof manual.baseVolume === 'number' ? normalizeManualValue(manual.baseVolume) ?? 50 : 50,
+    volume: restoreSharedVolume(calibration.volume, manual.baseVolume),
     noiseReduction: typeof manual.noiseReduction === 'number' ? normalizeManualValue(manual.noiseReduction) ?? 50 : 50,
     spatialFocus: typeof manual.spatialFocus === 'number' ? normalizeManualValue(manual.spatialFocus) ?? 50 : 50,
     hapticsEnabled: typeof feedback.hapticsEnabled === 'boolean' ? feedback.hapticsEnabled : true,
