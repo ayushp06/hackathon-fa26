@@ -25,9 +25,9 @@ export function HardwareConnection() {
           setStatus(next); setError(next.error);
           if (!next.connected) useDeviceStore.setState({ connectedDevice: null });
         }
-      } catch (failure) {
+      } catch {
         if (!stopped) {
-          setStatus(null); setError(failure instanceof Error ? failure.message : 'USB bridge unavailable');
+          setStatus(null); setError(null);
           useDeviceStore.setState({ connectedDevice: null });
         }
       }
@@ -57,6 +57,7 @@ export function HardwareConnection() {
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Restart failed'); }
     finally { setBusy(false); }
   };
+  const visibleError = error || device.error || transportError;
   return <View style={styles.panel}>
     <View style={styles.row}>
       <Text style={styles.title}>{connected ? 'STM32 connected · AUX' : 'USB hardware'}</Text>
@@ -74,7 +75,7 @@ export function HardwareConnection() {
         </Pressable>
       </View>
     </> : <Text style={styles.note}>Connect to apply your saved dial settings.</Text>}
-    {error || device.error || transportError ? <Text accessibilityLiveRegion="polite" style={styles.error}>{error || device.error || transportError}</Text> : null}
+    {visibleError ? <Text accessibilityLiveRegion="polite" style={styles.error}>{visibleError.startsWith('USB bridge unavailable.') ? 'Could not connect to USB hardware.' : visibleError}</Text> : null}
   </View>;
 }
 const styles = StyleSheet.create({

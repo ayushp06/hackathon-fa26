@@ -15,7 +15,7 @@ import { HardwareConnection } from '../components/HardwareConnection';
 
 export default function RootLayout() {
   const { width, height } = useWindowDimensions();
-  const framed = Platform.OS === 'web' && width >= 700 && height >= 640;
+  const framed = Platform.OS === 'web' && width >= 450;
   const app = (
     <GestureHandlerRootView style={styles.root}>
       <SoundFeedbackProvider>
@@ -26,7 +26,7 @@ export default function RootLayout() {
   if (!framed) return app;
   return (
     <View style={styles.previewBackdrop}>
-      <View style={[styles.phoneFrame, { height: Math.min(852, height - 32) }]}>
+      <View style={[styles.phoneFrame, { width: Math.min(414, width - 32), height: Math.min(852, height - 32) }]}>
         <View style={styles.phoneScreen}>
           {app}
         </View>
