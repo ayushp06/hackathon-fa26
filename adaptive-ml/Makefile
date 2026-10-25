@@ -41,8 +41,9 @@ build/test_audio_integration: tests/test_audio_integration.c embedded/ml_runtime
 
 DSP_SRC = ../audio_passthrough/Core/Src/noise_filter.c ../audio_passthrough/Drivers/CMSIS/DSP/Source/FilteringFunctions/arm_lms_norm_f32.c ../audio_passthrough/Drivers/CMSIS/DSP/Source/FilteringFunctions/arm_lms_norm_init_f32.c
 DSP_FLAGS = -D__GNUC_PYTHON__ -DARM_MATH_AUTOVECTORIZE -DAUDIO_NLMS -I../audio_passthrough/Drivers/CMSIS/DSP/Include -I../audio_passthrough/Core/Inc
-test-dsp: build/test_dsp_loop
+test-dsp: build/test_dsp_loop build/test_two_environments
 	./build/test_dsp_loop
+	./build/test_two_environments
 
 build/test_dsp_loop: tests/test_dsp_loop.c embedded/ml_runtime.c embedded/ml_features.c src/preference.c ../audio_passthrough/Core/Src/adaptive_audio.c ../audio_passthrough/Core/Src/audio_controls.c $(DSP_SRC) | build
 	$(CC) $(CPPFLAGS) -Iembedded $(CFLAGS) $(DSP_FLAGS) -DAUDIO_ADAPTIVE_ML -DAUDIO_APP_CONTROL -DCONTROL_HOST_TEST $^ $(LDLIBS) -o $@
@@ -52,3 +53,6 @@ benchmark: build/benchmark
 
 build/benchmark: simulation/benchmark.c embedded/ml_runtime.c embedded/ml_features.c src/preference.c | build
 	$(CC) $(CPPFLAGS) -Iembedded $(CFLAGS) $^ $(LDLIBS) -o $@
+
+build/test_two_environments: tests/test_two_environments.c embedded/ml_runtime.c embedded/ml_features.c src/preference.c ../audio_passthrough/Core/Src/adaptive_audio.c ../audio_passthrough/Core/Src/audio_controls.c $(DSP_SRC) | build
+	$(CC) $(CPPFLAGS) -Iembedded $(CFLAGS) $(DSP_FLAGS) -DAUDIO_ADAPTIVE_ML -DAUDIO_APP_CONTROL -DCONTROL_HOST_TEST $^ $(LDLIBS) -o $@

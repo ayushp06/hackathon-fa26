@@ -100,3 +100,6 @@ The opt-in firmware integration developed from main `b29a601` is documented in
 continuous NLMS strength, runs inference/learning in foreground, and adds separate
 explicit debug feedback without changing app code or the standalone learner algorithm.
 Target compilation/timing and physical demonstration still require hardware-owner checks.
+
+Two one-shot preferences: [current app path, host evidence and live runbook](docs/two-context-demo.md).
+Run `node --experimental-strip-types --test --test-isolation=none adaptive-ml/tests/app-queue.test.mjs adaptive-ml/tests/status-summary.test.mjs` from repository root for host transport/observer checks.

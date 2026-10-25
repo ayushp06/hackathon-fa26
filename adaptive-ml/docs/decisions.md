@@ -51,3 +51,5 @@
    debug commands train output 0; ordinary setters pause autonomy without training.
    Session-only memory and opt-in build avoid flash wear and preserve default builds.
    Synthetic real-DSP tests validate mechanics; no target/hardware claims follow.
+
+10. Task13: merge main `5f4b4f4` without production policy changes. Real-DSP two-context host test recalls80/30 from one correction each over ten round trips; identical RMS cannot distinguish contradictory preferences. Preserve radius, baseline and hold. Current app explicit confirmation and queued14/15/16 are implemented; remaining gaps and hardware-only checks are in two-context-demo.md. Hardware remains pinned ba961a4.

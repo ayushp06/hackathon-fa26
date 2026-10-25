@@ -1,8 +1,9 @@
 # App-to-ML feedback contract
 
 Firmware under test is pinned to `ba961a4`, not this branch's newest docs/tool commits.
-App/server inspected from `origin/main` at `030728d` (Wavelength-v3 checkpoint).
-This document proposes app integration; it does not add endpoints or firmware messages.
+App/server inspected and merged from `origin/main` at `5f4b4f4`.
+The app now implements explicit feedback and mode routes; firmware remains unchanged.
+See [two-context runbook](two-context-demo.md) for validation limits and results.
 
 ## Implemented path and wire contract
 
@@ -47,37 +48,44 @@ the applied target; the per-sample smoothing state is not exported. Player retri
 unacknowledged files about every 250 ms and deletes them upon matching sequence.
 `scripts/adaptive-feedback.ps1` uses that existing path and waits up to 4 s for status.
 
-The Node API's ordinary `/api/control` waits for matching firmware seq/status, but
-currently exposes ordinary control IDs 0..9, 12 and 13 plus dedicated reset routes. It has no
-learning-feedback, autonomy or preference-clear route. MIC4 also has no ML capability
-bit: protocol=4 does not prove that AUDIO_ADAPTIVE_ML was compiled in. Old builds
-reject the reserved ML IDs. Model counters/context/mode require debugger inspection.
+The Node API now routes POST `/api/noise-feedback` `{value:N}` to ID 14,
+`/api/noise-adaptation` `{enabled:boolean}` to ID 15, and
+`/api/noise-preferences` `{}` to ID 16 through the same `command` queue as ordinary
+controls. All wait for matching sequence/status; rejects/timeouts propagate.
+MIC4 has no ML capability bit: protocol=4 does not prove AUDIO_ADAPTIVE_ML is enabled.
+Model counters/context/mode still require debugger inspection.
 
-## PROPOSED app responsibilities (not implemented)
+## Current app responsibilities and remaining gaps
 
-1. Keep `setNoiseReduction` as non-training manual control. Hydration, connect/restart
-   restoration and intermediate drag/accessibility steps must never become feedback.
-2. Offer a deliberate confirmation such as "Remember this adjustment". Drag completion
-   can stage a candidate; it alone is not proof of intentional supervision. Inspect
-   `useRotaryGesture`/`RotaryDial` with the app team for a committed-action event.
-3. Flush and await the final ordinary setter before enqueueing ONE confirmed ID 14
-   event through the SAME server queue/serial owner. Allocate a unique sequence once
-   per event, preserve it for transport retries, and propagate firmware rejection.
-   No ID 1 write may follow the event inadvertently and pause autonomy again.
-4. Expose explicit autonomy enable/disable (ID 15); resuming need not retrain. Preserve
-   manual override until the user resumes or explicitly confirms a correction.
-5. Track desired UI value separately from acknowledged applied value. Poll actual
-   `values.noiseReduction`; updating the display from telemetry must not call a setter.
-   Current transport coalesces changes over ~60 ms and resolves multiple callers with
-   the last command's ack: that is not a record of each intermediate user's target.
-6. Display "correction accepted" only after seq/status confirmation, not "learning
-   improved". Applied target changes without user writes are consistent with recall
-   but do not prove it. ML mode/context/counters and firmware capability reporting
-   need a future coordinated protocol extension before a verified recall UI exists.
+`ManualScreen.dial` -> `useAppStore.setValue` -> `setNoiseReduction` sends ordinary
+ID 1 only. `Remember this adjustment` invokes `confirmNoiseReduction`, which awaits
+another final ordinary setter, checks desired value is unchanged, then submits ONE
+feedback request. `set`/`flush` coalesce ordinary writes over 60 ms. No service retry
+creates additional corrections; bridge retries reuse the sequence. An HTTP timeout
+is ambiguous: inspect counters/ack before another user confirmation.
 
-**Dependencies for app/server owners:** serialized feedback/mode routes; deliberate
-confirmation semantics; surfaced command/result types; applied-vs-desired state;
-capability discovery; context/time and playback-latency alignment. Endpoint names are
-intentionally unspecified until agreed. Calibration baseline import is also absent.
-For the current demo keep a stationary scene, use the existing debug helper with the
-app/API idle, and do not change the device firmware or shared bridge to fill these gaps.
+`HardwareConnection` polls `getStatus` and directly sets only `appliedNoiseReduction`;
+this emits no setter. Selected dial values remain desired values. The Manual screen
+shows selected versus device target separately. Resume/Pause/Clear buttons call the
+three dedicated service methods; these are hardware-specific methods, not additions
+to the generic mock DeviceService API.
+
+`useAppStore.onRehydrateStorage`, `HardwareDeviceService.connect`/`restart`, and
+`restoreProfile` can send ID 1 without training and pause autonomy. Complete these
+BEFORE learning. No automatic correction is sent during hydration or telemetry.
+The UI does not expose authoritative ML mode: success text is a past acknowledgment,
+not current mode. Dials remain editable while confirmation is pending; a change
+after the desired-value check can enqueue ID 1 after ID 14 and pause autonomy.
+Keep controls idle during confirmation and recall. Coordinate a future UI locking
+fix with the app owner rather than changing teammate code in this task.
+
+Remaining dependencies: explicit ML capability/mode/context/counter telemetry,
+context/time and playback-latency alignment, calibrated baseline import, physical
+transport verification. The embedded baseline is still fixed 50, not an app profile.
+
+Host coverage: `tests/hardware_server.test.mjs` exercises actual routes/queue with
+an emulated status file; `hardwareDeviceService.test.mjs` covers final-setter ack
+ordering. `adaptive-ml/tests/app-queue.test.mjs` additionally connects the actual
+service through real HTTP to the actual server and command file, verifying IDs,
+unique sequences, coalescing, rejection and telemetry without writes. Its status
+publisher emulates firmware acknowledgments; it does NOT run C# serial or hardware.
