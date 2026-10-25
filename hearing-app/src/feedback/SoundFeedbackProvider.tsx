@@ -3,6 +3,7 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { preload, setAudioModeAsync, useAudioPlayer, type AudioPlayer } from 'expo-audio';
 import { AccessibilityInfo } from 'react-native';
 import { useAppStore } from '../state/useAppStore';
+import { isSoundReady } from './feedbackTiming';
 import { type FeedbackSound, SoundFeedbackContext } from './useSoundFeedback';
 
 const sources = {
@@ -24,12 +25,14 @@ export function SoundFeedbackProvider({ children }: { children: ReactNode }) {
   const [screenReader, setScreenReader] = useState(true);
   const screenReaderRef = useRef(true);
   const activePlayer = useRef<AudioPlayer | null>(null);
+  const activeSound = useRef<FeedbackSound | null>(null);
   const busyUntil = useRef(0);
+  const requestId = useRef(0);
 
   useEffect(() => {
-    tick.volume = 0.18;
-    tap.volume = 0.18;
-    confirm.volume = 0.18;
+    tick.volume = 0.65;
+    tap.volume = 0.75;
+    confirm.volume = 0.35;
   }, [tick, tap, confirm]);
 
   useEffect(() => {
@@ -43,12 +46,16 @@ export function SoundFeedbackProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     screenReaderRef.current = screenReader;
-    if (screenReader) activePlayer.current?.pause();
+    if (screenReader) {
+      requestId.current++;
+      activePlayer.current?.pause();
+    }
   }, [screenReader]);
 
   useEffect(() => {
     let mounted = true;
     if (!enabled) {
+      requestId.current++;
       activePlayer.current?.pause();
       return;
     }
@@ -68,14 +75,16 @@ export function SoundFeedbackProvider({ children }: { children: ReactNode }) {
   const play = useCallback((sound: FeedbackSound) => {
     if (!enabled || !configured || screenReader) return;
     const now = Date.now();
-    if (sound !== 'confirm' && now < busyUntil.current) return;
+    if (!isSoundReady(sound, activeSound.current, busyUntil.current, now)) return;
     const player = sound === 'tick' ? tick : sound === 'tap' ? tap : confirm;
     if (!player.isLoaded) return;
     activePlayer.current?.pause();
     activePlayer.current = player;
+    activeSound.current = sound;
     busyUntil.current = now + durations[sound];
+    const request = ++requestId.current;
     void player.seekTo(0).then(() => {
-      if (activePlayer.current === player && useAppStore.getState().soundFeedbackEnabled && !screenReaderRef.current) player.play();
+      if (request === requestId.current && useAppStore.getState().soundFeedbackEnabled && !screenReaderRef.current) player.play();
     }).catch(() => {});
   }, [enabled, configured, screenReader, tick, tap, confirm]);
 

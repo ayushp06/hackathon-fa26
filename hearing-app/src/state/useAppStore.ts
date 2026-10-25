@@ -84,7 +84,7 @@ export const useAppStore = create<AppState>()(
       treble: 0,
       activeMode: 'automatic',
       hapticsEnabled: true,
-      soundFeedbackEnabled: false,
+      soundFeedbackEnabled: true,
       calibrationStatus: 'idle',
       lastResult: null,
       transportError: null,

@@ -6,7 +6,7 @@ import { useAppStore } from '../state/useAppStore';
 import { isReady } from './feedbackTiming';
 
 let lastDialAt = -Infinity;
-let lastBoundaryAt = -Infinity;
+let lastDetentAt = -Infinity;
 let lastSelectionAt = -Infinity;
 let lastSuccessAt = -Infinity;
 
@@ -23,15 +23,17 @@ export function useHaptics() {
     return () => { mounted = false; subscription.remove(); };
   }, []);
 
-  const dialStep = (value: number, min: number, max: number) => {
+  const dialStep = (value: number, min: number, max: number, landmark: boolean) => {
     if (!enabled || reducedMotion) return;
     const now = Date.now();
-    if (value === min || value === max) {
-      if (!isReady(lastBoundaryAt, now, 150)) return;
-      lastBoundaryAt = now;
+    const boundary = value === min || value === max;
+    if (landmark) {
+      if (!isReady(lastDetentAt, now, boundary ? 150 : 100)) return;
+      lastDetentAt = now;
+      lastDialAt = now;
       const result = Platform.OS === 'android'
         ? Haptics.performAndroidHapticsAsync(Haptics.AndroidHaptics.Segment_Tick)
-        : Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        : boundary ? Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium) : Haptics.selectionAsync();
       void result.catch(() => {});
     } else {
       if (!isReady(lastDialAt, now, 80)) return;

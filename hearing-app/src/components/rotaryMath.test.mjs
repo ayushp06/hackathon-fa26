@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { angleToValue, shortestAngleDelta, START_ANGLE, stepScale, SWEEP_ANGLE, valueToAngle } from './rotaryMath.ts';
+import { angleToValue, isDialLandmark, shortestAngleDelta, START_ANGLE, stepScale, SWEEP_ANGLE, valueToAngle } from './rotaryMath.ts';
 
 test('270 degree sweep increases clockwise and clamps at both ends', () => {
   assert.equal(valueToAngle(0, 0, 100), START_ANGLE);
@@ -16,4 +16,11 @@ test('wraparound keeps drag direction and decimal steps stay readable', () => {
   assert.equal(angleToValue(valueToAngle(0.3, 0, 1), 0, 1, 0.1, stepScale(0, 0.1)), 0.3);
   assert.equal(stepScale(0, 1e-7), 1e7);
   assert.equal(angleToValue(START_ANGLE + SWEEP_ANGLE, 0, 95, 10, 1), 95);
+});
+
+test('dial landmarks align with numbered quarter marks across control ranges', () => {
+  assert.equal(isDialLandmark(25, 0, 100), true);
+  assert.equal(isDialLandmark(26, 0, 100), false);
+  assert.equal(isDialLandmark(0, -12, 12), true);
+  assert.equal(isDialLandmark(-6, -12, 12), true);
 });

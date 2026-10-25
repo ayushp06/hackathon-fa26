@@ -6,7 +6,7 @@ import Svg, { Circle, Defs, Line, Path, RadialGradient, Stop, Text as SvgText } 
 import { theme } from '../../constants/theme';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
-import { angleToValue, clamp, stepScale, valueToAngle } from './rotaryMath';
+import { angleToValue, clamp, isDialLandmark, stepScale, valueToAngle } from './rotaryMath';
 import { useRotaryGesture } from './useRotaryGesture';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -34,8 +34,10 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
   const sound = useSoundFeedback();
   const handleValueChange = (nextValue: number) => {
     onValueChange(nextValue);
-    haptics.dialStep(nextValue, min, max);
-    sound.tick();
+    const landmark = isDialLandmark(nextValue, min, max);
+    haptics.dialStep(nextValue, min, max, landmark);
+    if (landmark) sound.tap();
+    else sound.tick();
   };
   const { angle, gesture } = useRotaryGesture({ value: currentValue, min, max, step, diameter, onValueChange: handleValueChange });
   const marks = Array.from({ length: 5 }, (_, index) => min + (max - min) * index / 4);

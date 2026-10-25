@@ -21,6 +21,11 @@ export function valueToAngle(value: number, min: number, max: number) {
   return START_ANGLE + (clamp(value, min, max) - min) / (max - min) * SWEEP_ANGLE;
 }
 
+export function isDialLandmark(value: number, min: number, max: number) {
+  const quarter = (value - min) * 4 / (max - min);
+  return Math.abs(quarter - Math.round(quarter)) < 1e-6;
+}
+
 export function stepScale(min: number, step: number) {
   const places = (value: number) => {
     const [mantissa, exponent = '0'] = String(value).toLowerCase().split('e');
