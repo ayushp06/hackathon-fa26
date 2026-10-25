@@ -23,11 +23,13 @@ export function HardwareConnection() {
         const next = await hardwareDeviceService.getStatus();
         if (!stopped) {
           setStatus(next); setError(next.error);
+          useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null });
           if (!next.connected) useDeviceStore.setState({ connectedDevice: null });
         }
       } catch {
         if (!stopped) {
           setStatus(null); setError(null);
+          useAppStore.setState({ appliedNoiseReduction: null });
           useDeviceStore.setState({ connectedDevice: null });
         }
       }
@@ -43,7 +45,9 @@ export function HardwareConnection() {
     try {
       if (connected) await device.disconnect();
       else await device.connect('stm32-usb');
-      setStatus(await hardwareDeviceService.getStatus());
+      const next = await hardwareDeviceService.getStatus();
+      setStatus(next);
+      useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null });
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Connection failed'); }
     finally { setBusy(false); }
   };
@@ -53,7 +57,9 @@ export function HardwareConnection() {
       const connectedDevice = await hardwareDeviceService.restart();
       useDeviceStore.setState({ connectedDevice, error: null });
       useAppStore.setState({ transportError: null });
-      setStatus(await hardwareDeviceService.getStatus()); setError(null);
+      const next = await hardwareDeviceService.getStatus();
+      setStatus(next); setError(null);
+      useAppStore.setState({ appliedNoiseReduction: next.connected ? next.noiseReduction : null });
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Restart failed'); }
     finally { setBusy(false); }
   };

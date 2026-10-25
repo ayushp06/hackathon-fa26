@@ -97,6 +97,14 @@ export class HardwareDeviceService implements DeviceService {
   }
   setVolume(value: number) { return this.set('volume', value); }
   setNoiseReduction(value: number) { return this.set('noiseReduction', value); }
+  async confirmNoiseReduction(value: number) {
+    const ack = await this.setNoiseReduction(value);
+    if (!ack.accepted) throw new Error('Connect the STM32 before confirming a correction.');
+    if (this.desired.get('noiseReduction') !== value) throw new Error('Noise reduction changed while confirming. Try again.');
+    return this.request<DeviceAcknowledgment>('/noise-feedback', { value });
+  }
+  setNoiseAdaptation(enabled: boolean) { return this.request<DeviceAcknowledgment>('/noise-adaptation', { enabled }); }
+  clearNoisePreferences() { return this.request<DeviceAcknowledgment>('/noise-preferences', {}); }
   setReduceLoudSounds(value: number) { return this.set('reduceLoudSounds', value); }
   setSpeechAmplification(value: number) { return this.set('speechAmplification', value); }
   setBass(value: number) { return this.set('bass', value); }

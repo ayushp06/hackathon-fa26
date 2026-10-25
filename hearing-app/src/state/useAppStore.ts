@@ -18,6 +18,7 @@ type AppState = Record<ManualControl, number> & {
   calibrationStatus: CalibrationStatus;
   lastResult: CalibrationResult | null;
   transportError: string | null;
+  appliedNoiseReduction: number | null;
   hydrated: boolean;
   savedProfile: SoundProfile | null;
   restoringProfile: boolean;
@@ -84,6 +85,7 @@ export const useAppStore = create<AppState>()(
       calibrationStatus: 'idle',
       lastResult: null,
       transportError: null,
+      appliedNoiseReduction: null,
       hydrated: false,
       savedProfile: null,
       restoringProfile: false,
