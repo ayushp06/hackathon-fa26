@@ -5,6 +5,8 @@ using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Collections.Generic;
+using System.Web.Script.Serialization;
 
 public static class MicSpeakerBridge
 {
@@ -45,6 +47,101 @@ public static class MicSpeakerBridge
     [DllImport("winmm.dll")] static extern uint waveOutClose(IntPtr handle);
 
     static volatile bool stop;
+    static readonly string statusPath=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"hardware-status.json");
+    static readonly string appCommandPath=Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"hardware-command.txt");
+    static Dictionary<string,object> liveStatus=new Dictionary<string,object>();
+    static readonly object statusLock=new object();
+    static string pendingStatus;
+    static bool statusWriterActive;
+    static uint sentCommand;
+    static double lastCommandSend=-1;
+    static readonly string[] controlNames={"volume","noiseReduction","speechAmplification","bass","mid","treble","eq250","eq500","eq2000","eq4000"};
+
+    static void SaveStatus(bool streaming,string error)
+    {
+        liveStatus["timestampMs"]=(long)(DateTime.UtcNow-new DateTime(1970,1,1)).TotalMilliseconds;
+        liveStatus["streaming"]=streaming;
+        liveStatus["error"]=error;
+        string json=new JavaScriptSerializer().Serialize(liveStatus);
+        lock (statusLock) {
+            pendingStatus=json;
+            if (!statusWriterActive) {
+                statusWriterActive=true;
+                ThreadPool.QueueUserWorkItem(delegate {
+                    for (;;) {
+                        string next;
+                        lock (statusLock) {
+                            next=pendingStatus; pendingStatus=null;
+                            if (next==null) { statusWriterActive=false; return; }
+                        }
+                        string temporary=statusPath+".tmp";
+                        try {
+                            File.WriteAllText(temporary,next);
+                            if (File.Exists(statusPath)) File.Replace(temporary,statusPath,null);
+                            else File.Move(temporary,statusPath);
+                        } catch (IOException) { /* Retry the next snapshot. */ }
+                    }
+                });
+            }
+        }
+        // On exit, flush the disconnected state before background threads end.
+        if (!streaming) for (int i=0;i<50;++i) {
+            lock (statusLock) { if (!statusWriterActive) break; }
+            Thread.Sleep(10);
+        }
+    }
+
+    static void PollAppCommand(SerialPort port,byte[] packet,double now)
+    {
+        try {
+            if (!File.Exists(appCommandPath)) return;
+            string[] fields=File.ReadAllText(appCommandPath).Trim().Split(' ');
+            if (fields.Length!=3) return;
+            byte id=byte.Parse(fields[0],CultureInfo.InvariantCulture);
+            sbyte value=sbyte.Parse(fields[1],CultureInfo.InvariantCulture);
+            uint sequence=uint.Parse(fields[2],CultureInfo.InvariantCulture);
+            if (packet[3]<51) return; // MIC3+ supports acknowledged controls.
+            if (id==11 && sentCommand==sequence) { File.Delete(appCommandPath); return; }
+            if (U32(packet,32)==sequence) { File.Delete(appCommandPath); return; }
+            if (sentCommand==sequence && now-lastCommandSend<0.25) return;
+            byte[] command={0xa5,0x5a,id,unchecked((byte)value),
+                (byte)sequence,(byte)(sequence>>8),(byte)(sequence>>16),(byte)(sequence>>24),0,0};
+            ushort crc=Crc(command,8); command[8]=(byte)crc; command[9]=(byte)(crc>>8);
+            port.Write(command,0,command.Length);
+            sentCommand=sequence; lastCommandSend=now;
+            if (id==11) File.Delete(appCommandPath); // Reset is sent once; boot has sequence zero.
+        } catch (IOException) { /* Atomic file publication may overlap a read. */ }
+    }
+
+    static void ReportStatus(byte[] packet,string port,string device,long packets,long missing,
+        long bad,long dropped,long underruns,long overflow)
+    {
+        int version=packet[3]-48;
+        int flags=packet[14];
+        liveStatus["protocol"]=version;
+        liveStatus["port"]=port; liveStatus["device"]=device;
+        liveStatus["packets"]=packets; liveStatus["missing"]=missing; liveStatus["crc"]=bad;
+        liveStatus["firmwareDrops"]=dropped; liveStatus["underruns"]=underruns; liveStatus["overflow"]=overflow;
+        liveStatus["filter"]=(flags&32)!=0?"bypass":(flags&4)!=0?"no-reference":(flags&8)!=0?"hold":"nlms";
+        if (version>=2) {
+            liveStatus["primaryRms"]=U32(packet,16); liveStatus["referenceRms"]=U32(packet,20);
+            liveStatus["outputRms"]=U32(packet,24); liveStatus["maxCycles"]=U32(packet,28);
+        }
+        if (version>=3) {
+            liveStatus["commandSequence"]=U32(packet,32);
+            liveStatus["commandStatus"]=packet[46]; liveStatus["relearns"]=U32(packet,48);
+            liveStatus["referenceClock"]=packet[47]!=0;
+            Dictionary<string,int> values=new Dictionary<string,int>();
+            for (int i=0;i<controlNames.Length;++i) values[controlNames[i]]=unchecked((sbyte)packet[36+i]);
+            if (version>=4) {
+                values["reduceLoudSounds"]=packet[52]; values["spatialFocus"]=packet[53];
+                liveStatus["spatialActive"]=packet[54]!=0;
+                liveStatus["microphoneSpacingMm"]=packet[55];
+            }
+            liveStatus["values"]=values;
+        }
+        SaveStatus(true,null);
+    }
     static void Check(uint result, string operation) {
         if (result != 0) throw new IOException(operation + " failed, Windows audio error " + result);
     }
@@ -202,12 +299,12 @@ public static class MicSpeakerBridge
             else matched = value == magic[0] ? 1 : 0;
             if (matched != magic.Length) continue;
             version = port.ReadByte();
-            if (version == 49 || version == 50) break;
+            if (version >= 49 && version <= 52) break;
             matched = version == magic[0] ? 1 : 0;
         }
         Array.Copy(magic, p, magic.Length);
         p[3] = (byte)version;
-        int length = (version == 50 ? 32 : 16) + 128 + 2;
+        int length = (version == 52 ? 56 : version == 51 ? 52 : version == 50 ? 32 : 16) + 128 + 2;
         int offset = 4;
         while (offset < length) offset += port.Read(p, offset, length - offset);
         return length;
@@ -245,6 +342,7 @@ public static class MicSpeakerBridge
             if (gain < 0 || gain > 8 || double.IsNaN(gain) || double.IsInfinity(gain))
                 throw new ArgumentException("Gain must be between 0 and 8.");
             if (waveOutGetNumDevs() == 0) throw new IOException("Windows has no available playback devices.");
+            SaveStatus(false,"Starting audio stream");
             Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e) { e.Cancel = true; stop = true; };
             using (SerialPort port = new SerialPort(portName, 921600, Parity.None, 8, StopBits.One))
             using (Output output = new Output(deviceIndex)) {
@@ -253,13 +351,15 @@ public static class MicSpeakerBridge
                 port.DtrEnable = false;
                 port.RtsEnable = false;
                 port.ReadTimeout = 1000;
+                port.WriteTimeout = 1000;
                 port.ReadBufferSize = 65536;
                 port.Open();
                 port.DiscardInBuffer();
-                Console.WriteLine("Microphone -> " + DeviceName(deviceIndex));
+                string outputDeviceName=DeviceName(deviceIndex);
+                Console.WriteLine("Microphone -> " + outputDeviceName);
                 Console.WriteLine(portName + " at 921600 baud; 16 kHz mono PCM16; gain " + gain);
                 Console.WriteLine("Start with low speaker volume to avoid acoustic feedback. Ctrl+C stops playback.");
-                byte[] packet = new byte[162], rendered = new byte[256];
+                byte[] packet = new byte[186], rendered = new byte[256];
                 Resampler resampler = new Resampler();
                 long packets = 0, missing = 0, bad = 0, timeouts = 0, firmwareDrops = 0;
                 uint expected = 0;
@@ -286,19 +386,27 @@ public static class MicSpeakerBridge
                         }
                         if (U32(packet, 8) != 16000 || packet[12] != 64 || packet[13] != 0 ||
                             Crc(packet, packetLength - 2) != (ushort)(packet[packetLength - 2] | packet[packetLength - 1] << 8)) { ++bad; continue; }
-                        bool nlms = packet[3] == 50;
-                        int pcmStart = nlms ? 32 : 16;
+                        bool nlms = packet[3] >= 50;
+                        int pcmStart = packet[3]==52 ? 56 : packet[3]==51 ? 52 : nlms ? 32 : 16;
                         int firmwareFault = packet[15];
                         if (firmwareFault != 0) {
+                            string faultMessage;
                             if (nlms && (packet[14] & 128) != 0) {
                                 uint positions = U32(packet, 16), diag = U32(packet, 20), events = U32(packet, 24);
-                                throw new IOException(string.Format("Dual receiver fault {0}: primaryNDTR={1} referenceNDTR={2} txNDTR={3} clocks=0x{4:X} stage={5} callbacks={6}/{7} SPI3=0x{8:X8}",
+                                faultMessage=string.Format("Dual receiver fault {0}: primaryNDTR={1} referenceNDTR={2} txNDTR={3} clocks=0x{4:X} stage={5} callbacks={6}/{7} SPI3=0x{8:X8}",
                                     firmwareFault, positions & 65535, positions >> 16, diag & 65535,
-                                    (diag >> 16) & 255, diag >> 24, events & 65535, events >> 16, U32(packet, 28)));
-                            }
-                            throw new IOException("Firmware fault " + firmwareFault +
+                                    (diag >> 16) & 255, diag >> 24, events & 65535, events >> 16, U32(packet, 28));
+                            } else faultMessage="Firmware fault " + firmwareFault +
                                 (nlms ? string.Format(" (sync={0}, overrun={1}, framing={2}, HAL=0x{3:X})",
-                                    U32(packet, 16), U32(packet, 20), U32(packet, 24), U32(packet, 28)) : ""));
+                                    U32(packet, 16), U32(packet, 20), U32(packet, 24), U32(packet, 28)) : "");
+                            if (packet[3]<51) throw new IOException(faultMessage);
+                            // Keep the serial link alive so the app can request
+                            // a board restart. Never play or label fault PCM live.
+                            liveStatus["protocol"]=packet[3]-48;
+                            liveStatus["port"]=portName; liveStatus["device"]=outputDeviceName;
+                            SaveStatus(false,faultMessage);
+                            PollAppCommand(port,packet,clock.Elapsed.TotalSeconds);
+                            continue;
                         }
                         uint seq = U32(packet, 4);
                         if (seen && seq != expected) {
@@ -316,6 +424,9 @@ public static class MicSpeakerBridge
                         if (record != null) record.Write(rendered, 0, size);
                         if (clock.Elapsed.TotalSeconds - lastControl >= 0.1) {
                             lastControl = clock.Elapsed.TotalSeconds;
+                            PollAppCommand(port,packet,clock.Elapsed.TotalSeconds);
+                            ReportStatus(packet,portName,outputDeviceName,packets,missing,bad,
+                                firmwareDrops,output.Underruns,output.OverflowResets);
                             try {
                                 if (File.Exists(controlPath)) {
                                     string command = File.ReadAllText(controlPath).Trim();
@@ -360,8 +471,10 @@ public static class MicSpeakerBridge
                     }
                 }
             }
+            SaveStatus(false,"Playback stopped");
             return 0;
         } catch (Exception e) {
+            SaveStatus(false,e.Message);
             Console.Error.WriteLine("Audio bridge: " + e.Message);
             Console.Error.WriteLine("Close monitor-mic.ps1 and other COM8 applications before running playback.");
             return 1;

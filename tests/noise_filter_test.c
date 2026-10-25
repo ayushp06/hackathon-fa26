@@ -76,6 +76,31 @@ int main(void)
     Noise_RequestReset();
     Noise_Process(primary, reference, output);
     assert(g_noise_stats.resets == 0);
+    /* Runtime mix must produce bypass, full cancellation and a half mix,
+     * rather than treating every nonzero percentage as an on/off switch. */
+    Noise_Init();
+    double mixes[3]={0};
+    const unsigned strengths[3]={0,100,50};
+    for (unsigned stage=0;stage<3;++stage) {
+        Noise_SetStrength(strengths[stage]);
+        double input_energy=0,output_energy=0;
+        for (unsigned block=0;block<700;++block) {
+            for (unsigned i=0;i<NOISE_BLOCK;++i) {
+                float n=random_noise();
+                reference[i]=(int32_t)(n*8388608.0f);
+                primary[i]=(int32_t)(n*0.6f*8388608.0f);
+            }
+            Noise_Process(primary,reference,output);
+            if (block>600) {
+                input_energy+=(double)g_noise_stats.primary_rms*g_noise_stats.primary_rms;
+                output_energy+=(double)g_noise_stats.output_rms*g_noise_stats.output_rms;
+            }
+        }
+        mixes[stage]=sqrt(output_energy/input_energy);
+    }
+    assert(mixes[0]>0.99 && mixes[0]<1.01);
+    assert(mixes[1]<0.05);
+    assert(mixes[2]>0.45 && mixes[2]<0.55);
     puts("PASS: convergence, desired-signal preservation, missing-reference bypass and control");
     return 0;
 }

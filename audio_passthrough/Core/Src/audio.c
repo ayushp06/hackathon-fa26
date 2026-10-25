@@ -3,6 +3,7 @@
 #include "pc_audio.h"
 #include "noise_filter.h"
 #include "reference_capture.h"
+#include "audio_controls.h"
 #include <string.h>
 
 /* DMA buffers contain HALFWORDS, never native-endian uint32_t samples. */
@@ -62,6 +63,9 @@ HAL_StatusTypeDef Audio_Start(void)
     last_callback = 0;
 #ifdef AUDIO_NLMS
     Noise_Init();
+#ifdef AUDIO_APP_CONTROL
+    Controls_Init();
+#endif
 #endif
 #ifdef AUDIO_DUAL_DATA
     ready_halves[0] = ready_halves[1] = 0;
@@ -80,7 +84,16 @@ HAL_StatusTypeDef Audio_Start(void)
     }
     g_audio_stats.dma_started = 1;
 #ifdef AUDIO_DUAL_DATA
-    if (Reference_Start() != HAL_OK) {
+    HAL_StatusTypeDef reference_status=Reference_Start();
+#ifdef AUDIO_APP_CONTROL
+    /* Keep the voice controls usable if the external WS loopback is missing.
+     * RX3 has not been enabled on HAL_TIMEOUT; its zero buffer provides a
+     * missing reference and NLMS explicitly bypasses. MIC3 reports this state. */
+    if (reference_status==HAL_TIMEOUT) Reference_ProbeClocks();
+    else
+#endif
+    if (reference_status != HAL_OK) {
+        Reference_ProbeClocks();
         Audio_Fault(AUDIO_FAULT_START);
         return HAL_ERROR;
     }
@@ -89,7 +102,7 @@ HAL_StatusTypeDef Audio_Start(void)
     SPI2->CR2 |= SPI_CR2_ERRIE;
     I2S2ext->CR2 |= SPI_CR2_ERRIE;
 #ifdef AUDIO_DUAL_DATA
-    SPI3->CR2 |= SPI_CR2_ERRIE;
+    if (reference_capture_running) SPI3->CR2 |= SPI_CR2_ERRIE;
 #endif
     return HAL_OK;
 }
@@ -107,8 +120,8 @@ void Audio_CheckI2SErrors(void)
     uint32_t errors = 0;
 #ifdef AUDIO_DUAL_DATA
     uint32_t ref_status = SPI3->SR;
-    if (ref_status & SPI_SR_OVR) { ++g_audio_stats.overruns; errors = 1; }
-    if (ref_status & SPI_SR_FRE) { ++g_audio_stats.frame_errors; errors = 1; }
+    if (reference_capture_running && (ref_status & SPI_SR_OVR)) { ++g_audio_stats.overruns; errors = 1; }
+    if (reference_capture_running && (ref_status & SPI_SR_FRE)) { ++g_audio_stats.frame_errors; errors = 1; }
 #endif
     if (rx_status & SPI_SR_OVR) { ++g_audio_stats.overruns; errors = 1; }
     if (tx_status & SPI_SR_UDR) { ++g_audio_stats.underruns; errors = 1; }
@@ -150,7 +163,7 @@ static void process_half(uint32_t half)
     if (half != expected_half || active_half(&hdma_i2s2_ext_rx) == half
                               || active_half(&hdma_i2s2_tx) == half
 #ifdef AUDIO_DUAL_DATA
-                              || active_half(&hdma_i2s3_rx) == half
+                              || (reference_capture_running && active_half(&hdma_i2s3_rx) == half)
 #endif
        ) {
 #ifdef AUDIO_DUAL_DATA
@@ -206,7 +219,13 @@ static void process_half(uint32_t half)
     }
 #ifdef AUDIO_NLMS
     if (!mute) {
+#ifdef AUDIO_APP_CONTROL
+        Controls_BeginBlock();
+#endif
         Noise_Process(primary_block, reference_block, clean_block);
+#ifdef AUDIO_APP_CONTROL
+        Controls_Process24(clean_block,NOISE_BLOCK);
+#endif
         for (uint32_t frame = 0; frame < AUDIO_BLOCK_FRAMES; ++frame) {
             pc_samples[frame] = (int16_t)(clean_block[frame] / 256);
         }
@@ -224,7 +243,7 @@ static void process_half(uint32_t half)
         || active_half(&hdma_i2s2_ext_rx) == half
         || active_half(&hdma_i2s2_tx) == half
 #ifdef AUDIO_DUAL_DATA
-        || active_half(&hdma_i2s3_rx) == half
+        || (reference_capture_running && active_half(&hdma_i2s3_rx) == half)
 #endif
        ) {
         ++g_audio_stats.deadline_errors;
@@ -240,6 +259,7 @@ static void process_half(uint32_t half)
 static void half_ready(uint32_t half, uint32_t source)
 {
 #ifdef AUDIO_DUAL_DATA
+    if (!reference_capture_running) { if (source==1U) process_half(half); return; }
     if (source == 1) ++dual_primary_events; else ++dual_reference_events;
     if (g_audio_stats.fault) { return; }
     if (ready_halves[half] & source) {

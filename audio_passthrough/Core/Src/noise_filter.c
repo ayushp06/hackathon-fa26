@@ -10,10 +10,14 @@ static arm_lms_norm_instance_f32 nlms;
 static float coefficients[NOISE_TAPS], state[NOISE_TAPS + NOISE_BLOCK - 1U];
 static float noise[NOISE_BLOCK], desired[NOISE_BLOCK], estimate[NOISE_BLOCK], error[NOISE_BLOCK];
 static float primary_delay[NOISE_DELAY];
+static float reference_delay[NOISE_DELAY], delayed_reference[NOISE_BLOCK];
+static float spatial_mix;
+static volatile uint32_t spatial_focus;
 static uint32_t delay_index, training_blocks;
 static float primary_prev, reference_prev, primary_hp, reference_hp;
 static float wet, noise_ratio;
 static volatile uint32_t enabled, reset_requested;
+static volatile uint32_t strength;
 volatile NoiseStats g_noise_stats;
 
 static void reset_kernel(void)
@@ -29,13 +33,25 @@ void Noise_Init(void)
 {
     memset((void *)&g_noise_stats, 0, sizeof g_noise_stats);
     memset(primary_delay, 0, sizeof primary_delay);
+    memset(reference_delay, 0, sizeof reference_delay);
+    spatial_focus = 0; spatial_mix = 0.0f;
     delay_index = 0;
     primary_prev = reference_prev = primary_hp = reference_hp = 0.0f;
     enabled = 1;
+    strength = 100;
     reset_requested = 0;
     reset_kernel();
 }
 void Noise_SetEnabled(uint32_t value) { enabled = value != 0; }
+void Noise_SetStrength(uint32_t percent) { strength=percent>100U?100U:percent; enabled=strength!=0; }
+void Noise_SetSpatialFocus(uint32_t percent)
+{
+    percent=percent>100U?100U:percent;
+    /* The reference contains wanted speech in an array. Never learn to cancel
+     * it; discard the old voice/noise transfer function on mode changes. */
+    if ((spatial_focus==0)!=(percent==0)) reset_requested=1;
+    spatial_focus=percent;
+}
 void Noise_RequestReset(void) { reset_requested = 1; }
 
 void Noise_Process(const int32_t *primary, const int32_t *reference, int32_t *output)
@@ -53,7 +69,9 @@ void Noise_Process(const int32_t *primary, const int32_t *reference, int32_t *ou
         reference_hp = r - reference_prev + 0.99f * reference_hp;
         primary_prev = p; reference_prev = r;
         desired[i] = primary_delay[delay_index];
+        delayed_reference[i] = reference_delay[delay_index];
         primary_delay[delay_index] = primary_hp;
+        reference_delay[delay_index] = reference_hp;
         delay_index = (delay_index + 1U) % NOISE_DELAY;
         noise[i] = reference_hp;
         primary_power += desired[i] * desired[i];
@@ -65,7 +83,8 @@ void Noise_Process(const int32_t *primary, const int32_t *reference, int32_t *ou
     uint32_t train = training_blocks < 500U; /* First two seconds: noise only. */
     uint32_t speech_guard = !train && primary_power > 1.0e-8f
         && primary_power > 4.0f * noise_ratio * reference_power;
-    uint32_t adapt = enabled && present && !input_clipped && !speech_guard;
+    uint32_t adapt = enabled && !spatial_focus && spatial_mix<0.001f
+        && present && !input_clipped && !speech_guard;
     if (adapt) {
         float ratio = primary_power / (reference_power + 1.0e-12f);
         ratio = fmaxf(0.01f, fminf(100.0f, ratio));
@@ -91,13 +110,18 @@ void Noise_Process(const int32_t *primary, const int32_t *reference, int32_t *ou
     }
     if (!isfinite(coefficient_power) || coefficient_power > 64.0f) { invalid = 1; }
     if (invalid) { reset_kernel(); ++g_noise_stats.resets; }
-    uint32_t active = enabled && present && !invalid;
+    uint32_t active = enabled && !spatial_focus && spatial_mix<0.001f && present && !invalid;
     float output_power = 0.0f;
     for (uint32_t i = 0; i < NOISE_BLOCK; ++i) {
-        float target = active ? 1.0f : 0.0f;
+        float target = active ? strength / 100.0f : 0.0f;
         if (wet < target) wet = fminf(target, wet + 0.002f);
         if (wet > target) wet = fmaxf(target, wet - 0.002f);
         float value = desired[i] - wet * (invalid ? 0.0f : estimate[i]);
+        float spatial_target=present?spatial_focus/100.0f:0.0f;
+        spatial_mix+=fmaxf(-0.002f,fminf(0.002f,spatial_target-spatial_mix));
+        /* Equal acoustic delay for broadside incidence. Both paths retain
+         * the same 32-sample latency as the NLMS path across all settings. */
+        value+=spatial_mix*0.5f*(delayed_reference[i]-desired[i]);
         if (value > 0.99999988f) { value = 0.99999988f; ++g_noise_stats.clips; }
         if (value < -1.0f) { value = -1.0f; ++g_noise_stats.clips; }
         output[i] = (int32_t)(value * 8388608.0f);

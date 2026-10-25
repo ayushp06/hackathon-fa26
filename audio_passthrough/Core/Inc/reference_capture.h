@@ -5,6 +5,7 @@
 extern I2S_HandleTypeDef hi2s3;
 extern DMA_HandleTypeDef hdma_i2s3_rx;
 extern uint16_t reference_rx[AUDIO_RING_WORDS];
+extern volatile uint32_t reference_capture_running;
 void Reference_Init(void);
 HAL_StatusTypeDef Reference_Start(void);
 void Audio_ReferenceHalfReady(uint32_t half);

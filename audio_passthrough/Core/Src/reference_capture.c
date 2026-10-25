@@ -4,6 +4,7 @@
 I2S_HandleTypeDef hi2s3;
 DMA_HandleTypeDef hdma_i2s3_rx;
 uint16_t reference_rx[AUDIO_RING_WORDS] __attribute__((aligned(4)));
+volatile uint32_t reference_capture_running;
 volatile uint32_t dual_primary_events, dual_reference_events, dual_stage, dual_clock_flags;
 volatile uint32_t dual_fault_words[4];
 
@@ -86,6 +87,7 @@ HAL_StatusTypeDef Reference_Start(void)
     HAL_StatusTypeDef status = HAL_I2S_Receive_DMA(&hi2s3, reference_rx, AUDIO_RING_FRAMES * 2U);
     if (status != HAL_OK || hdma_i2s3_rx.ErrorCode
         || !(hdma_i2s3_rx.Instance->CR & DMA_SxCR_EN)) { return HAL_ERROR; }
+    reference_capture_running=1;
     return HAL_OK;
 }
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *i2s)

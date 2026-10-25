@@ -67,6 +67,9 @@ int main(void)
     SystemClock_Config();
     MX_GPIO_Init();
     MX_USART2_UART_Init();
+#ifdef AUDIO_PC_STREAM
+    PC_Audio_Init();
+#endif
     debug_write("\r\nINMP441 -> I2S2 full duplex -> PCM5102A\r\n");
     MX_DMA_Init();
     MX_I2S2_Init();
@@ -275,5 +278,15 @@ void Error_Handler(void)
     if (huart2.Instance == USART2 && huart2.gState == HAL_UART_STATE_READY) {
         debug_write("FATAL: peripheral initialization/start failed; inspect g_audio_stats.\r\n");
     }
-    for (;;) {}
+    uint32_t fault_report_tick=HAL_GetTick();
+    for (;;) {
+#ifdef AUDIO_PC_STREAM
+        if (huart2.Instance==USART2) {
+            PC_Audio_Poll();
+            if (HAL_GetTick()-fault_report_tick>=100U) {
+                fault_report_tick=HAL_GetTick(); PC_Audio_ReportFault();
+            }
+        }
+#endif
+    }
 }

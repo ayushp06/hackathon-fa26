@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 file(GLOB HAL_SOURCES CONFIGURE_DEPENDS Drivers/STM32F4xx_HAL_Driver/Src/*.c)
 add_executable(AudioPassthrough
-    Core/Src/main.c Core/Src/audio.c Core/Src/pc_audio.c Core/Src/noise_filter.c Core/Src/reference_capture.c Core/Src/stm32f4xx_hal_msp.c
+    Core/Src/main.c Core/Src/audio.c Core/Src/pc_audio.c Core/Src/noise_filter.c Core/Src/audio_controls.c Core/Src/reference_capture.c Core/Src/stm32f4xx_hal_msp.c
     Core/Src/stm32f4xx_it.c Core/Src/system_stm32f4xx.c Core/Src/syscalls.c
     Core/Startup/startup_stm32f411xe.s ${HAL_SOURCES})
 set_target_properties(AudioPassthrough PROPERTIES SUFFIX .elf)
@@ -15,6 +15,13 @@ if(AUDIO_PIN_PROBE)
 endif()
 
 option(AUDIO_NLMS "Dual-microphone normalized LMS background-noise reduction" OFF)
+option(AUDIO_APP_CONTROL "Acknowledged live app controls and MIC3 telemetry" OFF)
+if(AUDIO_APP_CONTROL)
+    if(NOT AUDIO_NLMS OR NOT AUDIO_PC_STREAM)
+        message(FATAL_ERROR "App controls require NLMS and PC streaming")
+    endif()
+    target_compile_definitions(AudioPassthrough PRIVATE AUDIO_APP_CONTROL)
+endif()
 option(AUDIO_DUAL_DATA "Separate I2S3 data input with shared external clocks" OFF)
 option(AUDIO_SWAP_MIC_INPUTS "Voice on PC12 and noise reference on PB14" OFF)
 if(AUDIO_SWAP_MIC_INPUTS)

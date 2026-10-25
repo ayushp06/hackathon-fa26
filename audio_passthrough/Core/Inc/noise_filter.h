@@ -11,6 +11,9 @@ typedef struct {
 extern volatile NoiseStats g_noise_stats;
 void Noise_Init(void);
 void Noise_SetEnabled(uint32_t enabled);
+void Noise_SetStrength(uint32_t percent);
+/* Broadside delay-and-sum blend; requires matched, parallel microphones. */
+void Noise_SetSpatialFocus(uint32_t percent);
 void Noise_RequestReset(void);
 void Noise_Process(const int32_t *primary, const int32_t *reference, int32_t *output);
 #endif
