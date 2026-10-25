@@ -10,6 +10,7 @@ export class MockDeviceTransport implements DeviceService {
     connected: false,
     volume: 50,
     noiseReduction: 50,
+    reduceLoudSounds: 0,
     spatialFocus: 50,
     speechAmplification: 50,
     bass: 0,
@@ -62,6 +63,12 @@ export class MockDeviceTransport implements DeviceService {
   async setSpatialFocus(value: number) {
     this.assertPercent(value);
     this.status.spatialFocus = value;
+    return this.acknowledge();
+  }
+
+  async setReduceLoudSounds(value: number) {
+    this.assertPercent(value);
+    this.status.reduceLoudSounds = value;
     return this.acknowledge();
   }
 

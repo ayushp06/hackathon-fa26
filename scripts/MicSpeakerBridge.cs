@@ -136,6 +136,7 @@ public static class MicSpeakerBridge
             if (version>=4) {
                 values["reduceLoudSounds"]=packet[52]; values["spatialFocus"]=packet[53];
                 liveStatus["spatialActive"]=packet[54]!=0;
+                if (packet[54]!=0) liveStatus["filter"]="spatial";
                 liveStatus["microphoneSpacingMm"]=packet[55];
             }
             liveStatus["values"]=values;

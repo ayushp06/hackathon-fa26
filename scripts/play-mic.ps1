@@ -56,7 +56,7 @@ if ($runningBridge -and $runningBridge.Path -eq $bridgeExe) {
 if (-not (Test-Path -LiteralPath $bridgeExe) -or
     (Get-Item -LiteralPath $bridgeSource).LastWriteTimeUtc -gt (Get-Item -LiteralPath $bridgeExe).LastWriteTimeUtc) {
     if (Test-Path -LiteralPath $bridgeExe) { Remove-Item -LiteralPath $bridgeExe }
-    Add-Type -Path $bridgeSource -OutputAssembly $bridgeExe -OutputType ConsoleApplication -ReferencedAssemblies System.dll
+    Add-Type -Path $bridgeSource -OutputAssembly $bridgeExe -OutputType ConsoleApplication -ReferencedAssemblies System.dll,System.Web.Extensions.dll
 }
 if ($ListDevices) { & $bridgeExe --list; exit $LASTEXITCODE }
 $bridgeArguments = @('--port', $Port, '--device', "$DeviceIndex", '--gain',

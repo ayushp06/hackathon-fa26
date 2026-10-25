@@ -12,9 +12,10 @@ export type DeviceStatus = {
   connected: boolean;
   volume: number;
   noiseReduction: number;
+  reduceLoudSounds: number;
   spatialFocus: number;
   speechAmplification: number;
-  // Simulated signed EQ gains in dB; no hardware DSP is applied.
+  // Signed EQ gains in dB; the transport reports whether DSP is simulated.
   bass: number;
   mid: number;
   treble: number;
@@ -30,6 +31,7 @@ export interface DeviceTransport {
   disconnect(): Promise<void>;
   setVolume(value: number): Promise<DeviceAcknowledgment>;
   setNoiseReduction(value: number): Promise<DeviceAcknowledgment>;
+  setReduceLoudSounds(value: number): Promise<DeviceAcknowledgment>;
   setSpatialFocus(value: number): Promise<DeviceAcknowledgment>;
   setSpeechAmplification(value: number): Promise<DeviceAcknowledgment>;
   setBass(value: number): Promise<DeviceAcknowledgment>;

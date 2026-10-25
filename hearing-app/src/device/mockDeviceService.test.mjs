@@ -16,6 +16,7 @@ test('mock transport acknowledges independent controls and reports simulated sta
   const transport = new MockDeviceTransport();
   const volume = await transport.setVolume(72);
   await transport.setNoiseReduction(64);
+  await transport.setReduceLoudSounds(70);
   await transport.setSpatialFocus(28);
   await transport.setSpeechAmplification(81);
   await transport.setBass(-8);
@@ -30,10 +31,11 @@ test('mock transport acknowledges independent controls and reports simulated sta
   assert.equal(volume.accepted, true);
   assert.deepEqual(await transport.getStatus(), {
     simulated: true, connected: false, volume: 72,
-    noiseReduction: 64, spatialFocus: 28, speechAmplification: 81,
+    noiseReduction: 64, reduceLoudSounds: 70, spatialFocus: 28, speechAmplification: 81,
     bass: -8, mid: 0, treble: 12, eq250: 4, eq500: -3, eq2000: 6, eq4000: -2, calibrationStatus: 'idle',
   });
   await assert.rejects(transport.setNoiseReduction(101), /0 to 100/);
+  await assert.rejects(transport.setReduceLoudSounds(-1), /0 to 100/);
   await assert.rejects(transport.setSpeechAmplification(-1), /0 to 100/);
   await assert.rejects(transport.setBass(13), /-12 to \+12 dB/);
   await assert.rejects(transport.setMid(-13), /-12 to \+12 dB/);

@@ -11,6 +11,7 @@ import { SoundFeedbackProvider } from '../feedback/SoundFeedbackProvider';
 import { useHaptics } from '../feedback/useHaptics';
 import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { useAppStore } from '../state/useAppStore';
+import { HardwareConnection } from '../components/HardwareConnection';
 
 export default function RootLayout() {
   const { width, height } = useWindowDimensions();
@@ -84,6 +85,7 @@ function AppContent({ framed }: { framed: boolean }) {
             </Svg>}
           </Pressable> : null}
           <View style={styles.screen}>
+            <HardwareConnection />
             <Stack screenOptions={{ headerShown: false, animation: reducedMotion ? 'none' : 'fade', animationDuration: 180, contentStyle: styles.safeArea }} />
           </View>
         </View>

@@ -1,6 +1,22 @@
 # Hearing App
 
-Expo and React Native companion app. Device communication is mocked; the experimental hearing test plays local tones only when a wired headset is detected.
+Expo and React Native companion app. In the browser on the USB-connected Windows
+PC, controls use a real local bridge to the STM32. Native/mobile builds retain
+explicitly labeled mock controls. The experimental hearing test plays local
+tones only when a wired headset is detected.
+
+## Control the connected STM32
+
+Use the app-control firmware and current two-microphone wiring described in
+[hardware app setup](../audio_passthrough/APP_CONTROL.md). After `npm ci`, run
+`.\scripts\start-hardware-app.ps1` from the repository root and open
+http://localhost:8081. Choose **Connect USB** to apply saved settings and use
+the dials. Volume, noise-reduction strength, speech-band gain and EQ run on the
+STM32; **Relearn noise** resets its NLMS filter. Spatial Focus is disabled because
+this microphone configuration has no directional-processing implementation.
+The connection panel displays live microphone levels and reports missing clocks
+or a stopped stream. A disconnected dial saves its desired value without
+claiming to have changed hardware. Use the helper's `-Stop` switch to stop it.
 
 ## Run
 
@@ -32,15 +48,35 @@ npm test
 - `src/hearingTest`: imported report handling and the experimental tone plan/profile
 - `modules/headphone-route`: native wired headset detection for the tone test
 - `src/components`: reusable SVG rotary dial and circular gesture logic
-- `src/device`: transport interface, mock STM32-facing command implementation, and implementation binding
+- `src/device`: transport interface, real browser USB-bridge transport, native mock implementation, and binding
 - `src/state`: one Zustand app store with AsyncStorage persistence, plus session-only connection state
 
-The mock connection is session-only. The last device ID is stored locally; a restart never claims a live connection. No hearing-audio calibration, AI, or DSP is implemented. The current hardware documents do not define a BLE radio or GATT protocol. Real BLE needs those details, a native BLE package, platform permissions, and an Expo development build. Expo Go cannot load an arbitrary native module.
+Connections are session-only. The last device ID is stored locally; a restart
+never claims a live connection. The browser uses the USB audio bridge and
+acknowledged firmware DSP controls. Hearing calibration and AI are not
+implemented. The current hardware does not define a BLE radio or GATT protocol;
+mobile hardware transport needs those additions and a development build.
 
 The hearing test saves tone frequencies, relative playback levels, scenarios, taps, and timestamps locally. Its preliminary focus suggestion is experimental and non-diagnostic; phone audio is not calibrated in dB HL. The app never changes system volume. It plays a comfort-check tone at the highest test player level before starting and only uses equal or lower player levels afterward. Unplugging wired headphones pauses the test. Background noise is optional. Simulation mode never plays tones or generates a hearing profile.
 
-The Volume dial updates local state immediately and sends a simulated command through `DeviceTransport`; it does not adjust physical device output. The Recalibrate button requests a simulated 800 ms operation through the same transport and stores a timestamped mock result locally. `RotaryDial` accepts `min`, `max`, `step`, `diameter`, `label`, `value`, optional `valueSuffix`, and `onValueChange`; its 270° sweep leaves a gap at the bottom. Screen readers can increment or decrement it as an adjustable control.
+The Volume dial updates local state immediately and sends a command through
+`DeviceTransport`. In the connected browser it changes the STM32 PCM gain; in
+native preview it remains simulated. **Relearn noise** resets the real NLMS
+coefficients and checks for reference audio over two seconds, without producing
+a hearing profile. `RotaryDial` has a 270° sweep and accessible adjustment actions.
 
-Manual mode has Volume, Background Noise Reduction, Spatial Focus, and Speech Amplification dials. Its Advanced section has Bass, Mid, and Treble dials plus a seven-point frequency response editor at 125, 250, 500, 1k, 2k, 4k, and 8k Hz. The four extra bands have accessible step buttons. Manual settings are saved with AsyncStorage and sent to the mock transport; the response and waveform are illustrative and no hardware DSP is applied. The store also persists the active mode and feedback preferences, and migrates values saved by earlier versions. Calibration progress and live connection status stay session-only.
+Manual mode has Volume, Reduce Loud Sounds, Background Noise Reduction, Spatial
+Focus, and Speech Amplification dials. MIC4 firmware applies all five controls.
+Spatial Focus blends a broadside microphone sum at the 38 mm spacing, with
+noise cancellation and relearning paused while focus is nonzero. It controls
+the directional blend rather than a calibrated angle. Both microphones should
+face the same way. Reduce Loud Sounds compresses sustained peaks and limits
+digital transients. The two new controls default to zero; previously simulated
+spatial settings are reset during saved-state migration. Advanced
+has Bass, Mid and Treble plus a seven-point EQ editor; Treble uses a 4 kHz shelf
+because the 8 kHz point is Nyquist at 16 kHz sampling. Settings are saved with
+AsyncStorage and applied through the selected transport. The graph and waveform
+are illustrative, not measured audio. The store also persists mode and feedback
+preferences; learning progress and connection state remain session-only.
 
 Settings lets the user turn haptics and sounds on or off; haptics default on and sounds default off. Dial steps, mode changes, and mock recalibration use brief feedback when enabled. Bundled sound cues are short and low amplitude, player volume is limited to 18%, and playback follows the device's silent mode. Feedback does not change system volume, request microphone access, or play in the background. Reduced Motion suppresses haptics; active screen readers suppress UI sounds so spoken feedback is not interrupted.

@@ -1,5 +1,7 @@
 import { mockDeviceService } from './mockDeviceService';
 import type { DeviceService } from './types';
+import { Platform } from 'react-native';
+import { hardwareDeviceService } from './hardwareDeviceService';
 
-// Replace this binding when the STM32 BLE protocol and native transport are ready.
-export const deviceService: DeviceService = mockDeviceService;
+export const hardwareMode = Platform.OS === 'web';
+export const deviceService: DeviceService = hardwareMode ? hardwareDeviceService : mockDeviceService;

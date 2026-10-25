@@ -162,6 +162,7 @@ export function createHardwareServer({ directory, commandTimeout = 2200 } = {}) 
         try {
           const before = await snapshot();
           if (!(before.values?.noiseReduction > 0)) throw error('Turn up Background Noise Reduction before relearning.', 422);
+          if (before.values?.spatialFocus > 0) throw error('Set Spatial Focus to zero before relearning a noise reference.', 422);
           await command(10, 0);
           let referencePeak = 0;
           const end = Date.now() + 2200;

@@ -8,7 +8,7 @@ export const eqBands = [
   { control: 'treble', frequency: 8000 },
 ] as const;
 export type EqControl = (typeof eqBands)[number]['control'];
-export type ManualControl = 'noiseReduction' | 'spatialFocus' | 'speechAmplification' | EqControl;
+export type ManualControl = 'noiseReduction' | 'reduceLoudSounds' | 'spatialFocus' | 'speechAmplification' | EqControl;
 
 export function isEqControl(control: ManualControl): control is EqControl {
   return eqBands.some((band) => band.control === control);

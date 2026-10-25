@@ -11,11 +11,13 @@ import { useSoundFeedback } from '../feedback/useSoundFeedback';
 import { eqBands, type EqControl, type ManualControl } from '../state/manualValues';
 import { useAppStore } from '../state/useAppStore';
 import { EditableWaveform } from './EditableWaveform';
+import { hardwareMode } from '../device/deviceService';
 
 type DialControl = ManualControl | 'volume';
 
 const primaryControls: [DialControl, string][] = [
   ['volume', 'Volume/Gain'],
+  ['reduceLoudSounds', 'Reduce Loud Sounds'],
   ['noiseReduction', 'Background Noise Reduction'],
   ['spatialFocus', 'Spatial Focus'],
   ['speechAmplification', 'Speech Amplification'],
@@ -72,6 +74,7 @@ export function ManualScreen() {
       <Pressable accessibilityRole="button" accessibilityLabel="Back to Home" onPress={goHome} style={styles.backButton}><Text style={styles.backText}>‹ Home</Text></Pressable>
       <Text accessibilityRole="header" style={styles.title}>Manual Recalibration</Text>
       <Text style={styles.description}>Adjust each dial to shape your sound. Changes save automatically.</Text>
+      {hardwareMode ? <Text style={styles.description}>Connected controls change the live audio. Reduce Loud Sounds compresses peaks. Spatial Focus blends both microphones toward the direction perpendicular to their spacing and pauses noise cancellation while active. Speech Amplification boosts speech frequencies; Treble uses a 4 kHz shelf.</Text> : null}
       <View style={styles.grid}>
         {primaryControls.map((item) => <View key={item[0]} style={[styles.column, { width: columnWidth }]}>{dial(item, diameter)}</View>)}
       </View>
