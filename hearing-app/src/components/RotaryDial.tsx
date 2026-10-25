@@ -40,6 +40,7 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
   const { angle, gesture } = useRotaryGesture({ value: currentValue, min, max, step, diameter, onValueChange: handleValueChange });
   const marks = Array.from({ length: 5 }, (_, index) => min + (max - min) * index / 4);
   const ticks = Array.from({ length: 9 }, (_, index) => min + (max - min) * index / 8);
+  const numeralSize = Math.max(9, diameter * 0.07);
   const readout = `${valueSuffix.trim() === 'dB' && currentValue > 0 ? '+' : ''}${currentValue}${valueSuffix}`;
   const indicator = useAnimatedProps(() => {
     const radians = angle.value * Math.PI / 180;
@@ -97,7 +98,7 @@ export function RotaryDial({ min, max, step, diameter, label, value, valueSuffix
             })}
             {marks.map((mark) => {
               const radians = valueToAngle(mark, min, max) * Math.PI / 180;
-              return <SvgText key={mark} x={radius + Math.cos(radians) * radius * 0.7} y={radius + Math.sin(radians) * radius * 0.7} fill={theme.colors.background} fontSize={Math.max(9, diameter * 0.07)} fontWeight="600" textAnchor="middle" alignmentBaseline="central">{mark}</SvgText>;
+              return <SvgText key={mark} x={radius + Math.cos(radians) * radius * 0.7} y={radius + Math.sin(radians) * radius * 0.7} dy={numeralSize * 0.25} fill={theme.colors.background} fontSize={numeralSize} fontWeight="600" textAnchor="middle" alignmentBaseline="central">{mark}</SvgText>;
             })}
             <Circle cx={radius} cy={radius} r={radius * 0.31} fill="#1B1B1B" stroke="#666666" strokeOpacity={0.7} strokeWidth={1.2} />
             <Circle cx={radius} cy={radius} r={radius * 0.285} fill="#171717" />
