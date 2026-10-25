@@ -97,6 +97,38 @@ initial counters, each scene/time/applied value/context, correction ack sequence
 final counters and DWT maxima. Separate EXPECTED values from OBSERVED values. Until
 debugger evidence is recorded, mark model state and recall as unverified.
 
+## Read-only status helper
+
+Node.js 24 is sufficient; no dependencies, serial port, network request or command
+write. Run from a separate tooling checkout on the validation PC, pointing explicitly
+at the pinned ba961a4 checkout's status file. Alternatively copy only the helper file
+to a separate directory and pass `--file`; do not update/rebuild the pinned firmware.
+From this repository root, the default file is `build/hardware-status.json`:
+
+```powershell
+node adaptive-ml/tools/status-summary.mjs
+node adaptive-ml/tools/status-summary.mjs --file C:\path\to\pinned-checkout\build\hardware-status.json --json
+# Approximately one minute of read-only sampling; stdout can be captured by the shell.
+node adaptive-ml/tools/status-summary.mjs --samples 240 --interval 250 --json
+node --test --test-isolation=none adaptive-ml/tests/status-summary.test.mjs
+```
+
+`--interval` is milliseconds; `--json` emits one JSON object per sample. Text output
+shows freshness, applied target, ack and maximum callback cycles. JSON additionally
+includes observed counters/deltas, counter resets and warning lists. Omitted/malformed
+numeric fields remain null, not invented zeros. Stale/malformed/missing status never
+falls back to a cached live reading. Exit 1 means at least one unavailable/invalid,
+stale, faulted, stopped or non-MIC4 snapshot; exit 2 is a usage/runtime error. Warnings
+and counter changes must also be reviewed: exit 0 is NOT a validation pass.
+
+The helper labels hidden ML state explicitly and does not infer predictions, learned
+examples, autonomy or capability from applied strength/MIC4. "live" only describes
+the status snapshot, not microphone validity or model readiness. Its age window is
+-1000 <= age <1500 ms, matching the existing API; callback budget assumes nominal
+96 MHz. It does not distinguish ordinary versus automatic strength changes.
+Tests use synthetic fixtures; no new hardware measurements were made. Logs can be
+saved under ignored `build/ml-validation/` without changing the player/status files.
+
 ## Five critical integration risks
 
 | Failure mode | Detection | Smallest reasonable response/fix, requiring owner coordination where relevant |

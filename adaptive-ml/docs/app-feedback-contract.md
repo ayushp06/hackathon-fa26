@@ -48,7 +48,7 @@ unacknowledged files about every 250 ms and deletes them upon matching sequence.
 `scripts/adaptive-feedback.ps1` uses that existing path and waits up to 4 s for status.
 
 The Node API's ordinary `/api/control` waits for matching firmware seq/status, but
-currently exposes only control IDs 0..13 plus its dedicated reset routes. It has no
+currently exposes ordinary control IDs 0..9, 12 and 13 plus dedicated reset routes. It has no
 learning-feedback, autonomy or preference-clear route. MIC4 also has no ML capability
 bit: protocol=4 does not prove that AUDIO_ADAPTIVE_ML was compiled in. Old builds
 reject the reserved ML IDs. Model counters/context/mode require debugger inspection.
