@@ -10,6 +10,7 @@ import type { EqControl } from '../state/manualValues';
 import { frequencyResponsePath, manualWaveformPath, responseBandAtX, responseGainAtY, responseX, responseY } from './manualWaveform';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const ink = theme.colors.text;
 const cream = theme.colors.background;
 const muted = '#BFB9AE';
@@ -45,6 +46,9 @@ export function EditableWaveform({ bass, mid, treble, noiseReduction, spatialFoc
 
   const responseProps = useAnimatedProps(() => ({ d: frequencyResponsePath(width, animatedBass.value, animatedMid.value, animatedTreble.value) }));
   const waveformProps = useAnimatedProps(() => ({ d: manualWaveformPath(animatedBass.value, animatedMid.value, animatedTreble.value, animatedNoise.value, animatedFocus.value, animatedSpeech.value) }));
+  const bassNodeProps = useAnimatedProps(() => ({ cy: responseY(animatedBass.value) }));
+  const midNodeProps = useAnimatedProps(() => ({ cy: responseY(animatedMid.value) }));
+  const trebleNodeProps = useAnimatedProps(() => ({ cy: responseY(animatedTreble.value) }));
 
   const changeBand = (band: EqControl, value: number) => {
     if (band === 'bass') animatedBass.value = value;
@@ -71,9 +75,9 @@ export function EditableWaveform({ bass, mid, treble, noiseReduction, spatialFoc
   });
 
   const nodes = [
-    { control: 'bass', label: 'BASS', frequency: 125, gain: bass },
-    { control: 'mid', label: 'MID', frequency: 1000, gain: mid },
-    { control: 'treble', label: 'TREBLE', frequency: 8000, gain: treble },
+    { control: 'bass', label: 'BASS', frequency: 125, animatedProps: bassNodeProps },
+    { control: 'mid', label: 'MID', frequency: 1000, animatedProps: midNodeProps },
+    { control: 'treble', label: 'TREBLE', frequency: 8000, animatedProps: trebleNodeProps },
   ] as const;
 
   return (
@@ -87,15 +91,15 @@ export function EditableWaveform({ bass, mid, treble, noiseReduction, spatialFoc
         <View accessible accessibilityRole="image" accessibilityLabel="Illustrative frequency response editor. Drag Bass, Mid or Treble up or down. The dials above are accessible alternatives." onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={styles.responseChart}>
           <Svg width={width} height={190} pointerEvents="none">
             {[-12, 0, 12].map((gain) => <Line key={gain} x1={38} x2={width - 16} y1={responseY(gain)} y2={responseY(gain)} stroke={grid} strokeWidth={gain === 0 ? 1.3 : 0.8} strokeDasharray={gain === 0 ? undefined : '3 4'} />)}
-            {[100, 1000, 10000].map((frequency) => <Line key={frequency} x1={responseX(frequency, width)} x2={responseX(frequency, width)} y1={30} y2={150} stroke={grid} strokeWidth={0.8} strokeDasharray="3 4" />)}
+            {[125, 1000, 8000].map((frequency) => <Line key={frequency} x1={responseX(frequency, width)} x2={responseX(frequency, width)} y1={30} y2={150} stroke={grid} strokeWidth={0.8} strokeDasharray="3 4" />)}
             {[-12, 0, 12].map((gain) => <SvgText key={gain} x={4} y={responseY(gain) + 4} fill={muted} fontSize={10}>{gain > 0 ? `+${gain}` : gain} dB</SvgText>)}
-            {(width < 290 ? [20, 100, 1000, 20000] : [20, 100, 1000, 10000, 20000]).map((frequency) => <SvgText key={frequency} x={responseX(frequency, width)} y={176} fill={muted} fontSize={10} textAnchor={frequency === 20000 ? 'end' : 'middle'}>{frequency === 20000 ? '20k Hz' : frequency >= 1000 ? `${frequency / 1000}k` : frequency}</SvgText>)}
+            {(width < 340 ? [125, 1000, 8000] : [20, 125, 1000, 8000, 20000]).map((frequency) => <SvgText key={frequency} x={responseX(frequency, width)} y={176} fill={muted} fontSize={10} textAnchor={frequency === 20000 ? 'end' : 'middle'}>{frequency === 20 ? '20 Hz' : frequency === 20000 ? '20k Hz' : frequency >= 1000 ? `${frequency / 1000}k` : frequency}</SvgText>)}
             <AnimatedPath animatedProps={responseProps} fill="none" stroke={cream} strokeOpacity={0.14} strokeWidth={7} />
             <AnimatedPath animatedProps={responseProps} fill="none" stroke={cream} strokeWidth={2.2} />
-            {nodes.map(({ control, label, frequency, gain }) => <G key={control}>
+            {nodes.map(({ control, label, frequency, animatedProps }) => <G key={control}>
               <SvgText x={responseX(frequency, width)} y={18} fill={muted} fontSize={10} fontWeight="700" textAnchor="middle">{label}</SvgText>
-              <Circle cx={responseX(frequency, width)} cy={responseY(gain)} r={11} fill={ink} stroke={cream} strokeWidth={1.5} />
-              <Circle cx={responseX(frequency, width)} cy={responseY(gain)} r={4} fill={cream} />
+              <AnimatedCircle cx={responseX(frequency, width)} animatedProps={animatedProps} r={11} fill={ink} stroke={cream} strokeWidth={1.5} />
+              <AnimatedCircle cx={responseX(frequency, width)} animatedProps={animatedProps} r={4} fill={cream} />
             </G>)}
           </Svg>
         </View>

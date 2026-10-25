@@ -47,3 +47,13 @@ test('frequency response uses log-spaced Hz positions and gain in dB', () => {
   assert.ok(Math.abs(responseDbAt(20, 0, 6, 0)) < 0.01);
   assert.ok(frequencyResponsePath(width, 0, 0, 0).includes(`${responseY(0).toFixed(1)}`));
 });
+
+test('response line passes exactly through all three EQ handles', () => {
+  const width = 520;
+  const gains = [-12, -12, 4];
+  const path = frequencyResponsePath(width, ...gains);
+  for (const [index, frequency] of [125, 1000, 8000].entries()) {
+    assert.ok(Math.abs(responseDbAt(frequency, ...gains) - gains[index]) < 1e-9);
+    assert.ok(path.includes(`L ${responseX(frequency, width).toFixed(1)} ${responseY(gains[index]).toFixed(1)}`));
+  }
+});
